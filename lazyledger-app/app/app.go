@@ -7,6 +7,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec/types"
+	"github.com/gogo/protobuf/grpc"
 	"github.com/pelletier/go-toml"
 	"github.com/spf13/cast"
 
@@ -267,8 +268,10 @@ func New(
 	// ... other modules keepers
 
 	// Create IBC Keeper
+	// TODO(evan): fix this so
+	ibcClientSubspace := paramstypes.NewSubspace(appCodec, cdc, keys[ibchost.StoreKey], keys[ibchost.StoreKey], "ibc")
 	app.IBCKeeper = ibckeeper.NewKeeper(
-		appCodec, keys[ibchost.StoreKey], app.StakingKeeper, scopedIBCKeeper,
+		appCodec, keys[ibchost.StoreKey], ibcClientSubspace, app.StakingKeeper, scopedIBCKeeper,
 	)
 
 	// // register the proposal types
@@ -523,11 +526,11 @@ func (app *App) RegisterAPIRoutes(apiSvr *api.Server, apiConfig config.APIConfig
 	// Register legacy tx routes.
 	authrest.RegisterTxRoutes(clientCtx, apiSvr.Router)
 	// Register new tx routes from grpc-gateway.
-	authtx.RegisterGRPCGatewayRoutes(clientCtx, apiSvr.GRPCRouter)
+	authtx.RegisterGRPCGatewayRoutes(clientCtx, apiSvr.GRPCGatewayRouter)
 
 	// Register legacy and grpc-gateway routes for all modules.
 	ModuleBasics.RegisterRESTRoutes(clientCtx, apiSvr.Router)
-	ModuleBasics.RegisterGRPCGatewayRoutes(clientCtx, apiSvr.GRPCRouter)
+	ModuleBasics.RegisterGRPCGatewayRoutes(clientCtx, apiSvr.GRPCGatewayRouter)
 }
 
 // RegisterTxService implements the Application.RegisterTxService method.
@@ -545,6 +548,15 @@ func (app *App) RegisterTxService(clientCtx client.Context) {
 	clientCtx = clientCtx.WithClient(client)
 	// -- end of the workaround.
 	authtx.RegisterTxService(app.BaseApp.GRPCQueryRouter(), clientCtx, app.BaseApp.Simulate, app.interfaceRegistry)
+}
+
+//
+func (app *App) RegisterGRPCServer(srv grpc.Server) {
+
+}
+
+func (app *App) RegisterTendermintService(clientCtx client.Context) {
+
 }
 
 // GetMaccPerms returns a copy of the module account permissions
