@@ -46,7 +46,7 @@ require (
 	github.com/tendermint/btcd v0.1.1
 	github.com/tendermint/crypto v0.0.0-20191022145703-50d29ede1e15
 	github.com/tendermint/go-amino v0.16.0
-	github.com/tendermint/tendermint v0.34.0
+	github.com/tendermint/tendermint v0.34.1
 	github.com/tendermint/tm-db v0.6.3
 	golang.org/x/crypto v0.0.0-20201016220609-9e8e0b390897
 	golang.org/x/net v0.0.0-20200930145003-4acb6c075d10 // indirect
@@ -56,4 +56,7 @@ require (
 	gopkg.in/yaml.v2 v2.3.0
 )
 
-replace github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.2-alpha.regen.4
+replace (
+	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.2-alpha.regen.4
+	github.com/tendermint/tendermint v0.34.0 => github.com/lazyledger/lazyledger-core v0.32.7
+)
