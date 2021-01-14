@@ -3,11 +3,13 @@ package smt
 import (
 	"crypto/sha256"
 	"io"
+	"sync"
 
 	"github.com/cosmos/cosmos-sdk/store/cachekv"
 	"github.com/cosmos/cosmos-sdk/store/tracekv"
 	"github.com/cosmos/cosmos-sdk/store/types"
 	abci "github.com/tendermint/tendermint/abci/types"
+	dbm "github.com/tendermint/tm-db"
 
 	"github.com/lazyledger/smt"
 )
@@ -23,6 +25,16 @@ var (
 // Store Implements types.KVStore and CommitKVStore.
 type Store struct {
 	tree *smt.SparseMerkleTree
+	db   dbm.DB
+
+	mtx sync.RWMutex
+}
+
+func NewStore(underlyingDB dbm.DB) *Store {
+	return &Store{
+		tree: smt.NewSparseMerkleTree(underlyingDB, sha256.New()),
+		db:   underlyingDB,
+	}
 }
 
 // KVStore interface below:
@@ -43,6 +55,8 @@ func (s *Store) CacheWrapWithTrace(w io.Writer, tc types.TraceContext) types.Cac
 
 // Get returns nil iff key doesn't exist. Panics on nil key.
 func (s *Store) Get(key []byte) []byte {
+	s.mtx.RLock()
+	defer s.mtx.RUnlock()
 	val, err := s.tree.Get(key)
 	// TODO(tzdybal): how to handle this err?
 	if err != nil {
@@ -53,21 +67,34 @@ func (s *Store) Get(key []byte) []byte {
 
 // Has checks if a key exists. Panics on nil key.
 func (s *Store) Has(key []byte) bool {
-	val, err := s.tree.Get(key)
-	// TODO(tzdybal): how to handle this err?
-	// "defaultValue" for non-existent key is []byte{}
-	return err != nil && len(val) != 0
+	s.mtx.RLock()
+	defer s.mtx.RUnlock()
+	has, err := s.db.Has(indexKey(key))
+	return err == nil && has
 }
 
 // Set sets the key. Panics on nil key or value.
 func (s *Store) Set(key []byte, value []byte) {
+	s.mtx.Lock()
 	// TODO(tzdybal): how to handle this err?
-	_, _ = s.tree.Update(key, value)
+	// TODO(tzdybal): it should be done as batch, but probably using mutex is easier
+	_, err := s.tree.Update(key, value)
+	if err != nil {
+		panic(err.Error())
+	}
+	err = s.db.Set(indexKey(key), []byte{})
+	if err != nil {
+		panic(err.Error())
+	}
+	s.mtx.Unlock()
 }
 
 // Delete deletes the key. Panics on nil key.
 func (s *Store) Delete(key []byte) {
+	s.mtx.Lock()
 	_, _ = s.tree.Update(key, []byte{})
+	_ = s.db.Delete(indexKey(key))
+	s.mtx.Unlock()
 }
 
 // Iterator over a domain of keys in ascending order. End is exclusive.
@@ -77,7 +104,11 @@ func (s *Store) Delete(key []byte) {
 // CONTRACT: No writes may happen within a domain while an iterator exists over it.
 // Exceptionally allowed for cachekv.Store, safe to write in the modules.
 func (s *Store) Iterator(start []byte, end []byte) types.Iterator {
-	panic("not implemented") // TODO(tzdybal): Implement
+	iter, err := newIterator(s, start, end, false)
+	if err != nil {
+		panic(err.Error())
+	}
+	return iter
 }
 
 // Iterator over a domain of keys in descending order. End is exclusive.
@@ -86,7 +117,11 @@ func (s *Store) Iterator(start []byte, end []byte) types.Iterator {
 // CONTRACT: No writes may happen within a domain while an iterator exists over it.
 // Exceptionally allowed for cachekv.Store, safe to write in the modules.
 func (s *Store) ReverseIterator(start []byte, end []byte) types.Iterator {
-	panic("not implemented") // TODO(tzdybal): Implement
+	iter, err := newIterator(s, start, end, true)
+	if err != nil {
+		panic(err.Error())
+	}
+	return iter
 }
 
 // CommitStore interface below:
