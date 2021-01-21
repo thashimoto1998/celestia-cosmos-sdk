@@ -2,17 +2,18 @@ package network
 
 import (
 	"encoding/json"
+	"io/ioutil"
 	"path/filepath"
 	"time"
 
-	tmos "github.com/tendermint/tendermint/libs/os"
-	"github.com/tendermint/tendermint/node"
-	"github.com/tendermint/tendermint/p2p"
-	pvm "github.com/tendermint/tendermint/privval"
-	"github.com/tendermint/tendermint/proxy"
-	"github.com/tendermint/tendermint/rpc/client/local"
-	"github.com/tendermint/tendermint/types"
-	tmtime "github.com/tendermint/tendermint/types/time"
+	tmos "github.com/lazyledger/lazyledger-core/libs/os"
+	"github.com/lazyledger/lazyledger-core/node"
+	"github.com/lazyledger/lazyledger-core/p2p"
+	pvm "github.com/lazyledger/lazyledger-core/privval"
+	"github.com/lazyledger/lazyledger-core/proxy"
+	"github.com/lazyledger/lazyledger-core/rpc/client/local"
+	"github.com/lazyledger/lazyledger-core/types"
+	tmtime "github.com/lazyledger/lazyledger-core/types/time"
 
 	"github.com/cosmos/cosmos-sdk/server/api"
 	servergrpc "github.com/cosmos/cosmos-sdk/server/grpc"
@@ -34,10 +35,15 @@ func startInProcess(cfg Config, val *Validator) error {
 
 	app := cfg.AppConstructor(*val)
 
+	pvFile, err := pvm.LoadOrGenFilePV(tmCfg.PrivValidatorKeyFile(), tmCfg.PrivValidatorStateFile())
+	if err != nil {
+		return err
+	}
+
 	genDocProvider := node.DefaultGenesisDocProviderFunc(tmCfg)
 	tmNode, err := node.NewNode(
 		tmCfg,
-		pvm.LoadOrGenFilePV(tmCfg.PrivValidatorKeyFile(), tmCfg.PrivValidatorStateFile()),
+		pvFile,
 		nodeKey,
 		proxy.NewLocalClientCreator(app),
 		genDocProvider,
@@ -190,7 +196,7 @@ func writeFile(name string, dir string, contents []byte) error {
 		return err
 	}
 
-	err = tmos.WriteFile(file, contents, 0644)
+	err = ioutil.WriteFile(file, contents, 0644)
 	if err != nil {
 		return err
 	}

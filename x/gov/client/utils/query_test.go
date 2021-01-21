@@ -4,10 +4,10 @@ import (
 	"context"
 	"testing"
 
+	"github.com/lazyledger/lazyledger-core/rpc/client/mock"
+	ctypes "github.com/lazyledger/lazyledger-core/rpc/core/types"
+	tmtypes "github.com/lazyledger/lazyledger-core/types"
 	"github.com/stretchr/testify/require"
-	"github.com/tendermint/tendermint/rpc/client/mock"
-	ctypes "github.com/tendermint/tendermint/rpc/core/types"
-	tmtypes "github.com/tendermint/tendermint/types"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"

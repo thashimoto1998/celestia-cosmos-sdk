@@ -6,8 +6,8 @@ import (
 	"testing"
 
 	"github.com/cosmos/iavl"
+	abci "github.com/lazyledger/lazyledger-core/abci/types"
 	"github.com/stretchr/testify/require"
-	abci "github.com/tendermint/tendermint/abci/types"
 	dbm "github.com/tendermint/tm-db"
 
 	"github.com/cosmos/cosmos-sdk/store/types"

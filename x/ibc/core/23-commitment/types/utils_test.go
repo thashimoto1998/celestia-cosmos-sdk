@@ -3,9 +3,9 @@ package types_test
 import (
 	"fmt"
 
+	abci "github.com/lazyledger/lazyledger-core/abci/types"
+	crypto "github.com/lazyledger/lazyledger-core/proto/tendermint/crypto"
 	"github.com/stretchr/testify/require"
-	abci "github.com/tendermint/tendermint/abci/types"
-	crypto "github.com/tendermint/tendermint/proto/tendermint/crypto"
 
 	"github.com/cosmos/cosmos-sdk/x/ibc/core/23-commitment/types"
 )

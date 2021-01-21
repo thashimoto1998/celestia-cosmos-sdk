@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"io"
 
+	tmtypes "github.com/lazyledger/lazyledger-core/types"
 	amino "github.com/tendermint/go-amino"
-	tmtypes "github.com/tendermint/tendermint/types"
 
 	"github.com/cosmos/cosmos-sdk/codec/types"
 )

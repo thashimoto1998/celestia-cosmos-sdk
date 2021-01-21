@@ -5,8 +5,8 @@ import (
 	"os"
 	"testing"
 
+	"github.com/lazyledger/lazyledger-core/libs/log"
 	"github.com/stretchr/testify/require"
-	"github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"

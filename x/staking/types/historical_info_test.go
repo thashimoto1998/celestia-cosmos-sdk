@@ -5,8 +5,8 @@ import (
 	"sort"
 	"testing"
 
+	tmproto "github.com/lazyledger/lazyledger-core/proto/tendermint/types"
 	"github.com/stretchr/testify/require"
-	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 
 	"github.com/cosmos/cosmos-sdk/x/staking/types"
 )

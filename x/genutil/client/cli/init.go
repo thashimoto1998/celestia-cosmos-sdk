@@ -8,13 +8,13 @@ import (
 	"path/filepath"
 
 	"github.com/cosmos/go-bip39"
+	cfg "github.com/lazyledger/lazyledger-core/config"
+	"github.com/lazyledger/lazyledger-core/libs/cli"
+	tmos "github.com/lazyledger/lazyledger-core/libs/os"
+	tmrand "github.com/lazyledger/lazyledger-core/libs/rand"
+	"github.com/lazyledger/lazyledger-core/types"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
-	cfg "github.com/tendermint/tendermint/config"
-	"github.com/tendermint/tendermint/libs/cli"
-	tmos "github.com/tendermint/tendermint/libs/os"
-	tmrand "github.com/tendermint/tendermint/libs/rand"
-	"github.com/tendermint/tendermint/types"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"

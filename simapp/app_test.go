@@ -5,11 +5,11 @@ import (
 	"os"
 	"testing"
 
+	"github.com/lazyledger/lazyledger-core/libs/log"
 	"github.com/stretchr/testify/require"
-	"github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
 
-	abci "github.com/tendermint/tendermint/abci/types"
+	abci "github.com/lazyledger/lazyledger-core/abci/types"
 )
 
 func TestSimAppExportAndBlockedAddrs(t *testing.T) {

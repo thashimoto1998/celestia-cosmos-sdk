@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 
+	tmcfg "github.com/lazyledger/lazyledger-core/config"
+	"github.com/lazyledger/lazyledger-core/libs/cli"
+	"github.com/lazyledger/lazyledger-core/libs/log"
 	"github.com/spf13/viper"
-	tmcfg "github.com/tendermint/tendermint/config"
-	"github.com/tendermint/tendermint/libs/cli"
-	"github.com/tendermint/tendermint/libs/log"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
