@@ -4,10 +4,12 @@ import (
 	"crypto/sha256"
 	"io"
 	"sync"
+	"time"
 
 	"github.com/cosmos/cosmos-sdk/store/cachekv"
 	"github.com/cosmos/cosmos-sdk/store/tracekv"
 	"github.com/cosmos/cosmos-sdk/store/types"
+	"github.com/cosmos/cosmos-sdk/telemetry"
 	abci "github.com/tendermint/tendermint/abci/types"
 	dbm "github.com/tendermint/tm-db"
 
@@ -62,6 +64,7 @@ func (s *Store) CacheWrapWithTrace(w io.Writer, tc types.TraceContext) types.Cac
 
 // Get returns nil iff key doesn't exist. Panics on nil key.
 func (s *Store) Get(key []byte) []byte {
+	defer telemetry.MeasureSince(time.Now(), "store", "smt", "get")
 	s.mtx.RLock()
 	defer s.mtx.RUnlock()
 	val, err := s.tree.Get(key)
@@ -74,6 +77,7 @@ func (s *Store) Get(key []byte) []byte {
 
 // Has checks if a key exists. Panics on nil key.
 func (s *Store) Has(key []byte) bool {
+	defer telemetry.MeasureSince(time.Now(), "store", "smt", "has")
 	s.mtx.RLock()
 	defer s.mtx.RUnlock()
 	has, err := s.db.Has(indexKey(key))
@@ -98,6 +102,7 @@ func (s *Store) Set(key []byte, value []byte) {
 
 // Delete deletes the key. Panics on nil key.
 func (s *Store) Delete(key []byte) {
+	defer telemetry.MeasureSince(time.Now(), "store", "smt", "delete")
 	s.mtx.Lock()
 	_, _ = s.tree.Delete(key)
 	_ = s.db.Delete(indexKey(key))
@@ -134,6 +139,7 @@ func (s *Store) ReverseIterator(start []byte, end []byte) types.Iterator {
 // CommitStore interface below:
 
 func (s *Store) Commit() types.CommitID {
+	defer telemetry.MeasureSince(time.Now(), "store", "smt", "commit")
 	version := s.version + 1
 
 	if version == 1 && s.opts.initialVersion != 0 {
