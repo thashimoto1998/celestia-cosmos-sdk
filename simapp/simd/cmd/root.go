@@ -6,10 +6,10 @@ import (
 	"os"
 	"path/filepath"
 
+	tmcli "github.com/lazyledger/lazyledger-core/libs/cli"
+	"github.com/lazyledger/lazyledger-core/libs/log"
 	"github.com/spf13/cast"
 	"github.com/spf13/cobra"
-	tmcli "github.com/tendermint/tendermint/libs/cli"
-	"github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"

@@ -3,8 +3,8 @@ package keeper_test
 import (
 	"testing"
 
+	"github.com/lazyledger/lazyledger-core/crypto"
 	"github.com/stretchr/testify/suite"
-	"github.com/tendermint/tendermint/crypto"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	sdk "github.com/cosmos/cosmos-sdk/types"

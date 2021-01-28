@@ -4,8 +4,8 @@ import (
 	gocontext "context"
 	"testing"
 
+	tmproto "github.com/lazyledger/lazyledger-core/proto/tendermint/types"
 	"github.com/stretchr/testify/suite"
-	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/simapp"

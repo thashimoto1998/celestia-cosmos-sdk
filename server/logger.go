@@ -1,8 +1,8 @@
 package server
 
 import (
+	tmlog "github.com/lazyledger/lazyledger-core/libs/log"
 	"github.com/rs/zerolog"
-	tmlog "github.com/tendermint/tendermint/libs/log"
 )
 
 var _ tmlog.Logger = (*ZeroLogWrapper)(nil)

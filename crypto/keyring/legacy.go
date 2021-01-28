@@ -5,8 +5,8 @@ import (
 	"io"
 	"strings"
 
+	tmos "github.com/lazyledger/lazyledger-core/libs/os"
 	"github.com/pkg/errors"
-	tmos "github.com/tendermint/tendermint/libs/os"
 	dbm "github.com/tendermint/tm-db"
 
 	"github.com/cosmos/cosmos-sdk/crypto"

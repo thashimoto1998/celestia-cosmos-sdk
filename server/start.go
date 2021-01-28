@@ -8,15 +8,15 @@ import (
 	"runtime/pprof"
 	"time"
 
+	"github.com/lazyledger/lazyledger-core/abci/server"
+	tcmd "github.com/lazyledger/lazyledger-core/cmd/tendermint/commands"
+	tmos "github.com/lazyledger/lazyledger-core/libs/os"
+	"github.com/lazyledger/lazyledger-core/node"
+	"github.com/lazyledger/lazyledger-core/p2p"
+	pvm "github.com/lazyledger/lazyledger-core/privval"
+	"github.com/lazyledger/lazyledger-core/proxy"
+	"github.com/lazyledger/lazyledger-core/rpc/client/local"
 	"github.com/spf13/cobra"
-	"github.com/tendermint/tendermint/abci/server"
-	tcmd "github.com/tendermint/tendermint/cmd/tendermint/commands"
-	tmos "github.com/tendermint/tendermint/libs/os"
-	"github.com/tendermint/tendermint/node"
-	"github.com/tendermint/tendermint/p2p"
-	pvm "github.com/tendermint/tendermint/privval"
-	"github.com/tendermint/tendermint/proxy"
-	"github.com/tendermint/tendermint/rpc/client/local"
 	"google.golang.org/grpc"
 
 	"github.com/cosmos/cosmos-sdk/client"
@@ -240,10 +240,15 @@ func startInProcess(ctx *Context, clientCtx client.Context, appCreator types.App
 		return err
 	}
 
+	pvFile, err := pvm.LoadOrGenFilePV(cfg.PrivValidatorKeyFile(), cfg.PrivValidatorStateFile())
+	if err != nil {
+		return err
+	}
+
 	genDocProvider := node.DefaultGenesisDocProviderFunc(cfg)
 	tmNode, err := node.NewNode(
 		cfg,
-		pvm.LoadOrGenFilePV(cfg.PrivValidatorKeyFile(), cfg.PrivValidatorStateFile()),
+		pvFile,
 		nodeKey,
 		proxy.NewLocalClientCreator(app),
 		genDocProvider,

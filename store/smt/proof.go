@@ -8,9 +8,9 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/store/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	"github.com/lazyledger/lazyledger-core/crypto/merkle"
+	tmmerkle "github.com/lazyledger/lazyledger-core/proto/tendermint/crypto"
 	"github.com/lazyledger/smt"
-	"github.com/tendermint/tendermint/crypto/merkle"
-	tmmerkle "github.com/tendermint/tendermint/proto/tendermint/crypto"
 )
 
 type HasherType byte

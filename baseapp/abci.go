@@ -11,8 +11,8 @@ import (
 	"time"
 
 	"github.com/gogo/protobuf/proto"
-	abci "github.com/tendermint/tendermint/abci/types"
-	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
+	abci "github.com/lazyledger/lazyledger-core/abci/types"
+	tmproto "github.com/lazyledger/lazyledger-core/proto/tendermint/types"
 	"google.golang.org/grpc/codes"
 	grpcstatus "google.golang.org/grpc/status"
 
@@ -112,12 +112,6 @@ func (app *BaseApp) Info(req abci.RequestInfo) abci.ResponseInfo {
 		LastBlockHeight:  lastCommitID.Version,
 		LastBlockAppHash: lastCommitID.Hash,
 	}
-}
-
-// SetOption implements the ABCI interface.
-func (app *BaseApp) SetOption(req abci.RequestSetOption) (res abci.ResponseSetOption) {
-	// TODO: Implement!
-	return
 }
 
 // FilterPeerByAddrPort filters peers by address/port.
@@ -379,6 +373,18 @@ func (app *BaseApp) snapshot(height int64) {
 		}
 
 		app.logger.Debug("pruned state snapshots", "pruned", pruned)
+	}
+}
+
+// PreprocessTxs fullfills the lazyledger-core version of the ACBI interface,
+// also proposed here https://github.com/tendermint/spec/issues/194. It allows
+// for arbitrary processing steps before transaction data is included in the block.
+// todo(evan): update documentation after implemented
+func (app *BaseApp) PreprocessTxs(txs abci.RequestPreprocessTxs) abci.ResponsePreprocessTxs {
+	// TODO(evan): fully implement
+	// pass through txs w/o processing for now
+	return abci.ResponsePreprocessTxs{
+		Txs: txs.Txs,
 	}
 }
 

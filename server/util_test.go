@@ -97,7 +97,7 @@ func TestInterceptConfigsPreRunHandlerReadsConfigToml(t *testing.T) {
 		t.Fatalf("creating config.toml file failed: %v", err)
 	}
 
-	_, err = writer.WriteString(fmt.Sprintf("db_backend = '%s'\n", testDbBackend))
+	_, err = writer.WriteString(fmt.Sprintf("db-backend = '%s'\n", testDbBackend))
 	if err != nil {
 		t.Fatalf("Failed writing string to config.toml: %v", err)
 	}
@@ -181,7 +181,7 @@ func TestInterceptConfigsPreRunHandlerDoesNotMixConfigFiles(t *testing.T) {
 	}
 
 	// Put a value in config.toml that should be in app.toml
-	_, err = writer.WriteString(fmt.Sprintf("halt-time = %d\ndb_backend = \"%s\"\n", testHaltTime, testDbBackend))
+	_, err = writer.WriteString(fmt.Sprintf("halt-time = %d\ndb-backend = \"%s\"\n", testHaltTime, testDbBackend))
 	if err != nil {
 		t.Fatalf("Failed writing string to config.toml: %v", err)
 	}

@@ -1,7 +1,7 @@
 package rootmulti
 
 import (
-	"github.com/tendermint/tendermint/crypto/merkle"
+	"github.com/lazyledger/lazyledger-core/crypto/merkle"
 
 	"github.com/cosmos/cosmos-sdk/store/smt"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
@@ -30,4 +30,5 @@ func DefaultProofRuntime() (prt *merkle.ProofRuntime) {
 func SMTProofRuntime() (prt *merkle.ProofRuntime) {
 	prt = merkle.NewProofRuntime()
 	prt.RegisterOpDecoder(smt.SMTProofType, smt.ProofDecoder)
+	return prt
 }
