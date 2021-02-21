@@ -12,10 +12,9 @@ import (
 	tcmd "github.com/lazyledger/lazyledger-core/cmd/tendermint/commands"
 	tmos "github.com/lazyledger/lazyledger-core/libs/os"
 	"github.com/lazyledger/lazyledger-core/node"
-	"github.com/lazyledger/lazyledger-core/p2p"
-	pvm "github.com/lazyledger/lazyledger-core/privval"
 	"github.com/lazyledger/lazyledger-core/proxy"
 	"github.com/lazyledger/lazyledger-core/rpc/client/local"
+	optinode "github.com/lazyledger/optimint/node"
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc"
 
@@ -235,27 +234,29 @@ func startInProcess(ctx *Context, clientCtx client.Context, appCreator types.App
 
 	app := appCreator(ctx.Logger, db, traceWriter, ctx.Viper)
 
-	nodeKey, err := p2p.LoadOrGenNodeKey(cfg.NodeKeyFile())
-	if err != nil {
-		return err
-	}
-
-	pvFile, err := pvm.LoadOrGenFilePV(cfg.PrivValidatorKeyFile(), cfg.PrivValidatorStateFile())
-	if err != nil {
-		return err
-	}
+	//nodeKey, err := p2p.LoadOrGenNodeKey(cfg.NodeKeyFile())
+	//if err != nil {
+	//	return err
+	//}
+	//
+	//pvFile, err := pvm.LoadOrGenFilePV(cfg.PrivValidatorKeyFile(), cfg.PrivValidatorStateFile())
+	//if err != nil {
+	//	return err
+	//}
 
 	genDocProvider := node.DefaultGenesisDocProviderFunc(cfg)
-	tmNode, err := node.NewNode(
-		cfg,
-		pvFile,
-		nodeKey,
-		proxy.NewLocalClientCreator(app),
-		genDocProvider,
-		node.DefaultDBProvider,
-		node.DefaultMetricsProvider(cfg.Instrumentation),
-		ctx.Logger,
-	)
+	var tmNode node.NodeInterface
+	//tmNode, err = node.NewNode(
+	//	cfg,
+	//	pvFile,
+	//	nodeKey,
+	//	proxy.NewLocalClientCreator(app),
+	//	genDocProvider,
+	//	node.DefaultDBProvider,
+	//	node.DefaultMetricsProvider(cfg.Instrumentation),
+	//	ctx.Logger,
+	//)
+	tmNode, err = optinode.NewNode(proxy.NewLocalClientCreator(app), ctx.Logger)
 	if err != nil {
 		return err
 	}
