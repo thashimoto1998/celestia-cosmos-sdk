@@ -550,6 +550,12 @@ func (app *BaseApp) cacheTxContext(ctx sdk.Context, txBytes []byte) (sdk.Context
 	return ctx.WithMultiStore(msCache), msCache
 }
 
+// TxRunner returns the runTx method of the base app. This method is needed
+// to directly check and run txs during the LazyLedger PreprocessTxs ABCI method.
+func (app *BaseApp) TxRunner() func(runTxMode, []byte) (sdk.GasInfo, *sdk.Result, error) {
+	return app.runTx
+}
+
 // runTx processes a transaction within a given execution mode, encoded transaction
 // bytes, and the decoded transaction itself. All state transitions occur through
 // a cached Context depending on the mode provided. State only gets persisted
