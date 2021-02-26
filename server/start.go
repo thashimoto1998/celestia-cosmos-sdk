@@ -8,12 +8,12 @@ import (
 	"runtime/pprof"
 	"time"
 
+	"github.com/lazyledger/optimint/rpcclient"
 	"github.com/lazyledger/lazyledger-core/abci/server"
 	tcmd "github.com/lazyledger/lazyledger-core/cmd/tendermint/commands"
 	tmos "github.com/lazyledger/lazyledger-core/libs/os"
 	"github.com/lazyledger/lazyledger-core/node"
 	"github.com/lazyledger/lazyledger-core/proxy"
-	"github.com/lazyledger/lazyledger-core/rpc/client/local"
 	optinode "github.com/lazyledger/optimint/node"
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc"
@@ -245,7 +245,6 @@ func startInProcess(ctx *Context, clientCtx client.Context, appCreator types.App
 	//}
 
 	genDocProvider := node.DefaultGenesisDocProviderFunc(cfg)
-	var tmNode node.NodeInterface
 	//tmNode, err = node.NewNode(
 	//	cfg,
 	//	pvFile,
@@ -256,7 +255,7 @@ func startInProcess(ctx *Context, clientCtx client.Context, appCreator types.App
 	//	node.DefaultMetricsProvider(cfg.Instrumentation),
 	//	ctx.Logger,
 	//)
-	tmNode, err = optinode.NewNode(proxy.NewLocalClientCreator(app), ctx.Logger)
+	tmNode, err := optinode.NewNode(proxy.NewLocalClientCreator(app), ctx.Logger)
 	if err != nil {
 		return err
 	}
@@ -273,7 +272,7 @@ func startInProcess(ctx *Context, clientCtx client.Context, appCreator types.App
 	// service if API or gRPC is enabled, and avoid doing so in the general
 	// case, because it spawns a new local tendermint RPC client.
 	if config.API.Enable || config.GRPC.Enable {
-		clientCtx = clientCtx.WithClient(local.New(tmNode))
+		clientCtx = clientCtx.WithClient(rpcclient.NewLocal(tmNode))
 
 		app.RegisterTxService(clientCtx)
 		app.RegisterTendermintService(clientCtx)
