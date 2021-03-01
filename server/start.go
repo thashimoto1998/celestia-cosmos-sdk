@@ -14,7 +14,6 @@ import (
 	"github.com/lazyledger/lazyledger-core/node"
 	"github.com/lazyledger/lazyledger-core/p2p"
 	"github.com/lazyledger/lazyledger-core/proxy"
-	optinode "github.com/lazyledger/optimint/node"
 	"github.com/lazyledger/optimint/rpcclient"
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc"
@@ -26,6 +25,9 @@ import (
 	servergrpc "github.com/cosmos/cosmos-sdk/server/grpc"
 	"github.com/cosmos/cosmos-sdk/server/types"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
+
+	opticonv "github.com/lazyledger/optimint/conv"
+	optinode "github.com/lazyledger/optimint/node"
 )
 
 // Tendermint full-node start flags
@@ -256,7 +258,11 @@ func startInProcess(ctx *Context, clientCtx client.Context, appCreator types.App
 	//	node.DefaultMetricsProvider(cfg.Instrumentation),
 	//	ctx.Logger,
 	//)
-	tmNode, err := optinode.NewNode(nodeKey, proxy.NewLocalClientCreator(app), ctx.Logger)
+	key, err := opticonv.GetNodeKey(&nodeKey)
+	if err != nil {
+		return err
+	}
+	tmNode, err := optinode.NewNode(opticonv.GetNodeConfig(cfg), key, proxy.NewLocalClientCreator(app), ctx.Logger)
 	if err != nil {
 		return err
 	}
