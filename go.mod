@@ -5,9 +5,6 @@ module github.com/cosmos/cosmos-sdk
 require (
 	github.com/99designs/keyring v1.1.6
 	github.com/DataDog/zstd v1.4.5 // indirect
-	github.com/NebulousLabs/errors v0.0.0-20181203160057-9f787ce8f69e // indirect
-	github.com/NebulousLabs/fastrand v0.0.0-20181203155948-6fb6489aac4e // indirect
-	github.com/NebulousLabs/merkletree v0.0.0-20181203152040-08d5d54b07f5 // indirect
 	github.com/armon/go-metrics v0.3.6
 	github.com/bgentry/speakeasy v0.1.0
 	github.com/btcsuite/btcd v0.21.0-beta
@@ -30,7 +27,7 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
 	github.com/hashicorp/golang-lru v0.5.4
 	github.com/lazyledger/lazyledger-core v0.0.0-20210219190522-0eccfb24e2aa
-	github.com/lazyledger/optimint v0.0.0-20210226200903-25aa84fc2516
+	github.com/lazyledger/optimint v0.0.0-20210301111319-a58b55be1fb1
 	github.com/magiconair/properties v1.8.4
 	github.com/mattn/go-isatty v0.0.12
 	github.com/otiai10/copy v1.4.2
