@@ -3,6 +3,7 @@ package server
 // DONTCOVER
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"runtime/pprof"
@@ -262,7 +263,18 @@ func startInProcess(ctx *Context, clientCtx client.Context, appCreator types.App
 	if err != nil {
 		return err
 	}
-	tmNode, err := optinode.NewNode(opticonv.GetNodeConfig(cfg), key, proxy.NewLocalClientCreator(app), ctx.Logger)
+	genesis, err := genDocProvider()
+	if err != nil {
+		return err
+	}
+	tmNode, err := optinode.NewNode(
+		context.Background(),
+		opticonv.GetNodeConfig(cfg),
+		key,
+		proxy.NewLocalClientCreator(app),
+		genesis,
+		ctx.Logger,
+	)
 	if err != nil {
 		return err
 	}
