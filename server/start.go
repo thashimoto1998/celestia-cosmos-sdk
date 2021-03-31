@@ -243,23 +243,9 @@ func startInProcess(ctx *Context, clientCtx client.Context, appCreator types.App
 		return err
 	}
 
-	//pvFile, err := pvm.LoadOrGenFilePV(cfg.PrivValidatorKeyFile(), cfg.PrivValidatorStateFile())
-	//if err != nil {
-	//	return err
-	//}
-
 	genDocProvider := node.DefaultGenesisDocProviderFunc(cfg)
-	//tmNode, err = node.NewNode(
-	//	cfg,
-	//	pvFile,
-	//	nodeKey,
-	//	proxy.NewLocalClientCreator(app),
-	//	genDocProvider,
-	//	node.DefaultDBProvider,
-	//	node.DefaultMetricsProvider(cfg.Instrumentation),
-	//	ctx.Logger,
-	//)
-	key, err := opticonv.GetNodeKey(&nodeKey)
+	// node key in optimint format
+	oNodeKey, err := opticonv.GetNodeKey(&nodeKey)
 	if err != nil {
 		return err
 	}
@@ -270,7 +256,7 @@ func startInProcess(ctx *Context, clientCtx client.Context, appCreator types.App
 	tmNode, err := optinode.NewNode(
 		context.Background(),
 		opticonv.GetNodeConfig(cfg),
-		key,
+		oNodeKey,
 		proxy.NewLocalClientCreator(app),
 		genesis,
 		ctx.Logger,
