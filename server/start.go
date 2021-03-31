@@ -3,6 +3,7 @@ package server
 // DONTCOVER
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"runtime/pprof"
@@ -242,27 +243,24 @@ func startInProcess(ctx *Context, clientCtx client.Context, appCreator types.App
 		return err
 	}
 
-	//pvFile, err := pvm.LoadOrGenFilePV(cfg.PrivValidatorKeyFile(), cfg.PrivValidatorStateFile())
-	//if err != nil {
-	//	return err
-	//}
-
 	genDocProvider := node.DefaultGenesisDocProviderFunc(cfg)
-	//tmNode, err = node.NewNode(
-	//	cfg,
-	//	pvFile,
-	//	nodeKey,
-	//	proxy.NewLocalClientCreator(app),
-	//	genDocProvider,
-	//	node.DefaultDBProvider,
-	//	node.DefaultMetricsProvider(cfg.Instrumentation),
-	//	ctx.Logger,
-	//)
-	key, err := opticonv.GetNodeKey(&nodeKey)
+	// node key in optimint format
+	oNodeKey, err := opticonv.GetNodeKey(&nodeKey)
 	if err != nil {
 		return err
 	}
-	tmNode, err := optinode.NewNode(opticonv.GetNodeConfig(cfg), key, proxy.NewLocalClientCreator(app), ctx.Logger)
+	genesis, err := genDocProvider()
+	if err != nil {
+		return err
+	}
+	tmNode, err := optinode.NewNode(
+		context.Background(),
+		opticonv.GetNodeConfig(cfg),
+		oNodeKey,
+		proxy.NewLocalClientCreator(app),
+		genesis,
+		ctx.Logger,
+	)
 	if err != nil {
 		return err
 	}
