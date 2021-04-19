@@ -3,12 +3,13 @@ package network
 import (
 	"context"
 	"encoding/json"
-	opticonv "github.com/lazyledger/optimint/conv"
-	optinode "github.com/lazyledger/optimint/node"
-	"github.com/lazyledger/optimint/rpcclient"
 	"io/ioutil"
 	"path/filepath"
 	"time"
+
+	opticonv "github.com/lazyledger/optimint/conv"
+	optinode "github.com/lazyledger/optimint/node"
+	"github.com/lazyledger/optimint/rpcclient"
 
 	tmos "github.com/lazyledger/lazyledger-core/libs/os"
 	"github.com/lazyledger/lazyledger-core/node"
@@ -47,9 +48,14 @@ func startInProcess(cfg Config, val *Validator) error {
 	if err != nil {
 		return err
 	}
+	oConf := opticonv.GetNodeConfig(tmCfg)
+	err = opticonv.TranslateAddresses(&oConf)
+	if err != nil {
+		return err
+	}
 	optiNode, err := optinode.NewNode(
 		context.Background(),
-		opticonv.GetNodeConfig(tmCfg),
+		oConf,
 		oNodeKey,
 		proxy.NewLocalClientCreator(app),
 		genesis,
