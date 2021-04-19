@@ -27,7 +27,7 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
 	github.com/hashicorp/golang-lru v0.5.4
 	github.com/lazyledger/lazyledger-core v0.0.0-20210219190522-0eccfb24e2aa
-	github.com/lazyledger/optimint v0.0.0-20210330074628-e5533421f1a1
+	github.com/lazyledger/optimint v0.0.0-20210416063422-a1820ca6980f
 	github.com/magiconair/properties v1.8.4
 	github.com/mattn/go-isatty v0.0.12
 	github.com/otiai10/copy v1.4.2
