@@ -550,6 +550,143 @@ func (app *BaseApp) cacheTxContext(ctx sdk.Context, txBytes []byte) (sdk.Context
 	return ctx.WithMultiStore(msCache), msCache
 }
 
+type txOutput struct {
+	gInfo  sdk.GasInfo
+	result *sdk.Result
+	isr    []byte
+}
+
+// runTxs runs multiple transactions in order, and only updates the state after all transactions are executed
+func (app *BaseApp) runTxs(txs [][]byte) (outputs []txOutput, err error) {
+	var (
+		ctx     sdk.Context
+		msCache sdk.CacheMultiStore
+	)
+	mode := runTxModeCheck
+	for _, txBytes := range txs {
+		var (
+			gInfo  sdk.GasInfo
+			result *sdk.Result
+			err    error
+		)
+		// NOTE: GasWanted should be returned by the AnteHandler. GasUsed is
+		// determined by the GasMeter. We need access to the context to get the gas
+		// meter so we initialize upfront.
+		var gasWanted uint64
+
+		ctx = app.getContextForTx(runTxModeDeliver, txBytes)
+		ms := ctx.MultiStore()
+
+		if ctx.BlockGasMeter().IsOutOfGas() {
+			return outputs, sdkerrors.Wrap(sdkerrors.ErrOutOfGas, "no block gas left to run tx")
+		}
+
+		var startingGas uint64
+		if mode == runTxModeDeliver {
+			startingGas = ctx.BlockGasMeter().GasConsumed()
+		}
+
+		defer func() {
+			if r := recover(); r != nil {
+				recoveryMW := newOutOfGasRecoveryMiddleware(gasWanted, ctx, app.runTxRecoveryMiddleware)
+				err, result = processRecovery(r, recoveryMW), nil
+			}
+
+			gInfo = sdk.GasInfo{GasWanted: gasWanted, GasUsed: ctx.GasMeter().GasConsumed()}
+		}()
+
+		// If BlockGasMeter() panics it will be caught by the above recover and will
+		// return an error - in any case BlockGasMeter will consume gas past the limit.
+		//
+		// NOTE: This must exist in a separate defer function for the above recovery
+		// to recover from this one.
+		defer func() {
+			if mode == runTxModeDeliver {
+				ctx.BlockGasMeter().ConsumeGas(
+					ctx.GasMeter().GasConsumedToLimit(), "block gas meter",
+				)
+
+				if ctx.BlockGasMeter().GasConsumed() < startingGas {
+					panic(sdk.ErrorGasOverflow{Descriptor: "tx gas summation"})
+				}
+			}
+		}()
+
+		tx, err := app.txDecoder(txBytes)
+		if err != nil {
+			return outputs, err
+		}
+
+		msgs := tx.GetMsgs()
+		if err := validateBasicTxMsgs(msgs); err != nil {
+			return outputs, err
+		}
+
+		var events sdk.Events
+		if app.anteHandler != nil {
+			var (
+				anteCtx sdk.Context
+				msCache sdk.CacheMultiStore
+			)
+
+			// Branch context before AnteHandler call in case it aborts.
+			// This is required for both CheckTx and DeliverTx.
+			// Ref: https://github.com/cosmos/cosmos-sdk/issues/2772
+			//
+			// NOTE: Alternatively, we could require that AnteHandler ensures that
+			// writes do not happen if aborted/failed.  This may have some
+			// performance benefits, but it'll be more difficult to get right.
+			anteCtx, msCache = app.cacheTxContext(ctx, txBytes)
+			anteCtx = anteCtx.WithEventManager(sdk.NewEventManager())
+			newCtx, err := app.anteHandler(anteCtx, tx, mode == runTxModeSimulate)
+
+			if !newCtx.IsZero() {
+				// At this point, newCtx.MultiStore() is a store branch, or something else
+				// replaced by the AnteHandler. We want the original multistore.
+				//
+				// Also, in the case of the tx aborting, we need to track gas consumed via
+				// the instantiated gas meter in the AnteHandler, so we update the context
+				// prior to returning.
+				ctx = newCtx.WithMultiStore(ms)
+			}
+
+			events = ctx.EventManager().Events()
+
+			// GasMeter expected to be set in AnteHandler
+			gasWanted = ctx.GasMeter().Limit()
+
+			if err != nil {
+				return outputs, err
+			}
+
+			msCache.Write()
+		}
+
+		// Create a new Context based off of the existing Context with a MultiStore branch
+		// in case message processing fails. At this point, the MultiStore
+		// is a branch of a branch.
+		ctx, msCache = app.cacheTxContext(ctx, txBytes)
+
+		// Attempt to execute all messages and only update state if all messages pass
+		// and we're in DeliverTx. Note, runMsgs will never return a reference to a
+		// Result if any single message fails or does not have a registered Handler.
+		result, err = app.runMsgs(ctx, msgs, mode)
+		if err != nil {
+			return outputs, err
+		}
+
+		result.Events = append(events.ToABCIEvents(), result.Events...)
+
+		outputs = append(outputs, txOutput{
+			result: result,
+			gInfo:  gInfo,
+			isr:    app.cms.Commit().Hash,
+		})
+	}
+	msCache.Write()
+	return outputs, nil
+}
+
 // runTx processes a transaction within a given execution mode, encoded transaction
 // bytes, and the decoded transaction itself. All state transitions occur through
 // a cached Context depending on the mode provided. State only gets persisted

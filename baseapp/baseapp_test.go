@@ -1007,6 +1007,57 @@ func TestDeliverTx(t *testing.T) {
 	}
 }
 
+func TestRunTxs(t *testing.T) {
+	gasConsumed := uint64(5)
+
+	anteOpt := func(bapp *BaseApp) {
+		bapp.SetAnteHandler(func(ctx sdk.Context, tx sdk.Tx, simulate bool) (newCtx sdk.Context, err error) {
+			newCtx = ctx.WithGasMeter(sdk.NewGasMeter(gasConsumed))
+			return
+		})
+	}
+
+	routerOpt := func(bapp *BaseApp) {
+		r := sdk.NewRoute(routeMsgCounter, func(ctx sdk.Context, msg sdk.Msg) (*sdk.Result, error) {
+			ctx.GasMeter().ConsumeGas(gasConsumed, "test")
+			return &sdk.Result{}, nil
+		})
+		bapp.Router().AddRoute(r)
+	}
+
+	app := setupBaseApp(t, anteOpt, routerOpt)
+
+	app.InitChain(abci.RequestInitChain{})
+
+	// Create same codec used in txDecoder
+	cdc := codec.NewLegacyAmino()
+	registerTestCodec(cdc)
+
+	txs := make([][]byte, 4)
+	for i := 0; i < 4; i++ {
+		counter := int64(i)
+		tx := newTxCounter(counter, counter)
+
+		txBytes, err := cdc.MarshalBinaryBare(tx)
+		require.NoError(t, err)
+
+		txs[i] = txBytes
+	}
+
+	header := tmproto.Header{Height: 1}
+	app.BeginBlock(abci.RequestBeginBlock{Header: header})
+
+	outputs, err := app.runTxs(txs)
+	require.NoError(t, err)
+
+	app.EndBlock(abci.RequestEndBlock{})
+	app.Commit()
+
+	require.Equal(t, app.cms.Commit().Hash, outputs[len(outputs)-1].isr)
+
+	fmt.Println(outputs)
+}
+
 // Number of messages doesn't matter to CheckTx.
 func TestMultiMsgCheckTx(t *testing.T) {
 	// TODO: ensure we get the same results
