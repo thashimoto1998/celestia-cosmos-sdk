@@ -3,9 +3,9 @@ package maps
 import (
 	"encoding/binary"
 
-	"github.com/lazyledger/lazyledger-core/crypto/merkle"
-	"github.com/lazyledger/lazyledger-core/crypto/tmhash"
-	tmcrypto "github.com/lazyledger/lazyledger-core/proto/tendermint/crypto"
+	"github.com/celestiaorg/celestia-core/crypto/merkle"
+	"github.com/celestiaorg/celestia-core/crypto/tmhash"
+	tmcrypto "github.com/celestiaorg/celestia-core/proto/tendermint/crypto"
 
 	"github.com/cosmos/cosmos-sdk/types/kv"
 )

@@ -13,7 +13,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/lazyledger/lazyledger-core/types"
+	"github.com/celestiaorg/celestia-core/types"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"

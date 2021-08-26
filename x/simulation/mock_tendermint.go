@@ -7,10 +7,10 @@ import (
 	"testing"
 	"time"
 
-	abci "github.com/lazyledger/lazyledger-core/abci/types"
-	cryptoenc "github.com/lazyledger/lazyledger-core/crypto/encoding"
-	tmbytes "github.com/lazyledger/lazyledger-core/libs/bytes"
-	tmproto "github.com/lazyledger/lazyledger-core/proto/tendermint/types"
+	abci "github.com/celestiaorg/celestia-core/abci/types"
+	cryptoenc "github.com/celestiaorg/celestia-core/crypto/encoding"
+	tmbytes "github.com/celestiaorg/celestia-core/libs/bytes"
+	tmproto "github.com/celestiaorg/celestia-core/proto/tendermint/types"
 )
 
 type mockValidator struct {

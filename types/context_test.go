@@ -5,10 +5,10 @@ import (
 	"testing"
 	"time"
 
+	abci "github.com/celestiaorg/celestia-core/abci/types"
+	"github.com/celestiaorg/celestia-core/libs/log"
+	tmproto "github.com/celestiaorg/celestia-core/proto/tendermint/types"
 	"github.com/golang/mock/gomock"
-	abci "github.com/lazyledger/lazyledger-core/abci/types"
-	"github.com/lazyledger/lazyledger-core/libs/log"
-	tmproto "github.com/lazyledger/lazyledger-core/proto/tendermint/types"
 	"github.com/stretchr/testify/suite"
 	dbm "github.com/tendermint/tm-db"
 

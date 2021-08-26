@@ -14,8 +14,8 @@ import (
 	"syscall"
 	"time"
 
-	tmcfg "github.com/lazyledger/lazyledger-core/config"
-	tmlog "github.com/lazyledger/lazyledger-core/libs/log"
+	tmcfg "github.com/celestiaorg/celestia-core/config"
+	tmlog "github.com/celestiaorg/celestia-core/libs/log"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"

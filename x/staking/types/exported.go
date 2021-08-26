@@ -1,7 +1,7 @@
 package types
 
 import (
-	tmprotocrypto "github.com/lazyledger/lazyledger-core/proto/tendermint/crypto"
+	tmprotocrypto "github.com/celestiaorg/celestia-core/proto/tendermint/crypto"
 
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"

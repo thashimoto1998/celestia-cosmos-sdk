@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	ctypes "github.com/lazyledger/lazyledger-core/rpc/core/types"
+	ctypes "github.com/celestiaorg/celestia-core/rpc/core/types"
 	"github.com/stretchr/testify/suite"
 
 	"github.com/cosmos/cosmos-sdk/client/rpc"

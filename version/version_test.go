@@ -6,7 +6,7 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/lazyledger/lazyledger-core/libs/cli"
+	"github.com/celestiaorg/celestia-core/libs/cli"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 

@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/lazyledger/lazyledger-core/config"
+	"github.com/celestiaorg/celestia-core/config"
 	"github.com/stretchr/testify/require"
 )
 

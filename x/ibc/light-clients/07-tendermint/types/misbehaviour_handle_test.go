@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/lazyledger/lazyledger-core/crypto/tmhash"
-	tmtypes "github.com/lazyledger/lazyledger-core/types"
+	"github.com/celestiaorg/celestia-core/crypto/tmhash"
+	tmtypes "github.com/celestiaorg/celestia-core/types"
 
 	clienttypes "github.com/cosmos/cosmos-sdk/x/ibc/core/02-client/types"
 	commitmenttypes "github.com/cosmos/cosmos-sdk/x/ibc/core/23-commitment/types"

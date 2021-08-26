@@ -3,8 +3,8 @@ package mock_test
 import (
 	"testing"
 
-	tmproto "github.com/lazyledger/lazyledger-core/proto/tendermint/types"
-	tmtypes "github.com/lazyledger/lazyledger-core/types"
+	tmproto "github.com/celestiaorg/celestia-core/proto/tendermint/types"
+	tmtypes "github.com/celestiaorg/celestia-core/types"
 	"github.com/stretchr/testify/require"
 
 	"github.com/cosmos/cosmos-sdk/x/ibc/testing/mock"

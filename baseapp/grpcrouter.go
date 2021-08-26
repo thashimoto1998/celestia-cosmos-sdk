@@ -3,8 +3,8 @@ package baseapp
 import (
 	"fmt"
 
+	abci "github.com/celestiaorg/celestia-core/abci/types"
 	gogogrpc "github.com/gogo/protobuf/grpc"
-	abci "github.com/lazyledger/lazyledger-core/abci/types"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/encoding"
 	"google.golang.org/grpc/encoding/proto"

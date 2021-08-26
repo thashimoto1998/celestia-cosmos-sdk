@@ -10,9 +10,9 @@ import (
 	"syscall"
 	"time"
 
+	abci "github.com/celestiaorg/celestia-core/abci/types"
+	tmproto "github.com/celestiaorg/celestia-core/proto/tendermint/types"
 	"github.com/gogo/protobuf/proto"
-	abci "github.com/lazyledger/lazyledger-core/abci/types"
-	tmproto "github.com/lazyledger/lazyledger-core/proto/tendermint/types"
 	"google.golang.org/grpc/codes"
 	grpcstatus "google.golang.org/grpc/status"
 

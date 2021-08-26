@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	ctypes "github.com/lazyledger/lazyledger-core/rpc/core/types"
+	ctypes "github.com/celestiaorg/celestia-core/rpc/core/types"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"

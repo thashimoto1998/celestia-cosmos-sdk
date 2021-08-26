@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	tmtypes "github.com/lazyledger/lazyledger-core/types"
+	tmtypes "github.com/celestiaorg/celestia-core/types"
 	"github.com/spf13/cobra"
 
 	"github.com/cosmos/cosmos-sdk/client"

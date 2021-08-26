@@ -6,11 +6,11 @@ import (
 	"reflect"
 	"strings"
 
+	abci "github.com/celestiaorg/celestia-core/abci/types"
+	"github.com/celestiaorg/celestia-core/crypto/tmhash"
+	"github.com/celestiaorg/celestia-core/libs/log"
+	tmproto "github.com/celestiaorg/celestia-core/proto/tendermint/types"
 	"github.com/gogo/protobuf/proto"
-	abci "github.com/lazyledger/lazyledger-core/abci/types"
-	"github.com/lazyledger/lazyledger-core/crypto/tmhash"
-	"github.com/lazyledger/lazyledger-core/libs/log"
-	tmproto "github.com/lazyledger/lazyledger-core/proto/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
 
 	"github.com/cosmos/cosmos-sdk/codec/types"

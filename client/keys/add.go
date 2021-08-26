@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"sort"
 
+	"github.com/celestiaorg/celestia-core/libs/cli"
 	bip39 "github.com/cosmos/go-bip39"
-	"github.com/lazyledger/lazyledger-core/libs/cli"
 	"github.com/spf13/cobra"
 
 	"github.com/cosmos/cosmos-sdk/client"

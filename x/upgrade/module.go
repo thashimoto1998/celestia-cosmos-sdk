@@ -4,9 +4,9 @@ import (
 	"context"
 	"encoding/json"
 
+	abci "github.com/celestiaorg/celestia-core/abci/types"
 	"github.com/gorilla/mux"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
-	abci "github.com/lazyledger/lazyledger-core/abci/types"
 	"github.com/spf13/cobra"
 
 	"github.com/cosmos/cosmos-sdk/client"

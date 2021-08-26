@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
+	tmcli "github.com/celestiaorg/celestia-core/libs/cli"
 	"github.com/gogo/protobuf/proto"
-	tmcli "github.com/lazyledger/lazyledger-core/libs/cli"
 	"github.com/stretchr/testify/suite"
 
 	"github.com/cosmos/cosmos-sdk/client"

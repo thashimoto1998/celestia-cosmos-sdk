@@ -7,12 +7,12 @@ import (
 	"testing"
 	"time"
 
-	abci "github.com/lazyledger/lazyledger-core/abci/types"
-	"github.com/lazyledger/lazyledger-core/crypto/tmhash"
-	tmproto "github.com/lazyledger/lazyledger-core/proto/tendermint/types"
-	tmprotoversion "github.com/lazyledger/lazyledger-core/proto/tendermint/version"
-	tmtypes "github.com/lazyledger/lazyledger-core/types"
-	tmversion "github.com/lazyledger/lazyledger-core/version"
+	abci "github.com/celestiaorg/celestia-core/abci/types"
+	"github.com/celestiaorg/celestia-core/crypto/tmhash"
+	tmproto "github.com/celestiaorg/celestia-core/proto/tendermint/types"
+	tmprotoversion "github.com/celestiaorg/celestia-core/proto/tendermint/version"
+	tmtypes "github.com/celestiaorg/celestia-core/types"
+	tmversion "github.com/celestiaorg/celestia-core/version"
 	"github.com/stretchr/testify/require"
 
 	"github.com/cosmos/cosmos-sdk/client"

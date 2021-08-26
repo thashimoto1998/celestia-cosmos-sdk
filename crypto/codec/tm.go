@@ -1,9 +1,9 @@
 package codec
 
 import (
-	tmcrypto "github.com/lazyledger/lazyledger-core/crypto"
-	"github.com/lazyledger/lazyledger-core/crypto/encoding"
-	tmprotocrypto "github.com/lazyledger/lazyledger-core/proto/tendermint/crypto"
+	tmcrypto "github.com/celestiaorg/celestia-core/crypto"
+	"github.com/celestiaorg/celestia-core/crypto/encoding"
+	tmprotocrypto "github.com/celestiaorg/celestia-core/proto/tendermint/crypto"
 
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"

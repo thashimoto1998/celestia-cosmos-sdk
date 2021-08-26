@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	abci "github.com/lazyledger/lazyledger-core/abci/types"
+	abci "github.com/celestiaorg/celestia-core/abci/types"
 	"github.com/stretchr/testify/suite"
 
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"

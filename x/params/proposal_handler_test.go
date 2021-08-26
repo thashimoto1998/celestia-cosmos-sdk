@@ -5,8 +5,8 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/simapp"
 
-	"github.com/lazyledger/lazyledger-core/libs/log"
-	tmproto "github.com/lazyledger/lazyledger-core/proto/tendermint/types"
+	"github.com/celestiaorg/celestia-core/libs/log"
+	tmproto "github.com/celestiaorg/celestia-core/proto/tendermint/types"
 	"github.com/stretchr/testify/require"
 	dbm "github.com/tendermint/tm-db"
 

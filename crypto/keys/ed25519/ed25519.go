@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/lazyledger/lazyledger-core/crypto"
-	"github.com/lazyledger/lazyledger-core/crypto/tmhash"
+	"github.com/celestiaorg/celestia-core/crypto"
+	"github.com/celestiaorg/celestia-core/crypto/tmhash"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"

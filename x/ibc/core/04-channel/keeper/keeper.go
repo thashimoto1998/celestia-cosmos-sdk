@@ -4,7 +4,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/lazyledger/lazyledger-core/libs/log"
+	"github.com/celestiaorg/celestia-core/libs/log"
 	db "github.com/tendermint/tm-db"
 
 	"github.com/cosmos/cosmos-sdk/codec"

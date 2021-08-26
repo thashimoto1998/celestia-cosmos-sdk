@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	tmbytes "github.com/lazyledger/lazyledger-core/libs/bytes"
+	tmbytes "github.com/celestiaorg/celestia-core/libs/bytes"
 	"github.com/stretchr/testify/require"
 
 	"github.com/cosmos/cosmos-sdk/codec"

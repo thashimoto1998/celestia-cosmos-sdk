@@ -3,7 +3,7 @@ package rootmulti
 import (
 	"testing"
 
-	abci "github.com/lazyledger/lazyledger-core/abci/types"
+	abci "github.com/celestiaorg/celestia-core/abci/types"
 	"github.com/stretchr/testify/require"
 	dbm "github.com/tendermint/tm-db"
 

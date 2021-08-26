@@ -3,7 +3,7 @@ package types
 import (
 	"time"
 
-	tmtypes "github.com/lazyledger/lazyledger-core/types"
+	tmtypes "github.com/celestiaorg/celestia-core/types"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"

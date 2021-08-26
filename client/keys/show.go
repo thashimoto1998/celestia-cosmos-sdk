@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/lazyledger/lazyledger-core/libs/cli"
+	"github.com/celestiaorg/celestia-core/libs/cli"
 	"github.com/spf13/cobra"
 
 	"github.com/cosmos/cosmos-sdk/client"

@@ -3,7 +3,7 @@ package multisig
 import (
 	fmt "fmt"
 
-	tmcrypto "github.com/lazyledger/lazyledger-core/crypto"
+	tmcrypto "github.com/celestiaorg/celestia-core/crypto"
 
 	"github.com/cosmos/cosmos-sdk/codec/types"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"

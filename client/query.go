@@ -7,9 +7,9 @@ import (
 
 	"github.com/pkg/errors"
 
-	abci "github.com/lazyledger/lazyledger-core/abci/types"
-	tmbytes "github.com/lazyledger/lazyledger-core/libs/bytes"
-	rpcclient "github.com/lazyledger/lazyledger-core/rpc/client"
+	abci "github.com/celestiaorg/celestia-core/abci/types"
+	tmbytes "github.com/celestiaorg/celestia-core/libs/bytes"
+	rpcclient "github.com/celestiaorg/celestia-core/rpc/client"
 
 	"github.com/cosmos/cosmos-sdk/store/rootmulti"
 	sdk "github.com/cosmos/cosmos-sdk/types"

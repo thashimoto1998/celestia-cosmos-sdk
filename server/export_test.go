@@ -13,11 +13,11 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/require"
 
-	abci "github.com/lazyledger/lazyledger-core/abci/types"
-	tmjson "github.com/lazyledger/lazyledger-core/libs/json"
-	"github.com/lazyledger/lazyledger-core/libs/log"
-	tmproto "github.com/lazyledger/lazyledger-core/proto/tendermint/types"
-	tmtypes "github.com/lazyledger/lazyledger-core/types"
+	abci "github.com/celestiaorg/celestia-core/abci/types"
+	tmjson "github.com/celestiaorg/celestia-core/libs/json"
+	"github.com/celestiaorg/celestia-core/libs/log"
+	tmproto "github.com/celestiaorg/celestia-core/proto/tendermint/types"
+	tmtypes "github.com/celestiaorg/celestia-core/types"
 	dbm "github.com/tendermint/tm-db"
 
 	"github.com/cosmos/cosmos-sdk/client"

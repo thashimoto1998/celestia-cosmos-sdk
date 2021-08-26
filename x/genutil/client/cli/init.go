@@ -7,12 +7,12 @@ import (
 	"os"
 	"path/filepath"
 
+	cfg "github.com/celestiaorg/celestia-core/config"
+	"github.com/celestiaorg/celestia-core/libs/cli"
+	tmos "github.com/celestiaorg/celestia-core/libs/os"
+	tmrand "github.com/celestiaorg/celestia-core/libs/rand"
+	"github.com/celestiaorg/celestia-core/types"
 	"github.com/cosmos/go-bip39"
-	cfg "github.com/lazyledger/lazyledger-core/config"
-	"github.com/lazyledger/lazyledger-core/libs/cli"
-	tmos "github.com/lazyledger/lazyledger-core/libs/os"
-	tmrand "github.com/lazyledger/lazyledger-core/libs/rand"
-	"github.com/lazyledger/lazyledger-core/types"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 

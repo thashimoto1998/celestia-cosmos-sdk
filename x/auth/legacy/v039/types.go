@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"strings"
 
-	tmcrypto "github.com/lazyledger/lazyledger-core/crypto"
+	tmcrypto "github.com/celestiaorg/celestia-core/crypto"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/codec/legacy"

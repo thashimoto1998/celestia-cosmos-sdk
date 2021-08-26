@@ -5,7 +5,7 @@ import (
 	"io"
 	"strings"
 
-	tmos "github.com/lazyledger/lazyledger-core/libs/os"
+	tmos "github.com/celestiaorg/celestia-core/libs/os"
 	"github.com/pkg/errors"
 	dbm "github.com/tendermint/tm-db"
 

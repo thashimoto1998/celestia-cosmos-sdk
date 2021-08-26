@@ -6,11 +6,11 @@ import (
 	"fmt"
 	"strings"
 
-	tcmd "github.com/lazyledger/lazyledger-core/cmd/tendermint/commands"
-	"github.com/lazyledger/lazyledger-core/libs/cli"
-	"github.com/lazyledger/lazyledger-core/p2p"
-	pvm "github.com/lazyledger/lazyledger-core/privval"
-	tversion "github.com/lazyledger/lazyledger-core/version"
+	tcmd "github.com/celestiaorg/celestia-core/cmd/tendermint/commands"
+	"github.com/celestiaorg/celestia-core/libs/cli"
+	"github.com/celestiaorg/celestia-core/p2p"
+	pvm "github.com/celestiaorg/celestia-core/privval"
+	tversion "github.com/celestiaorg/celestia-core/version"
 	"github.com/spf13/cobra"
 	yaml "gopkg.in/yaml.v2"
 

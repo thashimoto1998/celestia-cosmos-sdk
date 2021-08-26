@@ -3,8 +3,8 @@ package keeper
 import (
 	"fmt"
 
+	"github.com/celestiaorg/celestia-core/libs/log"
 	gogotypes "github.com/gogo/protobuf/types"
-	"github.com/lazyledger/lazyledger-core/libs/log"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"

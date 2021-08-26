@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/lazyledger/lazyledger-core/libs/log"
+	"github.com/celestiaorg/celestia-core/libs/log"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/require"
 

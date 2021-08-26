@@ -3,9 +3,9 @@ package types_test
 import (
 	"time"
 
-	"github.com/lazyledger/lazyledger-core/crypto/tmhash"
-	tmproto "github.com/lazyledger/lazyledger-core/proto/tendermint/types"
-	tmtypes "github.com/lazyledger/lazyledger-core/types"
+	"github.com/celestiaorg/celestia-core/crypto/tmhash"
+	tmproto "github.com/celestiaorg/celestia-core/proto/tendermint/types"
+	tmtypes "github.com/celestiaorg/celestia-core/types"
 
 	clienttypes "github.com/cosmos/cosmos-sdk/x/ibc/core/02-client/types"
 	"github.com/cosmos/cosmos-sdk/x/ibc/core/exported"

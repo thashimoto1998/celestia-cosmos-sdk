@@ -5,7 +5,7 @@ import (
 	"math/rand"
 	"testing"
 
-	tmproto "github.com/lazyledger/lazyledger-core/proto/tendermint/types"
+	tmproto "github.com/celestiaorg/celestia-core/proto/tendermint/types"
 	"github.com/stretchr/testify/require"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"

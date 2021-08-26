@@ -4,8 +4,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/celestiaorg/celestia-core/light"
 	ics23 "github.com/confio/ics23/go"
-	"github.com/lazyledger/lazyledger-core/light"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"

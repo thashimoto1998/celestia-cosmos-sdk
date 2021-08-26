@@ -3,7 +3,7 @@ package keeper
 import (
 	"fmt"
 
-	"github.com/lazyledger/lazyledger-core/libs/log"
+	"github.com/celestiaorg/celestia-core/libs/log"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	capabilitykeeper "github.com/cosmos/cosmos-sdk/x/capability/keeper"

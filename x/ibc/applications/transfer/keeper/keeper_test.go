@@ -3,7 +3,7 @@ package keeper_test
 import (
 	"testing"
 
-	"github.com/lazyledger/lazyledger-core/crypto"
+	"github.com/celestiaorg/celestia-core/crypto"
 	"github.com/stretchr/testify/suite"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"

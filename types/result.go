@@ -11,8 +11,8 @@ import (
 
 	yaml "gopkg.in/yaml.v2"
 
-	abci "github.com/lazyledger/lazyledger-core/abci/types"
-	ctypes "github.com/lazyledger/lazyledger-core/rpc/core/types"
+	abci "github.com/celestiaorg/celestia-core/abci/types"
+	ctypes "github.com/celestiaorg/celestia-core/rpc/core/types"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"

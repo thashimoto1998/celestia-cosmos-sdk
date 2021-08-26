@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	tmcfg "github.com/lazyledger/lazyledger-core/config"
-	"github.com/lazyledger/lazyledger-core/libs/cli"
-	"github.com/lazyledger/lazyledger-core/libs/log"
+	tmcfg "github.com/celestiaorg/celestia-core/config"
+	"github.com/celestiaorg/celestia-core/libs/cli"
+	"github.com/celestiaorg/celestia-core/libs/log"
 	"github.com/spf13/viper"
 
 	"github.com/cosmos/cosmos-sdk/client"

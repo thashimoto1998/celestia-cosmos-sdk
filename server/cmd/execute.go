@@ -3,8 +3,8 @@ package cmd
 import (
 	"context"
 
-	tmcfg "github.com/lazyledger/lazyledger-core/config"
-	tmcli "github.com/lazyledger/lazyledger-core/libs/cli"
+	tmcfg "github.com/celestiaorg/celestia-core/config"
+	tmcli "github.com/celestiaorg/celestia-core/libs/cli"
 	"github.com/rs/zerolog"
 	"github.com/spf13/cobra"
 

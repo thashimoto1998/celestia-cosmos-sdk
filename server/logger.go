@@ -1,7 +1,7 @@
 package server
 
 import (
-	tmlog "github.com/lazyledger/lazyledger-core/libs/log"
+	tmlog "github.com/celestiaorg/celestia-core/libs/log"
 	"github.com/rs/zerolog"
 )
 

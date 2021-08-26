@@ -14,12 +14,12 @@ import (
 	"testing"
 	"time"
 
-	tmcfg "github.com/lazyledger/lazyledger-core/config"
-	tmflags "github.com/lazyledger/lazyledger-core/libs/cli/flags"
-	"github.com/lazyledger/lazyledger-core/libs/log"
-	tmrand "github.com/lazyledger/lazyledger-core/libs/rand"
-	"github.com/lazyledger/lazyledger-core/node"
-	tmclient "github.com/lazyledger/lazyledger-core/rpc/client"
+	tmcfg "github.com/celestiaorg/celestia-core/config"
+	tmflags "github.com/celestiaorg/celestia-core/libs/cli/flags"
+	"github.com/celestiaorg/celestia-core/libs/log"
+	tmrand "github.com/celestiaorg/celestia-core/libs/rand"
+	"github.com/celestiaorg/celestia-core/node"
+	tmclient "github.com/celestiaorg/celestia-core/rpc/client"
 	"github.com/stretchr/testify/require"
 	dbm "github.com/tendermint/tm-db"
 	"google.golang.org/grpc"
@@ -106,7 +106,7 @@ func DefaultConfig() Config {
 		AppConstructor:    NewAppConstructor(encCfg),
 		GenesisState:      simapp.ModuleBasics.DefaultGenesis(encCfg.Marshaler),
 		TimeoutCommit:     2 * time.Second,
-		ChainID:           "chain-" + tmrand.NewRand().Str(6),
+		ChainID:           "chain-" + tmrand.Str(6),
 		NumValidators:     4,
 		BondDenom:         sdk.DefaultBondDenom,
 		MinGasPrices:      fmt.Sprintf("0.000006%s", sdk.DefaultBondDenom),

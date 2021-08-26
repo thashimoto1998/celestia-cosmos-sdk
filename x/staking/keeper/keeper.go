@@ -4,7 +4,7 @@ import (
 	"container/list"
 	"fmt"
 
-	"github.com/lazyledger/lazyledger-core/libs/log"
+	"github.com/celestiaorg/celestia-core/libs/log"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"

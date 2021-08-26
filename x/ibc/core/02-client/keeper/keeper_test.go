@@ -5,9 +5,9 @@ import (
 	"testing"
 	"time"
 
-	tmbytes "github.com/lazyledger/lazyledger-core/libs/bytes"
-	tmproto "github.com/lazyledger/lazyledger-core/proto/tendermint/types"
-	tmtypes "github.com/lazyledger/lazyledger-core/types"
+	tmbytes "github.com/celestiaorg/celestia-core/libs/bytes"
+	tmproto "github.com/celestiaorg/celestia-core/proto/tendermint/types"
+	tmtypes "github.com/celestiaorg/celestia-core/types"
 	"github.com/stretchr/testify/suite"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"

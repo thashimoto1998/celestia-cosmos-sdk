@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"log"
 
-	abci "github.com/lazyledger/lazyledger-core/abci/types"
-	tmtypes "github.com/lazyledger/lazyledger-core/types"
+	abci "github.com/celestiaorg/celestia-core/abci/types"
+	tmtypes "github.com/celestiaorg/celestia-core/types"
 
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"

@@ -1,8 +1,8 @@
 package teststaking
 
 import (
-	tmcrypto "github.com/lazyledger/lazyledger-core/crypto"
-	tmtypes "github.com/lazyledger/lazyledger-core/types"
+	tmcrypto "github.com/celestiaorg/celestia-core/crypto"
+	tmtypes "github.com/celestiaorg/celestia-core/types"
 
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	"github.com/cosmos/cosmos-sdk/x/staking/types"

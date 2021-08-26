@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	tmproto "github.com/lazyledger/lazyledger-core/proto/tendermint/types"
+	tmproto "github.com/celestiaorg/celestia-core/proto/tendermint/types"
 
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 	"github.com/cosmos/cosmos-sdk/x/simulation"

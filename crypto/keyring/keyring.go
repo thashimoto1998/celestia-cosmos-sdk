@@ -12,8 +12,8 @@ import (
 	"strings"
 
 	"github.com/99designs/keyring"
+	tmcrypto "github.com/celestiaorg/celestia-core/crypto"
 	bip39 "github.com/cosmos/go-bip39"
-	tmcrypto "github.com/lazyledger/lazyledger-core/crypto"
 	"github.com/pkg/errors"
 	"github.com/tendermint/crypto/bcrypt"
 

@@ -6,6 +6,7 @@ package mocks
 
 import (
 	json "encoding/json"
+	types1 "github.com/celestiaorg/celestia-core/abci/types"
 	client "github.com/cosmos/cosmos-sdk/client"
 	codec "github.com/cosmos/cosmos-sdk/codec"
 	types "github.com/cosmos/cosmos-sdk/codec/types"
@@ -14,7 +15,6 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	mux "github.com/gorilla/mux"
 	runtime "github.com/grpc-ecosystem/grpc-gateway/runtime"
-	types1 "github.com/lazyledger/lazyledger-core/abci/types"
 	cobra "github.com/spf13/cobra"
 	reflect "reflect"
 )

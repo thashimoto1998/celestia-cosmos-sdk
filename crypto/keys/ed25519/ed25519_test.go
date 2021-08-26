@@ -5,8 +5,8 @@ import (
 	"encoding/base64"
 	"testing"
 
-	"github.com/lazyledger/lazyledger-core/crypto"
-	tmed25519 "github.com/lazyledger/lazyledger-core/crypto/ed25519"
+	"github.com/celestiaorg/celestia-core/crypto"
+	tmed25519 "github.com/celestiaorg/celestia-core/crypto/ed25519"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 

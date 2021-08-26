@@ -5,6 +5,8 @@ package types
 
 import (
 	fmt "fmt"
+	github_com_lazyledger_lazyledger_core_libs_bytes "github.com/celestiaorg/celestia-core/libs/bytes"
+	types2 "github.com/celestiaorg/celestia-core/proto/tendermint/types"
 	_go "github.com/confio/ics23/go"
 	types "github.com/cosmos/cosmos-sdk/x/ibc/core/02-client/types"
 	types1 "github.com/cosmos/cosmos-sdk/x/ibc/core/23-commitment/types"
@@ -13,8 +15,6 @@ import (
 	github_com_gogo_protobuf_types "github.com/gogo/protobuf/types"
 	_ "github.com/golang/protobuf/ptypes/duration"
 	_ "github.com/golang/protobuf/ptypes/timestamp"
-	github_com_lazyledger_lazyledger_core_libs_bytes "github.com/lazyledger/lazyledger-core/libs/bytes"
-	types2 "github.com/lazyledger/lazyledger-core/proto/tendermint/types"
 	io "io"
 	math "math"
 	math_bits "math/bits"
@@ -105,7 +105,7 @@ type ConsensusState struct {
 	Timestamp time.Time `protobuf:"bytes,1,opt,name=timestamp,proto3,stdtime" json:"timestamp"`
 	// commitment root (i.e app hash)
 	Root               types1.MerkleRoot                                         `protobuf:"bytes,2,opt,name=root,proto3" json:"root"`
-	NextValidatorsHash github_com_lazyledger_lazyledger_core_libs_bytes.HexBytes `protobuf:"bytes,3,opt,name=next_validators_hash,json=nextValidatorsHash,proto3,casttype=github.com/lazyledger/lazyledger-core/libs/bytes.HexBytes" json:"next_validators_hash,omitempty" yaml:"next_validators_hash"`
+	NextValidatorsHash github_com_lazyledger_lazyledger_core_libs_bytes.HexBytes `protobuf:"bytes,3,opt,name=next_validators_hash,json=nextValidatorsHash,proto3,casttype=github.com/celestiaorg/celestia-core/libs/bytes.HexBytes" json:"next_validators_hash,omitempty" yaml:"next_validators_hash"`
 }
 
 func (m *ConsensusState) Reset()         { *m = ConsensusState{} }

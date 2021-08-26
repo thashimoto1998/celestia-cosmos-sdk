@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"path/filepath"
 
-	tmtypes "github.com/lazyledger/lazyledger-core/types"
+	tmtypes "github.com/celestiaorg/celestia-core/types"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 

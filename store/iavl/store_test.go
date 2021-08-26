@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"testing"
 
+	abci "github.com/celestiaorg/celestia-core/abci/types"
 	"github.com/cosmos/iavl"
-	abci "github.com/lazyledger/lazyledger-core/abci/types"
 	"github.com/stretchr/testify/require"
 	dbm "github.com/tendermint/tm-db"
 

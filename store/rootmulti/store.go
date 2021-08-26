@@ -10,10 +10,10 @@ import (
 	"sort"
 	"strings"
 
+	abci "github.com/celestiaorg/celestia-core/abci/types"
 	iavltree "github.com/cosmos/iavl"
 	protoio "github.com/gogo/protobuf/io"
 	gogotypes "github.com/gogo/protobuf/types"
-	abci "github.com/lazyledger/lazyledger-core/abci/types"
 	"github.com/pkg/errors"
 	dbm "github.com/tendermint/tm-db"
 

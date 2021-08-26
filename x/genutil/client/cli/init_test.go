@@ -9,9 +9,9 @@ import (
 	"testing"
 	"time"
 
-	abci_server "github.com/lazyledger/lazyledger-core/abci/server"
-	"github.com/lazyledger/lazyledger-core/libs/cli"
-	"github.com/lazyledger/lazyledger-core/libs/log"
+	abci_server "github.com/celestiaorg/celestia-core/abci/server"
+	"github.com/celestiaorg/celestia-core/libs/cli"
+	"github.com/celestiaorg/celestia-core/libs/log"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/require"
 
