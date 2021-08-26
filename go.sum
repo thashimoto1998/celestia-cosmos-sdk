@@ -141,6 +141,8 @@ github.com/btcsuite/websocket v0.0.0-20150119174127-31079b680792/go.mod h1:ghJtE
 github.com/btcsuite/winsvc v1.0.0/go.mod h1:jsenWakMcC0zFBFurPLEAyrnc/teJEM1O46fmI40EZs=
 github.com/buger/jsonparser v0.0.0-20181115193947-bf1c66bbce23/go.mod h1:bbYlZJ7hK1yFx9hf58LP0zeX7UjIGs20ufpu3evjr+s=
 github.com/casbin/casbin/v2 v2.1.2/go.mod h1:YcPU1XXisHhLzuxH9coDNf2FbKpjGlbCg3n9yuLkIJQ=
+github.com/celestiaorg/celestia-core v0.0.1-mvp-das-lightclient.0.20210826202805-d80b357396f1 h1:OWD4wLA9vuK9PD78SlviQfOGNVrXUEu+hYQLE1TfYdw=
+github.com/celestiaorg/celestia-core v0.0.1-mvp-das-lightclient.0.20210826202805-d80b357396f1/go.mod h1:X+6c7m4HyjPTOxB3tg1j7EPfU46M7twHgsrn09iv5vU=
 github.com/celestiaorg/go-leopard v0.1.0 h1:28z2EkvKJIez5J9CEaiiUEC+OxalRLtTGJJ1oScfE1g=
 github.com/celestiaorg/go-leopard v0.1.0/go.mod h1:NtO/rjlB8dw2aq7jr06vZFKGvryQcTDXaNHelmPNOAM=
 github.com/celestiaorg/merkletree v0.0.0-20210714075610-a84dc3ddbbe4 h1:CJdIpo8n5MFP2MwK0gSRcOVlDlFdQJO1p+FqdxYzmvc=

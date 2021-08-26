@@ -9,7 +9,7 @@ require (
 	github.com/bgentry/speakeasy v0.1.0
 	github.com/btcsuite/btcd v0.22.0-beta
 	github.com/btcsuite/btcutil v1.0.3-0.20201208143702-a53e38424cce
-	github.com/celestiaorg/celestia-core d80b357396f1ecf8f0a06304386f8410298bea8b
+	github.com/celestiaorg/celestia-core v0.0.1-mvp-das-lightclient.0.20210826202805-d80b357396f1
 	github.com/confio/ics23/go v0.6.3
 	github.com/cosmos/go-bip39 v1.0.0
 	github.com/cosmos/iavl v0.15.3
@@ -51,6 +51,4 @@ require (
 	gopkg.in/yaml.v2 v2.4.0
 )
 
-replace (
-	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.2-alpha.regen.4
-)
+replace github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.2-alpha.regen.4
