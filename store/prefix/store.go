@@ -81,7 +81,7 @@ func (s Store) Delete(key []byte) {
 }
 
 // Implements KVStore
-// Check https://github.com/celestiaorg/celestia-core/blob/master/libs/db/prefix_db.go#L106
+// Check https://github.com/tendermint/tendermint/blob/master/libs/db/prefix_db.go#L106
 func (s Store) Iterator(start, end []byte) types.Iterator {
 	newstart := cloneAppend(s.prefix, start)
 
@@ -98,7 +98,7 @@ func (s Store) Iterator(start, end []byte) types.Iterator {
 }
 
 // ReverseIterator implements KVStore
-// Check https://github.com/celestiaorg/celestia-core/blob/master/libs/db/prefix_db.go#L129
+// Check https://github.com/tendermint/tendermint/blob/master/libs/db/prefix_db.go#L129
 func (s Store) ReverseIterator(start, end []byte) types.Iterator {
 	newstart := cloneAppend(s.prefix, start)
 
