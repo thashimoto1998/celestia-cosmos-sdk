@@ -9,7 +9,7 @@ require (
 	github.com/bgentry/speakeasy v0.1.0
 	github.com/btcsuite/btcd v0.22.0-beta
 	github.com/btcsuite/btcutil v1.0.3-0.20201208143702-a53e38424cce
-	github.com/celestiaorg/celestia-core v0.0.1-mvp-das-lightclient.0.20210826202805-d80b357396f1
+	github.com/celestiaorg/celestia-core v0.0.1-mvp-das-lightclient.0.20210830200007-52e4383a7266
 	github.com/confio/ics23/go v0.6.3
 	github.com/cosmos/go-bip39 v1.0.0
 	github.com/cosmos/iavl v0.15.3
@@ -52,7 +52,6 @@ require (
 )
 
 replace (
-	github.com/celestiaorg/celestia-core => /home/evan/go/src/github.com/celestia/celestia-core
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.2-alpha.regen.4
 	github.com/golang/mock => github.com/golang/mock v1.4.4
 	google.golang.org/grpc => google.golang.org/grpc v1.33.2
