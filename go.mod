@@ -51,4 +51,9 @@ require (
 	gopkg.in/yaml.v2 v2.4.0
 )
 
-replace github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.2-alpha.regen.4
+replace (
+	github.com/celestiaorg/celestia-core => /home/evan/go/src/github.com/celestia/celestia-core
+	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.2-alpha.regen.4
+	github.com/golang/mock => github.com/golang/mock v1.4.4
+	google.golang.org/grpc => google.golang.org/grpc v1.33.2
+)
