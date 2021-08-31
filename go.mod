@@ -9,7 +9,7 @@ require (
 	github.com/bgentry/speakeasy v0.1.0
 	github.com/btcsuite/btcd v0.22.0-beta
 	github.com/btcsuite/btcutil v1.0.3-0.20201208143702-a53e38424cce
-	github.com/celestiaorg/celestia-core v0.0.1-mvp-das-lightclient.0.20210830200007-52e4383a7266
+	github.com/celestiaorg/celestia-core v0.0.1-mvp-das-lightclient.0.20210831143948-ceaf5e5c3eec
 	github.com/confio/ics23/go v0.6.3
 	github.com/cosmos/go-bip39 v1.0.0
 	github.com/cosmos/iavl v0.15.3
@@ -21,7 +21,6 @@ require (
 	github.com/golang/mock v1.5.0
 	github.com/golang/protobuf v1.5.2
 	github.com/golang/snappy v0.0.2 // indirect
-	github.com/google/uuid v1.3.0 // indirect
 	github.com/gorilla/handlers v1.5.1
 	github.com/gorilla/mux v1.8.0
 	github.com/grpc-ecosystem/go-grpc-middleware v1.2.2
