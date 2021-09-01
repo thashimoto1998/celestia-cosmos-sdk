@@ -9,8 +9,8 @@ import (
 
 	btcSecp256k1 "github.com/btcsuite/btcd/btcec"
 	"github.com/btcsuite/btcutil/base58"
-	"github.com/lazyledger/lazyledger-core/crypto"
-	tmsecp256k1 "github.com/lazyledger/lazyledger-core/crypto/secp256k1"
+	"github.com/celestiaorg/celestia-core/crypto"
+	tmsecp256k1 "github.com/celestiaorg/celestia-core/crypto/secp256k1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 

@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	tmproto "github.com/lazyledger/lazyledger-core/proto/tendermint/types"
+	tmproto "github.com/celestiaorg/celestia-core/proto/tendermint/types"
 
 	"github.com/cosmos/cosmos-sdk/testutil/testdata"
 

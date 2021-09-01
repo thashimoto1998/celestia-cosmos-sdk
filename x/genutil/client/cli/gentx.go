@@ -10,8 +10,8 @@ import (
 	"os"
 	"path/filepath"
 
-	tmos "github.com/lazyledger/lazyledger-core/libs/os"
-	tmtypes "github.com/lazyledger/lazyledger-core/types"
+	tmos "github.com/celestiaorg/celestia-core/libs/os"
+	tmtypes "github.com/celestiaorg/celestia-core/types"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 

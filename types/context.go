@@ -4,10 +4,10 @@ import (
 	"context"
 	"time"
 
+	abci "github.com/celestiaorg/celestia-core/abci/types"
+	"github.com/celestiaorg/celestia-core/libs/log"
+	tmproto "github.com/celestiaorg/celestia-core/proto/tendermint/types"
 	"github.com/gogo/protobuf/proto"
-	abci "github.com/lazyledger/lazyledger-core/abci/types"
-	"github.com/lazyledger/lazyledger-core/libs/log"
-	tmproto "github.com/lazyledger/lazyledger-core/proto/tendermint/types"
 
 	"github.com/cosmos/cosmos-sdk/store/gaskv"
 	stypes "github.com/cosmos/cosmos-sdk/store/types"

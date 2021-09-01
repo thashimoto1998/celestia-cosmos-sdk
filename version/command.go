@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"strings"
 
-	"github.com/lazyledger/lazyledger-core/libs/cli"
+	"github.com/celestiaorg/celestia-core/libs/cli"
 	"github.com/spf13/cobra"
 	yaml "gopkg.in/yaml.v2"
 )

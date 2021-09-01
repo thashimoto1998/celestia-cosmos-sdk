@@ -11,11 +11,11 @@ import (
 	"os"
 	"path/filepath"
 
-	tmconfig "github.com/lazyledger/lazyledger-core/config"
-	tmos "github.com/lazyledger/lazyledger-core/libs/os"
-	tmrand "github.com/lazyledger/lazyledger-core/libs/rand"
-	"github.com/lazyledger/lazyledger-core/types"
-	tmtime "github.com/lazyledger/lazyledger-core/types/time"
+	tmconfig "github.com/celestiaorg/celestia-core/config"
+	tmos "github.com/celestiaorg/celestia-core/libs/os"
+	tmrand "github.com/celestiaorg/celestia-core/libs/rand"
+	"github.com/celestiaorg/celestia-core/types"
+	tmtime "github.com/celestiaorg/celestia-core/types/time"
 	"github.com/spf13/cobra"
 
 	"github.com/cosmos/cosmos-sdk/client"
@@ -116,7 +116,7 @@ func InitTestnet(
 ) error {
 
 	if chainID == "" {
-		chainID = "chain-" + tmrand.NewRand().Str(6)
+		chainID = "chain-" + tmrand.Str(6)
 	}
 
 	nodeIDs := make([]string, numValidators)

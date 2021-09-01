@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	abci "github.com/lazyledger/lazyledger-core/abci/types"
-	tmprototypes "github.com/lazyledger/lazyledger-core/proto/tendermint/types"
+	abci "github.com/celestiaorg/celestia-core/abci/types"
+	tmprototypes "github.com/celestiaorg/celestia-core/proto/tendermint/types"
 	"github.com/stretchr/testify/require"
 	dbm "github.com/tendermint/tm-db"
 

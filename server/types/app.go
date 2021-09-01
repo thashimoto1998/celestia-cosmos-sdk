@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"io"
 
+	abci "github.com/celestiaorg/celestia-core/abci/types"
+	"github.com/celestiaorg/celestia-core/libs/log"
+	tmtypes "github.com/celestiaorg/celestia-core/types"
 	"github.com/gogo/protobuf/grpc"
-	abci "github.com/lazyledger/lazyledger-core/abci/types"
-	"github.com/lazyledger/lazyledger-core/libs/log"
-	tmtypes "github.com/lazyledger/lazyledger-core/types"
 	"github.com/spf13/cobra"
 	dbm "github.com/tendermint/tm-db"
 

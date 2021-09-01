@@ -3,7 +3,7 @@
 package secp256k1
 
 import (
-	"github.com/lazyledger/lazyledger-core/crypto"
+	"github.com/celestiaorg/celestia-core/crypto"
 
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1/internal/secp256k1"
 )

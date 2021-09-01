@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"time"
 
-	"github.com/lazyledger/lazyledger-core/light"
-	tmtypes "github.com/lazyledger/lazyledger-core/types"
+	"github.com/celestiaorg/celestia-core/light"
+	tmtypes "github.com/celestiaorg/celestia-core/types"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"

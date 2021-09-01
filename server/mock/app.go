@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"github.com/lazyledger/lazyledger-core/types"
+	"github.com/celestiaorg/celestia-core/types"
 
-	abci "github.com/lazyledger/lazyledger-core/abci/types"
-	"github.com/lazyledger/lazyledger-core/libs/log"
+	abci "github.com/celestiaorg/celestia-core/abci/types"
+	"github.com/celestiaorg/celestia-core/libs/log"
 
 	bam "github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"

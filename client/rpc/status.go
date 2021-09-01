@@ -6,9 +6,9 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/lazyledger/lazyledger-core/libs/bytes"
-	"github.com/lazyledger/lazyledger-core/p2p"
-	ctypes "github.com/lazyledger/lazyledger-core/rpc/core/types"
+	"github.com/celestiaorg/celestia-core/libs/bytes"
+	"github.com/celestiaorg/celestia-core/p2p"
+	ctypes "github.com/celestiaorg/celestia-core/rpc/core/types"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"

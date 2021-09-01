@@ -6,8 +6,8 @@ import (
 	"os"
 	"path/filepath"
 
-	tmcli "github.com/lazyledger/lazyledger-core/libs/cli"
-	"github.com/lazyledger/lazyledger-core/libs/log"
+	tmcli "github.com/celestiaorg/celestia-core/libs/cli"
+	"github.com/celestiaorg/celestia-core/libs/log"
 	"github.com/spf13/cast"
 	"github.com/spf13/cobra"
 	dbm "github.com/tendermint/tm-db"

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	tmcli "github.com/lazyledger/lazyledger-core/libs/cli"
+	tmcli "github.com/celestiaorg/celestia-core/libs/cli"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"

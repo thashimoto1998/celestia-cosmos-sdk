@@ -7,9 +7,9 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/codec/types"
 
+	abci "github.com/celestiaorg/celestia-core/abci/types"
 	"github.com/golang/mock/gomock"
 	"github.com/gorilla/mux"
-	abci "github.com/lazyledger/lazyledger-core/abci/types"
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/require"
 

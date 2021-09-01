@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	tmcli "github.com/lazyledger/lazyledger-core/libs/cli"
+	tmcli "github.com/celestiaorg/celestia-core/libs/cli"
 	"github.com/stretchr/testify/suite"
 
 	clitestutil "github.com/cosmos/cosmos-sdk/testutil/cli"

@@ -3,7 +3,7 @@ package keeper
 import (
 	"time"
 
-	"github.com/lazyledger/lazyledger-core/crypto"
+	"github.com/celestiaorg/celestia-core/crypto"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/slashing/types"

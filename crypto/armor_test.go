@@ -7,9 +7,9 @@ import (
 	"io"
 	"testing"
 
-	tmcrypto "github.com/lazyledger/lazyledger-core/crypto"
-	"github.com/lazyledger/lazyledger-core/crypto/armor"
-	"github.com/lazyledger/lazyledger-core/crypto/xsalsa20symmetric"
+	tmcrypto "github.com/celestiaorg/celestia-core/crypto"
+	"github.com/celestiaorg/celestia-core/crypto/armor"
+	"github.com/celestiaorg/celestia-core/crypto/xsalsa20symmetric"
 	"github.com/stretchr/testify/require"
 	"github.com/tendermint/crypto/bcrypt"
 

@@ -3,8 +3,8 @@ package keeper
 import (
 	"fmt"
 
-	tmbytes "github.com/lazyledger/lazyledger-core/libs/bytes"
-	"github.com/lazyledger/lazyledger-core/libs/log"
+	tmbytes "github.com/celestiaorg/celestia-core/libs/bytes"
+	"github.com/celestiaorg/celestia-core/libs/log"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/store/prefix"

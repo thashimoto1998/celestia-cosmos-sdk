@@ -1,7 +1,7 @@
 package rootmulti
 
 import (
-	"github.com/lazyledger/lazyledger-core/crypto/merkle"
+	"github.com/celestiaorg/celestia-core/crypto/merkle"
 
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 )

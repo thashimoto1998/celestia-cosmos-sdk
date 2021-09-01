@@ -7,10 +7,10 @@ import (
 	"sync"
 	"time"
 
+	abci "github.com/celestiaorg/celestia-core/abci/types"
+	tmcrypto "github.com/celestiaorg/celestia-core/proto/tendermint/crypto"
 	ics23 "github.com/confio/ics23/go"
 	"github.com/cosmos/iavl"
-	abci "github.com/lazyledger/lazyledger-core/abci/types"
-	tmcrypto "github.com/lazyledger/lazyledger-core/proto/tendermint/crypto"
 	dbm "github.com/tendermint/tm-db"
 
 	"github.com/cosmos/cosmos-sdk/store/cachekv"

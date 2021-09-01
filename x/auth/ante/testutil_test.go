@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	tmproto "github.com/lazyledger/lazyledger-core/proto/tendermint/types"
+	tmproto "github.com/celestiaorg/celestia-core/proto/tendermint/types"
 	"github.com/stretchr/testify/suite"
 
 	"github.com/cosmos/cosmos-sdk/client"

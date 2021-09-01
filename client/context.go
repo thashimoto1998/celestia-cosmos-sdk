@@ -7,8 +7,8 @@ import (
 
 	"gopkg.in/yaml.v2"
 
+	rpcclient "github.com/celestiaorg/celestia-core/rpc/client"
 	"github.com/gogo/protobuf/proto"
-	rpcclient "github.com/lazyledger/lazyledger-core/rpc/client"
 	"github.com/pkg/errors"
 
 	"github.com/cosmos/cosmos-sdk/codec"

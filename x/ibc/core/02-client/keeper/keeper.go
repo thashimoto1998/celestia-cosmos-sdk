@@ -5,8 +5,8 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/lazyledger/lazyledger-core/libs/log"
-	"github.com/lazyledger/lazyledger-core/light"
+	"github.com/celestiaorg/celestia-core/libs/log"
+	"github.com/celestiaorg/celestia-core/light"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/store/prefix"

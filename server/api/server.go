@@ -7,12 +7,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/celestiaorg/celestia-core/libs/log"
+	tmrpcserver "github.com/celestiaorg/celestia-core/rpc/jsonrpc/server"
 	"github.com/gogo/gateway"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
-	"github.com/lazyledger/lazyledger-core/libs/log"
-	tmrpcserver "github.com/lazyledger/lazyledger-core/rpc/jsonrpc/server"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/server/config"

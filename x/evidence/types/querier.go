@@ -1,7 +1,7 @@
 package types
 
 import (
-	tmbytes "github.com/lazyledger/lazyledger-core/libs/bytes"
+	tmbytes "github.com/celestiaorg/celestia-core/libs/bytes"
 
 	query "github.com/cosmos/cosmos-sdk/types/query"
 )

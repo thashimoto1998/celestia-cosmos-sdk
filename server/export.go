@@ -7,9 +7,9 @@ import (
 	"io/ioutil"
 	"os"
 
-	tmjson "github.com/lazyledger/lazyledger-core/libs/json"
-	tmproto "github.com/lazyledger/lazyledger-core/proto/tendermint/types"
-	tmtypes "github.com/lazyledger/lazyledger-core/types"
+	tmjson "github.com/celestiaorg/celestia-core/libs/json"
+	tmproto "github.com/celestiaorg/celestia-core/proto/tendermint/types"
+	tmtypes "github.com/celestiaorg/celestia-core/types"
 	"github.com/spf13/cobra"
 
 	"github.com/cosmos/cosmos-sdk/client/flags"

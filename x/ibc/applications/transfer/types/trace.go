@@ -7,8 +7,8 @@ import (
 	"sort"
 	"strings"
 
-	tmbytes "github.com/lazyledger/lazyledger-core/libs/bytes"
-	tmtypes "github.com/lazyledger/lazyledger-core/types"
+	tmbytes "github.com/celestiaorg/celestia-core/libs/bytes"
+	tmtypes "github.com/celestiaorg/celestia-core/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"

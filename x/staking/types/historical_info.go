@@ -3,8 +3,8 @@ package types
 import (
 	"sort"
 
+	tmproto "github.com/celestiaorg/celestia-core/proto/tendermint/types"
 	"github.com/gogo/protobuf/proto"
-	tmproto "github.com/lazyledger/lazyledger-core/proto/tendermint/types"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"

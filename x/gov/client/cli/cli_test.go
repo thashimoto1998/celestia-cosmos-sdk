@@ -12,7 +12,7 @@ import (
 	"github.com/gogo/protobuf/proto"
 	"github.com/stretchr/testify/suite"
 
-	tmcli "github.com/lazyledger/lazyledger-core/libs/cli"
+	tmcli "github.com/celestiaorg/celestia-core/libs/cli"
 
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	clitestutil "github.com/cosmos/cosmos-sdk/testutil/cli"

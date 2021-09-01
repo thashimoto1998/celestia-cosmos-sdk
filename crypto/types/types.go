@@ -1,8 +1,8 @@
 package types
 
 import (
+	tmcrypto "github.com/celestiaorg/celestia-core/crypto"
 	proto "github.com/gogo/protobuf/proto"
-	tmcrypto "github.com/lazyledger/lazyledger-core/crypto"
 )
 
 // PubKey defines a public key and extends proto.Message.

@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/lazyledger/lazyledger-core/libs/cli"
-	rpchttp "github.com/lazyledger/lazyledger-core/rpc/client/http"
+	"github.com/celestiaorg/celestia-core/libs/cli"
+	rpchttp "github.com/celestiaorg/celestia-core/rpc/client/http"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"

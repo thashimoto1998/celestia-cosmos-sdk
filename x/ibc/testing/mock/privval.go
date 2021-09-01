@@ -1,9 +1,9 @@
 package mock
 
 import (
-	"github.com/lazyledger/lazyledger-core/crypto"
-	tmproto "github.com/lazyledger/lazyledger-core/proto/tendermint/types"
-	tmtypes "github.com/lazyledger/lazyledger-core/types"
+	"github.com/celestiaorg/celestia-core/crypto"
+	tmproto "github.com/celestiaorg/celestia-core/proto/tendermint/types"
+	tmtypes "github.com/celestiaorg/celestia-core/types"
 
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"

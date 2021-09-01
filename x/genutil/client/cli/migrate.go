@@ -6,7 +6,7 @@ import (
 	"sort"
 	"time"
 
-	tmjson "github.com/lazyledger/lazyledger-core/libs/json"
+	tmjson "github.com/celestiaorg/celestia-core/libs/json"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 

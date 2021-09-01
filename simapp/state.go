@@ -8,8 +8,8 @@ import (
 	"math/rand"
 	"time"
 
-	tmjson "github.com/lazyledger/lazyledger-core/libs/json"
-	tmtypes "github.com/lazyledger/lazyledger-core/types"
+	tmjson "github.com/celestiaorg/celestia-core/libs/json"
+	tmtypes "github.com/celestiaorg/celestia-core/types"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"

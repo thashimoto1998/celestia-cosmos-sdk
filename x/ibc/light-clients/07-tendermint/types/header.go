@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"time"
 
-	tmtypes "github.com/lazyledger/lazyledger-core/types"
+	tmtypes "github.com/celestiaorg/celestia-core/types"
 
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	clienttypes "github.com/cosmos/cosmos-sdk/x/ibc/core/02-client/types"

@@ -13,8 +13,8 @@ import (
 	"sort"
 	"strings"
 
-	cfg "github.com/lazyledger/lazyledger-core/config"
-	tmtypes "github.com/lazyledger/lazyledger-core/types"
+	cfg "github.com/celestiaorg/celestia-core/config"
+	tmtypes "github.com/celestiaorg/celestia-core/types"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"

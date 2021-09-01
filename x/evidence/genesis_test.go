@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	tmproto "github.com/lazyledger/lazyledger-core/proto/tendermint/types"
-	"github.com/lazyledger/lazyledger-core/types/time"
+	tmproto "github.com/celestiaorg/celestia-core/proto/tendermint/types"
+	"github.com/celestiaorg/celestia-core/types/time"
 	"github.com/stretchr/testify/suite"
 
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"

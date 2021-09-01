@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	tmrand "github.com/lazyledger/lazyledger-core/libs/rand"
+	tmrand "github.com/celestiaorg/celestia-core/libs/rand"
 	"github.com/stretchr/testify/require"
 	dbm "github.com/tendermint/tm-db"
 

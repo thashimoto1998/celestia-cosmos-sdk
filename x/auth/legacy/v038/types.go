@@ -11,7 +11,7 @@ import (
 	"sort"
 	"strings"
 
-	tmcrypto "github.com/lazyledger/lazyledger-core/crypto"
+	tmcrypto "github.com/celestiaorg/celestia-core/crypto"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"

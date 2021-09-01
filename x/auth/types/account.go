@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/celestiaorg/celestia-core/crypto"
 	"github.com/gogo/protobuf/proto"
-	"github.com/lazyledger/lazyledger-core/crypto"
 	"gopkg.in/yaml.v2"
 
 	"github.com/cosmos/cosmos-sdk/codec"

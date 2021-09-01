@@ -11,9 +11,9 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 
-	abci "github.com/lazyledger/lazyledger-core/abci/types"
-	"github.com/lazyledger/lazyledger-core/libs/bytes"
-	ctypes "github.com/lazyledger/lazyledger-core/rpc/core/types"
+	abci "github.com/celestiaorg/celestia-core/abci/types"
+	"github.com/celestiaorg/celestia-core/libs/bytes"
+	ctypes "github.com/celestiaorg/celestia-core/rpc/core/types"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/testutil/testdata"

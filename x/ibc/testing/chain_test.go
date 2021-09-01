@@ -3,7 +3,7 @@ package ibctesting_test
 import (
 	"testing"
 
-	tmtypes "github.com/lazyledger/lazyledger-core/types"
+	tmtypes "github.com/celestiaorg/celestia-core/types"
 	"github.com/stretchr/testify/require"
 
 	ibctesting "github.com/cosmos/cosmos-sdk/x/ibc/testing"

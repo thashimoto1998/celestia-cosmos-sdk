@@ -3,7 +3,7 @@ package keeper_test
 import (
 	"fmt"
 
-	abci "github.com/lazyledger/lazyledger-core/abci/types"
+	abci "github.com/celestiaorg/celestia-core/abci/types"
 
 	"github.com/cosmos/cosmos-sdk/testutil/testdata"
 	sdk "github.com/cosmos/cosmos-sdk/types"

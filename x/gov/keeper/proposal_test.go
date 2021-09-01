@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	tmproto "github.com/lazyledger/lazyledger-core/proto/tendermint/types"
+	tmproto "github.com/celestiaorg/celestia-core/proto/tendermint/types"
 	"github.com/stretchr/testify/require"
 
 	"github.com/cosmos/cosmos-sdk/simapp"

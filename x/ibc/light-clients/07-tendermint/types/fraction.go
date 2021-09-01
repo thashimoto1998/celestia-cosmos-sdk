@@ -1,8 +1,8 @@
 package types
 
 import (
-	tmmath "github.com/lazyledger/lazyledger-core/libs/math"
-	"github.com/lazyledger/lazyledger-core/light"
+	tmmath "github.com/celestiaorg/celestia-core/libs/math"
+	"github.com/celestiaorg/celestia-core/light"
 )
 
 // DefaultTrustLevel is the tendermint light client default trust level

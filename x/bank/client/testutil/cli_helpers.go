@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/celestiaorg/celestia-core/libs/cli"
 	gogogrpc "github.com/gogo/protobuf/grpc"
-	"github.com/lazyledger/lazyledger-core/libs/cli"
 	"github.com/spf13/cobra"
 	grpc "google.golang.org/grpc"
 

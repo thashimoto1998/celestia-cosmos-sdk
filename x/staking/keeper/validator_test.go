@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	abci "github.com/lazyledger/lazyledger-core/abci/types"
-	tmproto "github.com/lazyledger/lazyledger-core/proto/tendermint/types"
+	abci "github.com/celestiaorg/celestia-core/abci/types"
+	tmproto "github.com/celestiaorg/celestia-core/proto/tendermint/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 

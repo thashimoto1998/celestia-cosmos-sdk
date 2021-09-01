@@ -1,8 +1,8 @@
 package exported
 
 import (
+	tmbytes "github.com/celestiaorg/celestia-core/libs/bytes"
 	"github.com/gogo/protobuf/proto"
-	tmbytes "github.com/lazyledger/lazyledger-core/libs/bytes"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )

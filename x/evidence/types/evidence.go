@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"time"
 
-	abci "github.com/lazyledger/lazyledger-core/abci/types"
-	"github.com/lazyledger/lazyledger-core/crypto/tmhash"
-	tmbytes "github.com/lazyledger/lazyledger-core/libs/bytes"
+	abci "github.com/celestiaorg/celestia-core/abci/types"
+	"github.com/celestiaorg/celestia-core/crypto/tmhash"
+	tmbytes "github.com/celestiaorg/celestia-core/libs/bytes"
 	"gopkg.in/yaml.v2"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"

@@ -8,8 +8,8 @@ import (
 
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 
+	abci "github.com/celestiaorg/celestia-core/abci/types"
 	"github.com/gorilla/mux"
-	abci "github.com/lazyledger/lazyledger-core/abci/types"
 	"github.com/spf13/cobra"
 
 	sdkclient "github.com/cosmos/cosmos-sdk/client"

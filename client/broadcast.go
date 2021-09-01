@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/lazyledger/lazyledger-core/crypto/tmhash"
-	"github.com/lazyledger/lazyledger-core/mempool"
+	"github.com/celestiaorg/celestia-core/crypto/tmhash"
+	"github.com/celestiaorg/celestia-core/mempool"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 

@@ -8,10 +8,10 @@ import (
 	"strings"
 	"testing"
 
+	tmcli "github.com/celestiaorg/celestia-core/libs/cli"
+	"github.com/celestiaorg/celestia-core/proto/tendermint/crypto"
+	"github.com/celestiaorg/celestia-core/rpc/client/http"
 	"github.com/gogo/protobuf/proto"
-	tmcli "github.com/lazyledger/lazyledger-core/libs/cli"
-	"github.com/lazyledger/lazyledger-core/proto/tendermint/crypto"
-	"github.com/lazyledger/lazyledger-core/rpc/client/http"
 	"github.com/stretchr/testify/suite"
 
 	"github.com/cosmos/cosmos-sdk/client/flags"

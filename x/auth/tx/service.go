@@ -11,8 +11,8 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	abci "github.com/lazyledger/lazyledger-core/abci/types"
-	tmtypes "github.com/lazyledger/lazyledger-core/types"
+	abci "github.com/celestiaorg/celestia-core/abci/types"
+	tmtypes "github.com/celestiaorg/celestia-core/types"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"

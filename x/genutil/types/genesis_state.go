@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 
-	tmos "github.com/lazyledger/lazyledger-core/libs/os"
-	tmtypes "github.com/lazyledger/lazyledger-core/types"
+	tmos "github.com/celestiaorg/celestia-core/libs/os"
+	tmtypes "github.com/celestiaorg/celestia-core/types"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"

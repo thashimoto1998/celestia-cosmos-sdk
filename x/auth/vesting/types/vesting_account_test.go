@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	tmtime "github.com/lazyledger/lazyledger-core/types/time"
+	tmtime "github.com/celestiaorg/celestia-core/types/time"
 	"github.com/stretchr/testify/require"
 
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"

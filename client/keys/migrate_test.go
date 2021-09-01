@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/lazyledger/lazyledger-core/libs/cli"
+	"github.com/celestiaorg/celestia-core/libs/cli"
 	"github.com/otiai10/copy"
 	"github.com/stretchr/testify/assert"
 

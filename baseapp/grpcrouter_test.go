@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/lazyledger/lazyledger-core/libs/log"
+	"github.com/celestiaorg/celestia-core/libs/log"
 	"github.com/stretchr/testify/require"
 	dbm "github.com/tendermint/tm-db"
 
