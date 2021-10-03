@@ -6,9 +6,9 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/celestiaorg/celestia-core/libs/cli"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/tendermint/tendermint/libs/cli"
 
 	"github.com/cosmos/cosmos-sdk/testutil"
 	"github.com/cosmos/cosmos-sdk/version"
@@ -25,12 +25,13 @@ build tags:
 
 func TestInfo_String(t *testing.T) {
 	info := version.Info{
-		Name:      "testapp",
-		AppName:   "testappd",
-		Version:   "1.0.0",
-		GitCommit: "1b78457135a4104bc3af97f20654d49e2ea87454",
-		BuildTags: "netgo,ledger",
-		GoVersion: "go version go1.14 linux/amd64",
+		Name:             "testapp",
+		AppName:          "testappd",
+		Version:          "1.0.0",
+		GitCommit:        "1b78457135a4104bc3af97f20654d49e2ea87454",
+		BuildTags:        "netgo,ledger",
+		GoVersion:        "go version go1.14 linux/amd64",
+		CosmosSdkVersion: "0.42.5",
 	}
 	want := `testapp: 1.0.0
 git commit: 1b78457135a4104bc3af97f20654d49e2ea87454

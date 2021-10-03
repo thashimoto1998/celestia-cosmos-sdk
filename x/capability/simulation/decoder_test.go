@@ -14,7 +14,7 @@ import (
 )
 
 func TestDecodeStore(t *testing.T) {
-	cdc := simapp.MakeTestEncodingConfig().Marshaler
+	cdc := simapp.MakeTestEncodingConfig().Codec
 	dec := simulation.NewDecodeStore(cdc)
 
 	capOwners := types.CapabilityOwners{
@@ -29,7 +29,7 @@ func TestDecodeStore(t *testing.T) {
 			},
 			{
 				Key:   types.KeyPrefixIndexCapability,
-				Value: cdc.MustMarshalBinaryBare(&capOwners),
+				Value: cdc.MustMarshal(&capOwners),
 			},
 			{
 				Key:   []byte{0x99},

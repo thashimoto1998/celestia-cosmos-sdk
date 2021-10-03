@@ -19,7 +19,6 @@ type Store struct {
 }
 
 // NewStore returns a reference to a new GasKVStore.
-// nolint
 func NewStore(parent types.KVStore, gasMeter types.GasMeter, gasConfig types.GasConfig) *Store {
 	kvs := &Store{
 		gasMeter:  gasMeter,
@@ -36,8 +35,6 @@ func (gs *Store) GetStoreType() types.StoreType {
 
 // Implements KVStore.
 func (gs *Store) Get(key []byte) (value []byte) {
-	defer telemetry.MeasureSince(time.Now(), "store", "gaskv", "get")
-
 	gs.gasMeter.ConsumeGas(gs.gasConfig.ReadCostFlat, types.GasReadCostFlatDesc)
 	value = gs.parent.Get(key)
 
@@ -49,8 +46,6 @@ func (gs *Store) Get(key []byte) (value []byte) {
 
 // Implements KVStore.
 func (gs *Store) Set(key []byte, value []byte) {
-	defer telemetry.MeasureSince(time.Now(), "store", "gaskv", "set")
-
 	types.AssertValidKey(key)
 	types.AssertValidValue(value)
 	gs.gasMeter.ConsumeGas(gs.gasConfig.WriteCostFlat, types.GasWriteCostFlatDesc)
@@ -99,6 +94,11 @@ func (gs *Store) CacheWrapWithTrace(_ io.Writer, _ types.TraceContext) types.Cac
 	panic("cannot CacheWrapWithTrace a GasKVStore")
 }
 
+// CacheWrapWithListeners implements the CacheWrapper interface.
+func (gs *Store) CacheWrapWithListeners(_ types.StoreKey, _ []types.WriteListener) types.CacheWrap {
+	panic("cannot CacheWrapWithListeners a GasKVStore")
+}
+
 func (gs *Store) iterator(start, end []byte, ascending bool) types.Iterator {
 	var parent types.Iterator
 	if ascending {
@@ -108,9 +108,7 @@ func (gs *Store) iterator(start, end []byte, ascending bool) types.Iterator {
 	}
 
 	gi := newGasIterator(gs.gasMeter, gs.gasConfig, parent)
-	if gi.Valid() {
-		gi.(*gasIterator).consumeSeekGas()
-	}
+	gi.(*gasIterator).consumeSeekGas()
 
 	return gi
 }
@@ -143,10 +141,7 @@ func (gi *gasIterator) Valid() bool {
 // in the iterator. It incurs a flat gas cost for seeking and a variable gas
 // cost based on the current value's length if the iterator is valid.
 func (gi *gasIterator) Next() {
-	if gi.Valid() {
-		gi.consumeSeekGas()
-	}
-
+	gi.consumeSeekGas()
 	gi.parent.Next()
 }
 
@@ -174,11 +169,13 @@ func (gi *gasIterator) Error() error {
 	return gi.parent.Error()
 }
 
-// consumeSeekGas consumes a flat gas cost for seeking and a variable gas cost
+// consumeSeekGas consumes on each iteration step a flat gas cost and a variable gas cost
 // based on the current value's length.
 func (gi *gasIterator) consumeSeekGas() {
-	value := gi.Value()
+	if gi.Valid() {
+		value := gi.Value()
 
-	gi.gasMeter.ConsumeGas(gi.gasConfig.ReadCostPerByte*types.Gas(len(value)), types.GasValuePerByteDesc)
+		gi.gasMeter.ConsumeGas(gi.gasConfig.ReadCostPerByte*types.Gas(len(value)), types.GasValuePerByteDesc)
+	}
 	gi.gasMeter.ConsumeGas(gi.gasConfig.IterNextCostFlat, types.GasIterNextCostFlatDesc)
 }

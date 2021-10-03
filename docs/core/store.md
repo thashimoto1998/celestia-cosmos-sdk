@@ -8,11 +8,11 @@ A store is a data structure that holds the state of the application. {synopsis}
 
 ### Pre-requisite Readings
 
-- [Anatomy of an SDK application](../basics/app-anatomy.md) {prereq}
+- [Anatomy of a Cosmos SDK application](../basics/app-anatomy.md) {prereq}
 
-## Introduction to SDK Stores
+## Introduction to Cosmos SDK Stores
 
-The Cosmos SDK comes with a large set of stores to persist the state of applications. By default, the main store of SDK applications is a `multistore`, i.e. a store of stores. Developers can add any number of key-value stores to the multistore, depending on their application needs. The multistore exists to support the modularity of the Cosmos SDK, as it lets each module declare and manage their own subset of the state. Key-value stores in the multistore can only be accessed with a specific capability `key`, which is typically held in the [`keeper`](../building-modules/keeper.md) of the module that declared the store.
+The Cosmos SDK comes with a large set of stores to persist the state of applications. By default, the main store of Cosmos SDK applications is a `multistore`, i.e. a store of stores. Developers can add any number of key-value stores to the multistore, depending on their application needs. The multistore exists to support the modularity of the Cosmos SDK, as it lets each module declare and manage their own subset of the state. Key-value stores in the multistore can only be accessed with a specific capability `key`, which is typically held in the [`keeper`](../building-modules/keeper.md) of the module that declared the store.
 
 ```
 +-----------------------------------------------------+
@@ -56,11 +56,11 @@ The Cosmos SDK comes with a large set of stores to persist the state of applicat
 
 ### Store Interface
 
-At its very core, a Cosmos SDK `store` is an object that holds a `CacheWrapper` and has a `GetStoreType()` method: 
+At its very core, a Cosmos SDK `store` is an object that holds a `CacheWrapper` and has a `GetStoreType()` method:
 
 +++ https://github.com/cosmos/cosmos-sdk/blob/v0.40.0-rc6/store/types/store.go#L15-L18
 
-The `GetStoreType` is a simple method that returns the type of store, whereas a `CacheWrapper` is a simple interface that implements store read caching and write branching  through `Write` method:
+The `GetStoreType` is a simple method that returns the type of store, whereas a `CacheWrapper` is a simple interface that implements store read caching and write branching through `Write` method:
 
 +++ https://github.com/cosmos/cosmos-sdk/blob/v0.40.0-rc6/store/types/store.go#L240-L264
 
@@ -104,11 +104,11 @@ The `rootMulti.Store` is a base-layer multistore built around a `db` on top of w
 
 ### CacheMultiStore
 
-Whenever the `rootMulti.Store` needs to be branched, a [`cachemulti.Store`](https://github.com/cosmos/cosmos-sdk/blob/master/store/cachemulti/store.go) is used. 
+Whenever the `rootMulti.Store` needs to be branched, a [`cachemulti.Store`](https://github.com/cosmos/cosmos-sdk/blob/v0.42.1/store/cachemulti/store.go) is used.
 
 +++ https://github.com/cosmos/cosmos-sdk/blob/v0.40.0-rc6/store/cachemulti/store.go#L17-L28
 
-`cachemulti.Store` branches all substores (creates a virtual store for each substore) in its constructor and hold them in `Store.stores`. Moreover cachese all read queries. `Store.GetKVStore()` returns the store from `Store.stores`, and `Store.Write()` recursively calls `CacheWrap.Write()` on all the substores.
+`cachemulti.Store` branches all substores (creates a virtual store for each substore) in its constructor and hold them in `Store.stores`. Moreover caches all read queries. `Store.GetKVStore()` returns the store from `Store.stores`, and `Store.Write()` recursively calls `CacheWrap.Write()` on all the substores.
 
 ## Base-layer KVStores
 
@@ -180,7 +180,7 @@ This is the type used whenever an IAVL Store needs to be branched to create an i
 
 #### `Set`
 
-`Store.Set()` sets the key-value pair to the `Store.cache`. `cValue` has the field dirty bool which indicates whether the cached value is different from the underlying value. When `Store.Set()` cachees a new pair, the `cValue.dirty` is set `true` so when `Store.Write()` is called it can be written to the underlying store.
+`Store.Set()` sets the key-value pair to the `Store.cache`. `cValue` has the field dirty bool which indicates whether the cached value is different from the underlying value. When `Store.Set()` caches a new pair, the `cValue.dirty` is set `true` so when `Store.Write()` is called it can be written to the underlying store.
 
 #### `Iterator`
 

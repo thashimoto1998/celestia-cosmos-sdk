@@ -3,9 +3,9 @@ package staking_test
 import (
 	"testing"
 
-	abci "github.com/celestiaorg/celestia-core/abci/types"
-	tmproto "github.com/celestiaorg/celestia-core/proto/tendermint/types"
 	"github.com/stretchr/testify/require"
+	abci "github.com/tendermint/tendermint/abci/types"
+	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 
 	"github.com/cosmos/cosmos-sdk/simapp"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -40,8 +40,8 @@ func checkDelegation(
 }
 
 func TestStakingMsgs(t *testing.T) {
-	genTokens := sdk.TokensFromConsensusPower(42)
-	bondTokens := sdk.TokensFromConsensusPower(10)
+	genTokens := sdk.TokensFromConsensusPower(42, sdk.DefaultPowerReduction)
+	bondTokens := sdk.TokensFromConsensusPower(10, sdk.DefaultPowerReduction)
 	genCoin := sdk.NewCoin(sdk.DefaultBondDenom, genTokens)
 	bondCoin := sdk.NewCoin(sdk.DefaultBondDenom, bondTokens)
 
@@ -59,7 +59,7 @@ func TestStakingMsgs(t *testing.T) {
 		},
 	}
 
-	app := simapp.SetupWithGenesisAccounts(accs, balances...)
+	app := simapp.SetupWithGenesisAccounts(t, accs, balances...)
 	simapp.CheckBalance(t, app, addr1, sdk.Coins{genCoin})
 	simapp.CheckBalance(t, app, addr2, sdk.Coins{genCoin})
 

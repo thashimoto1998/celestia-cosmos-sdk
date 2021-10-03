@@ -7,10 +7,10 @@ import (
 	"testing"
 	"time"
 
-	abci "github.com/celestiaorg/celestia-core/abci/types"
-	cryptoenc "github.com/celestiaorg/celestia-core/crypto/encoding"
-	tmbytes "github.com/celestiaorg/celestia-core/libs/bytes"
-	tmproto "github.com/celestiaorg/celestia-core/proto/tendermint/types"
+	abci "github.com/tendermint/tendermint/abci/types"
+	cryptoenc "github.com/tendermint/tendermint/crypto/encoding"
+	tmbytes "github.com/tendermint/tendermint/libs/bytes"
+	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 )
 
 type mockValidator struct {
@@ -58,8 +58,6 @@ func (vals mockValidators) getKeys() []string {
 
 	return keys
 }
-
-//_________________________________________________________________________________
 
 // randomProposer picks a random proposer from the current validator set
 func (vals mockValidators) randomProposer(r *rand.Rand) tmbytes.HexBytes {

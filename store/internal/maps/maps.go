@@ -3,9 +3,9 @@ package maps
 import (
 	"encoding/binary"
 
-	"github.com/celestiaorg/celestia-core/crypto/merkle"
-	"github.com/celestiaorg/celestia-core/crypto/tmhash"
-	tmcrypto "github.com/celestiaorg/celestia-core/proto/tendermint/crypto"
+	"github.com/tendermint/tendermint/crypto/merkle"
+	"github.com/tendermint/tendermint/crypto/tmhash"
+	tmcrypto "github.com/tendermint/tendermint/proto/tendermint/crypto"
 
 	"github.com/cosmos/cosmos-sdk/types/kv"
 )

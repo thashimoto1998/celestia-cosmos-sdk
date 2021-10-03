@@ -1,7 +1,7 @@
 package genutil
 
 import (
-	abci "github.com/celestiaorg/celestia-core/abci/types"
+	abci "github.com/tendermint/tendermint/abci/types"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	sdk "github.com/cosmos/cosmos-sdk/types"

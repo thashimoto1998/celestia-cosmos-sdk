@@ -7,9 +7,9 @@ import (
 	"sort"
 	"strings"
 
-	abci "github.com/celestiaorg/celestia-core/abci/types"
 	"github.com/gogo/protobuf/jsonpb"
 	proto "github.com/gogo/protobuf/proto"
+	abci "github.com/tendermint/tendermint/abci/types"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 )
@@ -223,6 +223,12 @@ func toBytes(i interface{}) []byte {
 
 // Common event types and attribute keys
 var (
+	EventTypeTx = "tx"
+
+	AttributeKeyAccountSequence = "acc_seq"
+	AttributeKeySignature       = "signature"
+	AttributeKeyFee             = "fee"
+
 	EventTypeMessage = "message"
 
 	AttributeKeyAction = "action"

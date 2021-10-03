@@ -4,10 +4,10 @@ import (
 	"encoding/hex"
 	"fmt"
 
-	"github.com/celestiaorg/celestia-core/crypto"
-	"github.com/celestiaorg/celestia-core/crypto/armor"
-	"github.com/celestiaorg/celestia-core/crypto/xsalsa20symmetric"
 	"github.com/tendermint/crypto/bcrypt"
+	"github.com/tendermint/tendermint/crypto"
+	"github.com/tendermint/tendermint/crypto/armor"
+	"github.com/tendermint/tendermint/crypto/xsalsa20symmetric"
 
 	"github.com/cosmos/cosmos-sdk/codec/legacy"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
@@ -152,7 +152,7 @@ func encryptPrivKey(privKey cryptotypes.PrivKey, passphrase string) (saltBytes [
 	}
 
 	key = crypto.Sha256(key) // get 32 bytes
-	privKeyBytes := legacy.Cdc.MustMarshalBinaryBare(privKey)
+	privKeyBytes := legacy.Cdc.MustMarshal(privKey)
 
 	return saltBytes, xsalsa20symmetric.EncryptSymmetric(privKeyBytes, key)
 }

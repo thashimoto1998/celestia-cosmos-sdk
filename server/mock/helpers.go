@@ -5,8 +5,8 @@ import (
 	"io/ioutil"
 	"os"
 
-	abci "github.com/celestiaorg/celestia-core/abci/types"
-	"github.com/celestiaorg/celestia-core/libs/log"
+	abci "github.com/tendermint/tendermint/abci/types"
+	"github.com/tendermint/tendermint/libs/log"
 )
 
 // SetupApp returns an application as well as a clean-up function

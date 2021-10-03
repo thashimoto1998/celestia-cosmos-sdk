@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/celestiaorg/celestia-core/crypto/tmhash"
-	"github.com/celestiaorg/celestia-core/mempool"
-	"github.com/celestiaorg/celestia-core/rpc/client/mock"
-	ctypes "github.com/celestiaorg/celestia-core/rpc/core/types"
-	tmtypes "github.com/celestiaorg/celestia-core/types"
 	"github.com/stretchr/testify/require"
+	"github.com/tendermint/tendermint/crypto/tmhash"
+	"github.com/tendermint/tendermint/mempool"
+	"github.com/tendermint/tendermint/rpc/client/mock"
+	ctypes "github.com/tendermint/tendermint/rpc/core/types"
+	tmtypes "github.com/tendermint/tendermint/types"
 
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"

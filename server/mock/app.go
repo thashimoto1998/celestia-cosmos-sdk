@@ -6,14 +6,16 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"github.com/celestiaorg/celestia-core/types"
+	"github.com/tendermint/tendermint/types"
 
-	abci "github.com/celestiaorg/celestia-core/abci/types"
-	"github.com/celestiaorg/celestia-core/libs/log"
+	abci "github.com/tendermint/tendermint/abci/types"
+	"github.com/tendermint/tendermint/libs/log"
 
 	bam "github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"
+	"github.com/cosmos/cosmos-sdk/simapp"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/x/auth/middleware"
 )
 
 // NewApp creates a simple mock kvstore app for testing. It should work
@@ -37,7 +39,19 @@ func NewApp(rootDir string, logger log.Logger) (abci.Application, error) {
 	baseApp.SetInitChainer(InitChainer(capKeyMainStore))
 
 	// Set a Route.
-	baseApp.Router().AddRoute(sdk.NewRoute("kvstore", KVStoreHandler(capKeyMainStore)))
+	encCfg := simapp.MakeTestEncodingConfig()
+	legacyRouter := middleware.NewLegacyRouter()
+	// We're adding a test legacy route here, which accesses the kvstore
+	// and simply sets the Msg's key/value pair in the kvstore.
+	legacyRouter.AddRoute(sdk.NewRoute("kvstore", KVStoreHandler(capKeyMainStore)))
+	txHandler, err := middleware.NewDefaultTxHandler(middleware.TxHandlerOptions{
+		LegacyRouter:     legacyRouter,
+		MsgServiceRouter: middleware.NewMsgServiceRouter(encCfg.InterfaceRegistry),
+	})
+	if err != nil {
+		return nil, err
+	}
+	baseApp.SetTxHandler(txHandler)
 
 	// Load latest version.
 	if err := baseApp.LoadLatestVersion(); err != nil {

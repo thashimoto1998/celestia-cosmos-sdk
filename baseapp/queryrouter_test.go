@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	abci "github.com/celestiaorg/celestia-core/abci/types"
+	abci "github.com/tendermint/tendermint/abci/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )

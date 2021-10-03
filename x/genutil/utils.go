@@ -6,13 +6,13 @@ import (
 	"path/filepath"
 	"time"
 
-	cfg "github.com/celestiaorg/celestia-core/config"
-	tmed25519 "github.com/celestiaorg/celestia-core/crypto/ed25519"
-	tmos "github.com/celestiaorg/celestia-core/libs/os"
-	"github.com/celestiaorg/celestia-core/p2p"
-	"github.com/celestiaorg/celestia-core/privval"
-	tmtypes "github.com/celestiaorg/celestia-core/types"
 	"github.com/cosmos/go-bip39"
+	cfg "github.com/tendermint/tendermint/config"
+	tmed25519 "github.com/tendermint/tendermint/crypto/ed25519"
+	tmos "github.com/tendermint/tendermint/libs/os"
+	"github.com/tendermint/tendermint/p2p"
+	"github.com/tendermint/tendermint/privval"
+	tmtypes "github.com/tendermint/tendermint/types"
 
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
@@ -66,7 +66,7 @@ func InitializeNodeValidatorFilesFromMnemonic(config *cfg.Config, mnemonic strin
 		return "", nil, err
 	}
 
-	nodeID = string(nodeKey.ID)
+	nodeID = string(nodeKey.ID())
 
 	pvKeyFile := config.PrivValidatorKeyFile()
 	if err := tmos.EnsureDir(filepath.Dir(pvKeyFile), 0777); err != nil {
@@ -80,13 +80,11 @@ func InitializeNodeValidatorFilesFromMnemonic(config *cfg.Config, mnemonic strin
 
 	var filePV *privval.FilePV
 	if len(mnemonic) == 0 {
-		filePV, err = privval.LoadOrGenFilePV(pvKeyFile, pvStateFile)
-		if err != nil {
-			return "", nil, err
-		}
+		filePV = privval.LoadOrGenFilePV(pvKeyFile, pvStateFile)
 	} else {
 		privKey := tmed25519.GenPrivKeyFromSecret([]byte(mnemonic))
 		filePV = privval.NewFilePV(privKey, pvKeyFile, pvStateFile)
+		filePV.Save()
 	}
 
 	tmValPubKey, err := filePV.GetPubKey()

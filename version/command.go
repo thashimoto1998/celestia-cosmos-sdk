@@ -4,20 +4,20 @@ import (
 	"encoding/json"
 	"strings"
 
-	"github.com/celestiaorg/celestia-core/libs/cli"
 	"github.com/spf13/cobra"
-	yaml "gopkg.in/yaml.v2"
+	"github.com/tendermint/tendermint/libs/cli"
+	"sigs.k8s.io/yaml"
 )
 
 const flagLong = "long"
 
+// NewVersionCommand returns a CLI command to interactively print the application binary version information.
 func NewVersionCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "version",
 		Short: "Print the application binary version information",
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			verInfo := NewInfo()
-			cmd.SetOut(cmd.OutOrStdout())
 
 			if long, _ := cmd.Flags().GetBool(flagLong); !long {
 				cmd.Println(verInfo.Version)

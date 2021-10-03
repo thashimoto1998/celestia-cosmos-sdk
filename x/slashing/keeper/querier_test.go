@@ -5,8 +5,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	abci "github.com/celestiaorg/celestia-core/abci/types"
-	tmproto "github.com/celestiaorg/celestia-core/proto/tendermint/types"
+	abci "github.com/tendermint/tendermint/abci/types"
+	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/simapp"
@@ -16,7 +16,7 @@ import (
 )
 
 func TestNewQuerier(t *testing.T) {
-	app := simapp.Setup(false)
+	app := simapp.Setup(t, false)
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
 	app.SlashingKeeper.SetParams(ctx, testslashing.TestParams())
 	legacyQuerierCdc := codec.NewAminoCodec(app.LegacyAmino())
@@ -34,7 +34,7 @@ func TestNewQuerier(t *testing.T) {
 func TestQueryParams(t *testing.T) {
 	cdc := codec.NewLegacyAmino()
 	legacyQuerierCdc := codec.NewAminoCodec(cdc)
-	app := simapp.Setup(false)
+	app := simapp.Setup(t, false)
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
 	app.SlashingKeeper.SetParams(ctx, testslashing.TestParams())
 

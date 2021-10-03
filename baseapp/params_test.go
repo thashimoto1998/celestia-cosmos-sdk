@@ -3,9 +3,9 @@ package baseapp_test
 import (
 	"testing"
 
-	abci "github.com/celestiaorg/celestia-core/abci/types"
-	tmproto "github.com/celestiaorg/celestia-core/proto/tendermint/types"
 	"github.com/stretchr/testify/require"
+	abci "github.com/tendermint/tendermint/abci/types"
+	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
 )

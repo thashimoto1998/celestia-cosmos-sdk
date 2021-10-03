@@ -4,7 +4,7 @@ import (
 	"errors"
 	"strings"
 
-	abci "github.com/celestiaorg/celestia-core/abci/types"
+	abci "github.com/tendermint/tendermint/abci/types"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -444,7 +444,6 @@ func queryParameters(ctx sdk.Context, k Keeper, legacyQuerierCdc *codec.LegacyAm
 	return res, nil
 }
 
-//______________________________________________________
 // util
 
 func DelegationToDelegationResponse(ctx sdk.Context, k Keeper, del types.Delegation) (types.DelegationResponse, error) {

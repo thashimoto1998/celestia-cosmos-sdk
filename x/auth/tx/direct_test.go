@@ -83,7 +83,7 @@ func TestDirectModeHandler(t *testing.T) {
 		SignerInfos: signerInfo,
 	}
 
-	authInfoBytes := marshaler.MustMarshalBinaryBare(authInfo)
+	authInfoBytes := marshaler.MustMarshal(authInfo)
 
 	anys := make([]*codectypes.Any, len(msgs))
 
@@ -99,7 +99,7 @@ func TestDirectModeHandler(t *testing.T) {
 		Memo:     memo,
 		Messages: anys,
 	}
-	bodyBytes := marshaler.MustMarshalBinaryBare(txBody)
+	bodyBytes := marshaler.MustMarshal(txBody)
 
 	t.Log("verify GetSignBytes with generating sign bytes by marshaling SignDoc")
 	signDoc := txtypes.SignDoc{
@@ -131,6 +131,7 @@ func TestDirectModeHandler(t *testing.T) {
 
 func TestDirectModeHandler_nonDIRECT_MODE(t *testing.T) {
 	invalidModes := []signingtypes.SignMode{
+		signingtypes.SignMode_SIGN_MODE_DIRECT_JSON,
 		signingtypes.SignMode_SIGN_MODE_TEXTUAL,
 		signingtypes.SignMode_SIGN_MODE_LEGACY_AMINO_JSON,
 		signingtypes.SignMode_SIGN_MODE_UNSPECIFIED,

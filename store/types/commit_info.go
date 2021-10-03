@@ -3,8 +3,8 @@ package types
 import (
 	fmt "fmt"
 
-	tmcrypto "github.com/celestiaorg/celestia-core/proto/tendermint/crypto"
 	ics23 "github.com/confio/ics23/go"
+	tmcrypto "github.com/tendermint/tendermint/proto/tendermint/crypto"
 
 	sdkmaps "github.com/cosmos/cosmos-sdk/store/internal/maps"
 	sdkproofs "github.com/cosmos/cosmos-sdk/store/internal/proofs"

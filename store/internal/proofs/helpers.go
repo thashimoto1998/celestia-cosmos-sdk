@@ -3,8 +3,8 @@ package proofs
 import (
 	"sort"
 
-	"github.com/celestiaorg/celestia-core/libs/rand"
-	tmcrypto "github.com/celestiaorg/celestia-core/proto/tendermint/crypto"
+	"github.com/tendermint/tendermint/libs/rand"
+	tmcrypto "github.com/tendermint/tendermint/proto/tendermint/crypto"
 
 	sdkmaps "github.com/cosmos/cosmos-sdk/store/internal/maps"
 )
@@ -70,7 +70,7 @@ func GetKey(allkeys []string, loc Where) string {
 		return allkeys[len(allkeys)-1]
 	}
 	// select a random index between 1 and allkeys-2
-	idx := rand.NewRand().Int()%(len(allkeys)-2) + 1
+	idx := rand.Int()%(len(allkeys)-2) + 1
 	return allkeys[idx]
 }
 

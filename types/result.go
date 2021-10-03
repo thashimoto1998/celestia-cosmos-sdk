@@ -9,10 +9,10 @@ import (
 
 	"github.com/gogo/protobuf/proto"
 
-	yaml "gopkg.in/yaml.v2"
+	"sigs.k8s.io/yaml"
 
-	abci "github.com/celestiaorg/celestia-core/abci/types"
-	ctypes "github.com/celestiaorg/celestia-core/rpc/core/types"
+	abci "github.com/tendermint/tendermint/abci/types"
+	ctypes "github.com/tendermint/tendermint/rpc/core/types"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"

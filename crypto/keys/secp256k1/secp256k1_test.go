@@ -9,10 +9,10 @@ import (
 
 	btcSecp256k1 "github.com/btcsuite/btcd/btcec"
 	"github.com/btcsuite/btcutil/base58"
-	"github.com/celestiaorg/celestia-core/crypto"
-	tmsecp256k1 "github.com/celestiaorg/celestia-core/crypto/secp256k1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/tendermint/tendermint/crypto"
+	tmsecp256k1 "github.com/tendermint/tendermint/crypto/secp256k1"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
@@ -247,11 +247,11 @@ func TestMarshalAmino(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.desc, func(t *testing.T) {
 			// Do a round trip of encoding/decoding binary.
-			bz, err := aminoCdc.MarshalBinaryBare(tc.msg)
+			bz, err := aminoCdc.Marshal(tc.msg)
 			require.NoError(t, err)
 			require.Equal(t, tc.expBinary, bz)
 
-			err = aminoCdc.UnmarshalBinaryBare(bz, tc.typ)
+			err = aminoCdc.Unmarshal(bz, tc.typ)
 			require.NoError(t, err)
 
 			require.Equal(t, tc.msg, tc.typ)
@@ -288,7 +288,7 @@ func TestMarshalAmino_BackwardsCompatibility(t *testing.T) {
 			"secp256k1 private key, binary",
 			tmPrivKey,
 			privKey,
-			aminoCdc.MarshalBinaryBare,
+			aminoCdc.Marshal,
 		},
 		{
 			"secp256k1 private key, JSON",
@@ -300,7 +300,7 @@ func TestMarshalAmino_BackwardsCompatibility(t *testing.T) {
 			"secp256k1 public key, binary",
 			tmPubKey,
 			pubKey,
-			aminoCdc.MarshalBinaryBare,
+			aminoCdc.Marshal,
 		},
 		{
 			"secp256k1 public key, JSON",

@@ -7,10 +7,10 @@ import (
 	"io/ioutil"
 	"os"
 
-	tmjson "github.com/celestiaorg/celestia-core/libs/json"
-	tmproto "github.com/celestiaorg/celestia-core/proto/tendermint/types"
-	tmtypes "github.com/celestiaorg/celestia-core/types"
 	"github.com/spf13/cobra"
+	tmjson "github.com/tendermint/tendermint/libs/json"
+	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
+	tmtypes "github.com/tendermint/tendermint/types"
 
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/server/types"
@@ -109,8 +109,7 @@ func ExportCmd(appExporter types.AppExporter, defaultNodeHome string) *cobra.Com
 			return nil
 		},
 	}
-	cmd.SetOut(cmd.OutOrStdout())
-	cmd.SetErr(cmd.ErrOrStderr())
+
 	cmd.Flags().String(flags.FlagHome, defaultNodeHome, "The application home directory")
 	cmd.Flags().Int64(FlagHeight, -1, "Export state from a particular height (-1 means latest height)")
 	cmd.Flags().Bool(FlagForZeroHeight, false, "Export state to start at height zero (perform preproccessing)")

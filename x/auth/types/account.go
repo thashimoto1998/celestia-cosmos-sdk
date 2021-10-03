@@ -7,9 +7,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/celestiaorg/celestia-core/crypto"
 	"github.com/gogo/protobuf/proto"
-	"gopkg.in/yaml.v2"
+	"github.com/tendermint/tendermint/crypto"
+	"sigs.k8s.io/yaml"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
@@ -48,6 +48,7 @@ func ProtoBaseAccount() AccountI {
 }
 
 // NewBaseAccountWithAddress - returns a new base account with a given address
+// leaving AccountNumber and Sequence to zero.
 func NewBaseAccountWithAddress(addr sdk.AccAddress) *BaseAccount {
 	return &BaseAccount{
 		Address: addr.String(),
@@ -236,12 +237,12 @@ func (ma ModuleAccount) Validate() error {
 }
 
 type moduleAccountPretty struct {
-	Address       sdk.AccAddress `json:"address" yaml:"address"`
-	PubKey        string         `json:"public_key" yaml:"public_key"`
-	AccountNumber uint64         `json:"account_number" yaml:"account_number"`
-	Sequence      uint64         `json:"sequence" yaml:"sequence"`
-	Name          string         `json:"name" yaml:"name"`
-	Permissions   []string       `json:"permissions" yaml:"permissions"`
+	Address       sdk.AccAddress `json:"address"`
+	PubKey        string         `json:"public_key"`
+	AccountNumber uint64         `json:"account_number"`
+	Sequence      uint64         `json:"sequence"`
+	Name          string         `json:"name"`
+	Permissions   []string       `json:"permissions"`
 }
 
 func (ma ModuleAccount) String() string {

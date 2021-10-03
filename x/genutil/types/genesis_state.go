@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 
-	tmos "github.com/celestiaorg/celestia-core/libs/os"
-	tmtypes "github.com/celestiaorg/celestia-core/types"
+	tmos "github.com/tendermint/tendermint/libs/os"
+	tmtypes "github.com/tendermint/tendermint/types"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -46,7 +46,7 @@ func NewGenesisStateFromTx(txJSONEncoder sdk.TxEncoder, genTxs []sdk.Tx) *Genesi
 }
 
 // GetGenesisStateFromAppState gets the genutil genesis state from the expected app state
-func GetGenesisStateFromAppState(cdc codec.JSONMarshaler, appState map[string]json.RawMessage) *GenesisState {
+func GetGenesisStateFromAppState(cdc codec.JSONCodec, appState map[string]json.RawMessage) *GenesisState {
 	var genesisState GenesisState
 	if appState[ModuleName] != nil {
 		cdc.MustUnmarshalJSON(appState[ModuleName], &genesisState)
@@ -56,7 +56,7 @@ func GetGenesisStateFromAppState(cdc codec.JSONMarshaler, appState map[string]js
 
 // SetGenesisStateInAppState sets the genutil genesis state within the expected app state
 func SetGenesisStateInAppState(
-	cdc codec.JSONMarshaler, appState map[string]json.RawMessage, genesisState *GenesisState,
+	cdc codec.JSONCodec, appState map[string]json.RawMessage, genesisState *GenesisState,
 ) map[string]json.RawMessage {
 
 	genesisStateBz := cdc.MustMarshalJSON(genesisState)
@@ -69,7 +69,6 @@ func SetGenesisStateInAppState(
 //
 // NOTE: The pubkey input is this machines pubkey.
 func GenesisStateFromGenDoc(genDoc tmtypes.GenesisDoc) (genesisState map[string]json.RawMessage, err error) {
-
 	if err = json.Unmarshal(genDoc.AppState, &genesisState); err != nil {
 		return genesisState, err
 	}

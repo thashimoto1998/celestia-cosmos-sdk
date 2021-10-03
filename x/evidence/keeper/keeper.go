@@ -3,8 +3,8 @@ package keeper
 import (
 	"fmt"
 
-	tmbytes "github.com/celestiaorg/celestia-core/libs/bytes"
-	"github.com/celestiaorg/celestia-core/libs/log"
+	tmbytes "github.com/tendermint/tendermint/libs/bytes"
+	"github.com/tendermint/tendermint/libs/log"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
@@ -18,7 +18,7 @@ import (
 // managing persistence, state transitions and query handling for the evidence
 // module.
 type Keeper struct {
-	cdc            codec.BinaryMarshaler
+	cdc            codec.BinaryCodec
 	storeKey       sdk.StoreKey
 	router         types.Router
 	stakingKeeper  types.StakingKeeper
@@ -26,7 +26,7 @@ type Keeper struct {
 }
 
 func NewKeeper(
-	cdc codec.BinaryMarshaler, storeKey sdk.StoreKey, stakingKeeper types.StakingKeeper,
+	cdc codec.BinaryCodec, storeKey sdk.StoreKey, stakingKeeper types.StakingKeeper,
 	slashingKeeper types.SlashingKeeper,
 ) *Keeper {
 

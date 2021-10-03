@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"path/filepath"
 
-	tmtypes "github.com/celestiaorg/celestia-core/types"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
+	tmtypes "github.com/tendermint/tendermint/types"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
@@ -27,7 +27,7 @@ func CollectGenTxsCmd(genBalIterator types.GenesisBalancesIterator, defaultNodeH
 			config := serverCtx.Config
 
 			clientCtx := client.GetClientContextFromCmd(cmd)
-			cdc := clientCtx.JSONMarshaler
+			cdc := clientCtx.Codec
 
 			config.SetRoot(clientCtx.HomeDir)
 

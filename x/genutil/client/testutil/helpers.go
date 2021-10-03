@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	tmcfg "github.com/celestiaorg/celestia-core/config"
-	"github.com/celestiaorg/celestia-core/libs/cli"
-	"github.com/celestiaorg/celestia-core/libs/log"
 	"github.com/spf13/viper"
+	tmcfg "github.com/tendermint/tendermint/config"
+	"github.com/tendermint/tendermint/libs/cli"
+	"github.com/tendermint/tendermint/libs/log"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -17,7 +17,7 @@ import (
 	genutilcli "github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
 )
 
-func ExecInitCmd(testMbm module.BasicManager, home string, cdc codec.JSONMarshaler) error {
+func ExecInitCmd(testMbm module.BasicManager, home string, cdc codec.Codec) error {
 	logger := log.NewNopLogger()
 	cfg, err := CreateDefaultTendermintConfig(home)
 	if err != nil {
@@ -26,7 +26,7 @@ func ExecInitCmd(testMbm module.BasicManager, home string, cdc codec.JSONMarshal
 
 	cmd := genutilcli.InitCmd(testMbm, home)
 	serverCtx := server.NewContext(viper.New(), cfg, logger)
-	clientCtx := client.Context{}.WithJSONMarshaler(cdc).WithHomeDir(home)
+	clientCtx := client.Context{}.WithCodec(cdc).WithHomeDir(home)
 
 	_, out := testutil.ApplyMockIO(cmd)
 	clientCtx = clientCtx.WithOutput(out)

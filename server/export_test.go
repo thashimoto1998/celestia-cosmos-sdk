@@ -13,11 +13,11 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/require"
 
-	abci "github.com/celestiaorg/celestia-core/abci/types"
-	tmjson "github.com/celestiaorg/celestia-core/libs/json"
-	"github.com/celestiaorg/celestia-core/libs/log"
-	tmproto "github.com/celestiaorg/celestia-core/proto/tendermint/types"
-	tmtypes "github.com/celestiaorg/celestia-core/types"
+	abci "github.com/tendermint/tendermint/abci/types"
+	tmjson "github.com/tendermint/tendermint/libs/json"
+	"github.com/tendermint/tendermint/libs/log"
+	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
+	tmtypes "github.com/tendermint/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
 
 	"github.com/cosmos/cosmos-sdk/client"
@@ -135,8 +135,8 @@ func setupApp(t *testing.T, tempDir string) (*simapp.SimApp, context.Context, *t
 	serverCtx := server.NewDefaultContext()
 	serverCtx.Config.RootDir = tempDir
 
-	clientCtx := client.Context{}.WithJSONMarshaler(app.AppCodec())
-	genDoc := newDefaultGenesisDoc(encCfg.Marshaler)
+	clientCtx := client.Context{}.WithCodec(app.AppCodec())
+	genDoc := newDefaultGenesisDoc(encCfg.Codec)
 
 	require.NoError(t, saveGenesisFile(genDoc, serverCtx.Config.GenesisFile()))
 	app.InitChain(
@@ -177,7 +177,7 @@ func createConfigFolder(dir string) error {
 	return os.Mkdir(path.Join(dir, "config"), 0700)
 }
 
-func newDefaultGenesisDoc(cdc codec.Marshaler) *tmtypes.GenesisDoc {
+func newDefaultGenesisDoc(cdc codec.Codec) *tmtypes.GenesisDoc {
 	genesisState := simapp.NewDefaultGenesisState(cdc)
 
 	stateBytes, err := json.MarshalIndent(genesisState, "", "  ")

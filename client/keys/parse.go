@@ -1,16 +1,15 @@
 package keys
 
 import (
-	"context"
 	"encoding/hex"
 	"errors"
 	"fmt"
 	"io"
 	"strings"
 
-	"github.com/celestiaorg/celestia-core/libs/cli"
 	"github.com/spf13/cobra"
-	yaml "gopkg.in/yaml.v2"
+	"github.com/tendermint/tendermint/libs/cli"
+	"sigs.k8s.io/yaml"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/bech32"
@@ -86,7 +85,7 @@ hexadecimal into bech32 cosmos prefixed format and vice versa.
 }
 
 func parseKey(cmd *cobra.Command, args []string) error {
-	config, _ := sdk.GetSealedConfig(context.Background())
+	config, _ := sdk.GetSealedConfig(cmd.Context())
 	return doParseKey(cmd, config, args)
 }
 

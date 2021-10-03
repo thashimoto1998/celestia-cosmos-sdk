@@ -1,9 +1,9 @@
 package types
 
 import (
-	"github.com/celestiaorg/celestia-core/crypto/merkle"
-	tmmerkle "github.com/celestiaorg/celestia-core/proto/tendermint/crypto"
 	ics23 "github.com/confio/ics23/go"
+	"github.com/tendermint/tendermint/crypto/merkle"
+	tmmerkle "github.com/tendermint/tendermint/proto/tendermint/crypto"
 
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )

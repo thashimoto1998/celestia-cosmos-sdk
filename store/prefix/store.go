@@ -6,6 +6,7 @@ import (
 	"io"
 
 	"github.com/cosmos/cosmos-sdk/store/cachekv"
+	"github.com/cosmos/cosmos-sdk/store/listenkv"
 	"github.com/cosmos/cosmos-sdk/store/tracekv"
 	"github.com/cosmos/cosmos-sdk/store/types"
 )
@@ -55,6 +56,11 @@ func (s Store) CacheWrap() types.CacheWrap {
 // CacheWrapWithTrace implements the KVStore interface.
 func (s Store) CacheWrapWithTrace(w io.Writer, tc types.TraceContext) types.CacheWrap {
 	return cachekv.NewStore(tracekv.NewStore(s, w, tc))
+}
+
+// CacheWrapWithListeners implements the CacheWrapper interface.
+func (s Store) CacheWrapWithListeners(storeKey types.StoreKey, listeners []types.WriteListener) types.CacheWrap {
+	return cachekv.NewStore(listenkv.NewStore(s, storeKey, listeners))
 }
 
 // Implements KVStore
@@ -192,7 +198,7 @@ func (pi *prefixIterator) Error() error {
 	return nil
 }
 
-// copied from github.com/celestiaorg/celestia-core/libs/db/prefix_db.go
+// copied from github.com/tendermint/tendermint/libs/db/prefix_db.go
 func stripPrefix(key []byte, prefix []byte) []byte {
 	if len(key) < len(prefix) || !bytes.Equal(key[:len(prefix)], prefix) {
 		panic("should not happen")

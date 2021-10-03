@@ -1,8 +1,8 @@
 package keys
 
 import (
-	"github.com/celestiaorg/celestia-core/libs/cli"
 	"github.com/spf13/cobra"
+	"github.com/tendermint/tendermint/libs/cli"
 
 	"github.com/cosmos/cosmos-sdk/client/flags"
 )
@@ -44,8 +44,8 @@ The pass backend requires GnuPG: https://gnupg.org/
 		ImportKeyCommand(),
 		ListKeysCmd(),
 		ShowKeysCmd(),
-		flags.LineBreak,
 		DeleteKeyCommand(),
+		RenameKeyCommand(),
 		ParseKeyStringCommand(),
 		MigrateCommand(),
 	)

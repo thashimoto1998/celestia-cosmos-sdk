@@ -4,13 +4,14 @@ import (
 	"encoding/json"
 	"testing"
 
-	abci "github.com/celestiaorg/celestia-core/abci/types"
-	"github.com/celestiaorg/celestia-core/libs/log"
-	tmproto "github.com/celestiaorg/celestia-core/proto/tendermint/types"
 	"github.com/stretchr/testify/require"
+	abci "github.com/tendermint/tendermint/abci/types"
+	"github.com/tendermint/tendermint/libs/log"
+	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
 
 	"github.com/cosmos/cosmos-sdk/simapp"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
@@ -19,7 +20,7 @@ import (
 )
 
 func TestImportExportQueues(t *testing.T) {
-	app := simapp.Setup(false)
+	app := simapp.Setup(t, false)
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
 	addrs := simapp.AddTestAddrs(app, ctx, 2, valTokens)
 
@@ -111,8 +112,29 @@ func TestImportExportQueues(t *testing.T) {
 	require.True(t, proposal2.Status == types.StatusRejected)
 }
 
+func TestImportExportQueues_ErrorUnconsistentState(t *testing.T) {
+	app := simapp.Setup(t, false)
+	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
+	require.Panics(t, func() {
+		gov.InitGenesis(ctx, app.AccountKeeper, app.BankKeeper, app.GovKeeper, &types.GenesisState{
+			Deposits: types.Deposits{
+				{
+					ProposalId: 1234,
+					Depositor:  "me",
+					Amount: sdk.Coins{
+						sdk.NewCoin(
+							"stake",
+							sdk.NewInt(1234),
+						),
+					},
+				},
+			},
+		})
+	})
+}
+
 func TestEqualProposals(t *testing.T) {
-	app := simapp.Setup(false)
+	app := simapp.Setup(t, false)
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
 	addrs := simapp.AddTestAddrs(app, ctx, 2, valTokens)
 

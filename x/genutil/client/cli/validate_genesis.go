@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	tmtypes "github.com/celestiaorg/celestia-core/types"
 	"github.com/spf13/cobra"
+	tmtypes "github.com/tendermint/tendermint/types"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/server"
@@ -24,7 +24,7 @@ func ValidateGenesisCmd(mbm module.BasicManager) *cobra.Command {
 			serverCtx := server.GetServerContextFromCmd(cmd)
 			clientCtx := client.GetClientContextFromCmd(cmd)
 
-			cdc := clientCtx.JSONMarshaler
+			cdc := clientCtx.Codec
 
 			// Load default if passed no args, otherwise load passed file
 			var genesis string

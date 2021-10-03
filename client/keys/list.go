@@ -1,7 +1,6 @@
 package keys
 
 import (
-	"github.com/celestiaorg/celestia-core/libs/cli"
 	"github.com/spf13/cobra"
 
 	"github.com/cosmos/cosmos-sdk/client"
@@ -29,21 +28,18 @@ func runListCmd(cmd *cobra.Command, _ []string) error {
 		return err
 	}
 
-	infos, err := clientCtx.Keyring.List()
+	records, err := clientCtx.Keyring.List()
 	if err != nil {
 		return err
 	}
 
-	cmd.SetOut(cmd.OutOrStdout())
-
 	if ok, _ := cmd.Flags().GetBool(flagListNames); !ok {
-		output, _ := cmd.Flags().GetString(cli.OutputFlag)
-		printInfos(cmd.OutOrStdout(), infos, output)
+		printKeyringRecords(cmd.OutOrStdout(), records, clientCtx.OutputFormat)
 		return nil
 	}
 
-	for _, info := range infos {
-		cmd.Println(info.GetName())
+	for _, k := range records {
+		cmd.Println(k.Name)
 	}
 
 	return nil

@@ -3,7 +3,7 @@ package keeper
 import (
 	"fmt"
 
-	abci "github.com/celestiaorg/celestia-core/abci/types"
+	abci "github.com/tendermint/tendermint/abci/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/distribution/types"
@@ -11,9 +11,11 @@ import (
 )
 
 // AllocateTokens handles distribution of the collected fees
+// bondedVotes is a list of (validator address, validator voted on last block flag) for all
+// validators in the bonded set.
 func (k Keeper) AllocateTokens(
 	ctx sdk.Context, sumPreviousPrecommitPower, totalPreviousPower int64,
-	previousProposer sdk.ConsAddress, previousVotes []abci.VoteInfo,
+	previousProposer sdk.ConsAddress, bondedVotes []abci.VoteInfo,
 ) {
 
 	logger := k.Logger(ctx)
@@ -83,7 +85,7 @@ func (k Keeper) AllocateTokens(
 
 	// allocate tokens proportionally to voting power
 	// TODO consider parallelizing later, ref https://github.com/cosmos/cosmos-sdk/pull/3099#discussion_r246276376
-	for _, vote := range previousVotes {
+	for _, vote := range bondedVotes {
 		validator := k.stakingKeeper.ValidatorByConsAddr(ctx, vote.Validator.Address)
 
 		// TODO consider microslashing for missing votes.

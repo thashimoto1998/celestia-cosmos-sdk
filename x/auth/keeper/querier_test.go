@@ -8,7 +8,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	abci "github.com/celestiaorg/celestia-core/abci/types"
+	abci "github.com/tendermint/tendermint/abci/types"
 
 	"github.com/cosmos/cosmos-sdk/testutil/testdata"
 	keep "github.com/cosmos/cosmos-sdk/x/auth/keeper"
@@ -16,7 +16,7 @@ import (
 )
 
 func TestQueryAccount(t *testing.T) {
-	app, ctx := createTestApp(true)
+	app, ctx := createTestApp(t, true)
 	legacyQuerierCdc := codec.NewAminoCodec(app.LegacyAmino())
 
 	req := abci.RequestQuery{

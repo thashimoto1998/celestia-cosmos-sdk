@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 
-	abci "github.com/celestiaorg/celestia-core/abci/types"
-	tmproto "github.com/celestiaorg/celestia-core/proto/tendermint/types"
+	abci "github.com/tendermint/tendermint/abci/types"
+	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )

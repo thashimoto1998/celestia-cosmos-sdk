@@ -1,7 +1,7 @@
 package rootmulti
 
 import (
-	"github.com/celestiaorg/celestia-core/crypto/merkle"
+	"github.com/tendermint/tendermint/crypto/merkle"
 
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 )
