@@ -37,7 +37,7 @@ func (suite *HandlerTestSuite) TestMsgCreateVestingAccount() {
 
 	acc1 := suite.app.AccountKeeper.NewAccountWithAddress(ctx, addr1)
 	suite.app.AccountKeeper.SetAccount(ctx, acc1)
-	suite.Require().NoError(simapp.FundAccount(suite.app, ctx, addr1, balances))
+	suite.Require().NoError(simapp.FundAccount(suite.app.BankKeeper, ctx, addr1, balances))
 
 	testCases := []struct {
 		name      string
@@ -102,7 +102,7 @@ func (suite *HandlerTestSuite) TestMsgCreatePeriodicVestingAccount() {
 
 	period := []types.Period{{Length: 5000, Amount: balances}}
 	suite.app.AccountKeeper.SetAccount(ctx, acc1)
-	suite.Require().NoError(simapp.FundAccount(suite.app, ctx, addr1, balances))
+	suite.Require().NoError(simapp.FundAccount(suite.app.BankKeeper, ctx, addr1, balances))
 
 	testCases := []struct {
 		name      string
@@ -110,8 +110,33 @@ func (suite *HandlerTestSuite) TestMsgCreatePeriodicVestingAccount() {
 		expectErr bool
 	}{
 		{
-			name:      "continuous vesting account already exists",
+			name:      "create periodic vesting account",
 			msg:       types.NewMsgCreatePeriodicVestingAccount(addr1, addr3, 0, period),
+			expectErr: false,
+		},
+		{
+			name: "bad from addr",
+			msg: &types.MsgCreatePeriodicVestingAccount{
+				FromAddress:    "foo",
+				ToAddress:      addr3.String(),
+				StartTime:      0,
+				VestingPeriods: period,
+			},
+			expectErr: true,
+		},
+		{
+			name: "bad to addr",
+			msg: &types.MsgCreatePeriodicVestingAccount{
+				FromAddress:    addr1.String(),
+				ToAddress:      "foo",
+				StartTime:      0,
+				VestingPeriods: period,
+			},
+			expectErr: true,
+		},
+		{
+			name:      "account exists",
+			msg:       types.NewMsgCreatePeriodicVestingAccount(addr1, addr1, 0, period),
 			expectErr: true,
 		},
 	}
@@ -128,9 +153,18 @@ func (suite *HandlerTestSuite) TestMsgCreatePeriodicVestingAccount() {
 				suite.Require().NotNil(res)
 
 				toAddr, err := sdk.AccAddressFromBech32(tc.msg.ToAddress)
+
 				suite.Require().NoError(err)
+				fromAddr, err := sdk.AccAddressFromBech32(tc.msg.FromAddress)
+				suite.Require().NoError(err)
+
 				accI := suite.app.AccountKeeper.GetAccount(ctx, toAddr)
 				suite.Require().NotNil(accI)
+				suite.Require().IsType(&types.PeriodicVestingAccount{}, accI)
+				balanceSource := suite.app.BankKeeper.GetBalance(ctx, fromAddr, "test")
+				suite.Require().Equal(balanceSource, sdk.NewInt64Coin("test", 0))
+				balanceDest := suite.app.BankKeeper.GetBalance(ctx, toAddr, "test")
+				suite.Require().Equal(balanceDest, sdk.NewInt64Coin("test", 1000))
 
 			}
 		})

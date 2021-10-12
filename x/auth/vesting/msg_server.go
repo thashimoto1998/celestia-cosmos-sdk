@@ -99,7 +99,7 @@ func (s msgServer) CreateVestingAccount(goCtx context.Context, msg *types.MsgCre
 	return &types.MsgCreateVestingAccountResponse{}, nil
 }
 
-func (s msgServer) CreatePeriodicVestingAccount(goCtx context.Context, msg *types.MsgCreatePeriodicVestingAccount) (*types.MsgCreateVestingAccountResponse, error) {
+func (s msgServer) CreatePeriodicVestingAccount(goCtx context.Context, msg *types.MsgCreatePeriodicVestingAccount) (*types.MsgCreatePeriodicVestingAccountResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	ak := s.AccountKeeper
@@ -125,12 +125,28 @@ func (s msgServer) CreatePeriodicVestingAccount(goCtx context.Context, msg *type
 	var totalCoins sdk.Coins
 
 	for _, period := range msg.VestingPeriods {
-		totalCoins.Add(period.Amount...)
+		totalCoins = totalCoins.Add(period.Amount...)
 	}
 
 	baseAccount := ak.NewAccountWithAddress(ctx, to)
 
-	types.NewPeriodicVestingAccount(baseAccount.(*authtypes.BaseAccount), totalCoins.Sort(), msg.StartTime, msg.VestingPeriods)
+	acc := types.NewPeriodicVestingAccount(baseAccount.(*authtypes.BaseAccount), totalCoins.Sort(), msg.StartTime, msg.VestingPeriods)
+
+	ak.SetAccount(ctx, acc)
+
+	defer func() {
+		telemetry.IncrCounter(1, "new", "account")
+
+		for _, a := range totalCoins {
+			if a.Amount.IsInt64() {
+				telemetry.SetGaugeWithLabels(
+					[]string{"tx", "msg", "create_periodic_vesting_account"},
+					float32(a.Amount.Int64()),
+					[]metrics.Label{telemetry.NewLabel("denom", a.Denom)},
+				)
+			}
+		}
+	}()
 
 	err = bk.SendCoins(ctx, from, to, totalCoins)
 	if err != nil {
@@ -143,6 +159,6 @@ func (s msgServer) CreatePeriodicVestingAccount(goCtx context.Context, msg *type
 			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
 		),
 	)
-	return &types.MsgCreateVestingAccountResponse{}, nil
+	return &types.MsgCreatePeriodicVestingAccountResponse{}, nil
 
 }
