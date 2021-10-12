@@ -272,9 +272,11 @@ func startInProcess(ctx *Context, clientCtx client.Context, appCreator types.App
 	if err != nil {
 		return err
 	}
+	nodeConfig := opticonv.GetNodeConfig(cfg)
+	nodeConfig.DALayer = "grpc"
 	tmNode, err := optinode.NewNode(
 		context.Background(),
-		opticonv.GetNodeConfig(cfg),
+		nodeConfig,
 		oNodeKey,
 		proxy.NewLocalClientCreator(app),
 		genesis,
