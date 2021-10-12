@@ -274,6 +274,8 @@ func startInProcess(ctx *Context, clientCtx client.Context, appCreator types.App
 	}
 	nodeConfig := opticonv.GetNodeConfig(cfg)
 	nodeConfig.DALayer = "grpc"
+	nodeConfig.Aggregator = true
+	nodeConfig.BlockTime = 60*time.Second
 	err = opticonv.TranslateAddresses(&nodeConfig)
 	if err != nil {
 		return err
