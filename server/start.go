@@ -273,8 +273,14 @@ func startInProcess(ctx *Context, clientCtx client.Context, appCreator types.App
 		return err
 	}
 	nodeConfig := opticonv.GetNodeConfig(cfg)
+	err = opticonv.TranslateAddresses(&nodeConfig)
+	if err != nil {
+		return err
+	}
 	nodeConfig.DALayer = "grpc"
-	nodeConfig.Aggregator = true
+	if cfg.Moniker == "aggregator" {
+		nodeConfig.Aggregator = true
+	}
 	nodeConfig.BlockTime = 15*time.Second
 	err = opticonv.TranslateAddresses(&nodeConfig)
 	if err != nil {
