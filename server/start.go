@@ -281,11 +281,7 @@ func startInProcess(ctx *Context, clientCtx client.Context, appCreator types.App
 	if cfg.Moniker == "aggregator" {
 		nodeConfig.Aggregator = true
 	}
-	nodeConfig.BlockTime = 15*time.Second
-	err = opticonv.TranslateAddresses(&nodeConfig)
-	if err != nil {
-		return err
-	}
+	nodeConfig.BlockTime = 15 * time.Second
 	tmNode, err := optinode.NewNode(
 		context.Background(),
 		nodeConfig,
