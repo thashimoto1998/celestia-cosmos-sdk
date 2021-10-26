@@ -8,6 +8,7 @@ require (
 	github.com/bgentry/speakeasy v0.1.0
 	github.com/btcsuite/btcd v0.22.0-beta
 	github.com/btcsuite/btcutil v1.0.3-0.20201208143702-a53e38424cce
+	github.com/celestiaorg/optimint v0.0.0-20211022154858-39ffb65790ea
 	github.com/coinbase/rosetta-sdk-go v0.6.10
 	github.com/confio/ics23/go v0.6.6
 	github.com/cosmos/go-bip39 v1.0.0
@@ -26,16 +27,13 @@ require (
 	github.com/hdevalence/ed25519consensus v0.0.0-20210204194344-59a8610d2b87
 	github.com/improbable-eng/grpc-web v0.14.1
 	github.com/jhump/protoreflect v1.9.0
-	github.com/kr/text v0.2.0 // indirect
 	github.com/lib/pq v1.10.2 // indirect
 	github.com/magiconair/properties v1.8.5
 	github.com/mattn/go-isatty v0.0.14
-	github.com/onsi/ginkgo v1.16.4 // indirect
-	github.com/onsi/gomega v1.13.0 // indirect
 	github.com/otiai10/copy v1.6.0
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.11.0
-	github.com/prometheus/common v0.29.0
+	github.com/prometheus/common v0.30.0
 	github.com/rakyll/statik v0.1.7
 	github.com/regen-network/cosmos-proto v0.3.1
 	github.com/rs/zerolog v1.23.0
@@ -49,9 +47,9 @@ require (
 	github.com/tendermint/go-amino v0.16.0
 	github.com/tendermint/tendermint v0.34.14
 	github.com/tendermint/tm-db v0.6.4
-	golang.org/x/crypto v0.0.0-20210513164829-c07d793c2f9a
-	google.golang.org/genproto v0.0.0-20210602131652-f16073e35f0c
-	google.golang.org/grpc v1.40.0
+	golang.org/x/crypto v0.0.0-20210813211128-0a44fdfbc16e
+	google.golang.org/genproto v0.0.0-20210830153122-0bac4d21c8ea
+	google.golang.org/grpc v1.41.0
 	google.golang.org/protobuf v1.27.1
 	gopkg.in/yaml.v2 v2.4.0
 )
