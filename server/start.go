@@ -33,6 +33,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/server/types"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 
+	opticonf "github.com/celestiaorg/optimint/config"
 	opticonv "github.com/celestiaorg/optimint/conv"
 	optinode "github.com/celestiaorg/optimint/node"
 	"github.com/celestiaorg/optimint/rpcclient"
@@ -272,16 +273,13 @@ func startInProcess(ctx *Context, clientCtx client.Context, appCreator types.App
 	if err != nil {
 		return err
 	}
-	nodeConfig := opticonv.GetNodeConfig(cfg)
+	nodeConfig := opticonf.NodeConfig{}
+	nodeConfig.GetViperConfig(ctx.Viper)
+	opticonv.GetNodeConfig(&nodeConfig, cfg)
 	err = opticonv.TranslateAddresses(&nodeConfig)
 	if err != nil {
 		return err
 	}
-	nodeConfig.DALayer = "grpc"
-	if cfg.Moniker == "aggregator" {
-		nodeConfig.Aggregator = true
-	}
-	nodeConfig.BlockTime = 15 * time.Second
 	tmNode, err := optinode.NewNode(
 		context.Background(),
 		nodeConfig,
