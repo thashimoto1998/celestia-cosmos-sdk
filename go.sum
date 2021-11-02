@@ -175,6 +175,8 @@ github.com/celestiaorg/optimint v0.0.0-20211027181340-793cf6ba64cb h1:k6SojfnaF7
 github.com/celestiaorg/optimint v0.0.0-20211027181340-793cf6ba64cb/go.mod h1:w3BSwdRyGLCymAbdW7j5kdFXaGVC9uXq8xb2nsk4hiA=
 github.com/celestiaorg/optimint v0.0.0-20211028111520-a6ffe62e55dd h1:dD8oJ2+4skn233XllCRluj/kllgT7pY5zPCDf/odndQ=
 github.com/celestiaorg/optimint v0.0.0-20211028111520-a6ffe62e55dd/go.mod h1:w3BSwdRyGLCymAbdW7j5kdFXaGVC9uXq8xb2nsk4hiA=
+github.com/celestiaorg/optimint v0.0.0-20211102125240-b1c072efb230 h1:uBy/mssd0kyPX0y8NkmplIvbykpXJ7PDR/2e0qR1LLc=
+github.com/celestiaorg/optimint v0.0.0-20211102125240-b1c072efb230/go.mod h1:w3BSwdRyGLCymAbdW7j5kdFXaGVC9uXq8xb2nsk4hiA=
 github.com/cenkalti/backoff v2.2.1+incompatible h1:tNowT99t7UNflLxfYYSlKYsBpXdEet03Pg2g16Swow4=
 github.com/cenkalti/backoff v2.2.1+incompatible/go.mod h1:90ReRw6GdpyfrHakVjL/QHaoyV4aDUVVkXQJJJ3NXXM=
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=

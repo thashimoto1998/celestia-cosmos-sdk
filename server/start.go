@@ -171,6 +171,7 @@ which accepts a path for the resulting pprof file.
 
 	// add support for all Tendermint-specific command line options
 	tcmd.AddNodeFlags(cmd)
+	opticonf.AddFlags(cmd)
 	return cmd
 }
 
@@ -302,7 +303,7 @@ func startInProcess(ctx *Context, clientCtx client.Context, appCreator types.App
 	// service if API or gRPC is enabled, and avoid doing so in the general
 	// case, because it spawns a new local tendermint RPC client.
 	if config.API.Enable || config.GRPC.Enable {
-		clientCtx = clientCtx.WithClient(rpcclient.NewLocal(tmNode, cfg.RPC))
+		clientCtx = clientCtx.WithClient(rpcclient.NewLocal(tmNode))
 
 		app.RegisterTxService(clientCtx)
 		app.RegisterTendermintService(clientCtx)
