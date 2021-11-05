@@ -275,7 +275,10 @@ func startInProcess(ctx *Context, clientCtx client.Context, appCreator types.App
 		return err
 	}
 	nodeConfig := opticonf.NodeConfig{}
-	nodeConfig.GetViperConfig(ctx.Viper)
+	err = nodeConfig.GetViperConfig(ctx.Viper)
+	if err != nil {
+		return err
+	}
 	opticonv.GetNodeConfig(&nodeConfig, cfg)
 	err = opticonv.TranslateAddresses(&nodeConfig)
 	if err != nil {
