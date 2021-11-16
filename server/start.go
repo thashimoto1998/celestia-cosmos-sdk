@@ -296,7 +296,7 @@ func startInProcess(ctx *Context, clientCtx client.Context, appCreator types.App
 		return err
 	}
 
-	server := optirpc.NewServer(tmNode, cfg.RPC)
+	server := optirpc.NewServer(tmNode, cfg.RPC, ctx.Logger)
 	err = server.Start()
 	if err != nil {
 		return err
