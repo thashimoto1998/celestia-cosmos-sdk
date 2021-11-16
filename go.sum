@@ -181,6 +181,8 @@ github.com/celestiaorg/optimint v0.0.0-20211116145915-f5842c2d54ae h1:KkKUGC52VP
 github.com/celestiaorg/optimint v0.0.0-20211116145915-f5842c2d54ae/go.mod h1:OLuwV/ADWFeGZ2bJalbTB1VFM2ZpwFRAYzNfaiwE1QY=
 github.com/celestiaorg/optimint v0.0.0-20211116151336-3cfc2d948237 h1:NIakOwA09Z1F4WnT3LJHnRmqPvf/4utuBR/cHTZp6fc=
 github.com/celestiaorg/optimint v0.0.0-20211116151336-3cfc2d948237/go.mod h1:OLuwV/ADWFeGZ2bJalbTB1VFM2ZpwFRAYzNfaiwE1QY=
+github.com/celestiaorg/optimint v0.0.0-20211116155141-22f71f758ad7 h1:UWp2vP8RU0r2tXPxhmI2YQOj1iFgSN6a/Rt6ZmxPwz4=
+github.com/celestiaorg/optimint v0.0.0-20211116155141-22f71f758ad7/go.mod h1:OLuwV/ADWFeGZ2bJalbTB1VFM2ZpwFRAYzNfaiwE1QY=
 github.com/cenkalti/backoff v2.2.1+incompatible h1:tNowT99t7UNflLxfYYSlKYsBpXdEet03Pg2g16Swow4=
 github.com/cenkalti/backoff v2.2.1+incompatible/go.mod h1:90ReRw6GdpyfrHakVjL/QHaoyV4aDUVVkXQJJJ3NXXM=
 github.com/cenkalti/backoff/v4 v4.1.1/go.mod h1:scbssz8iZGpm3xbr14ovlUdkxfGXNInqkPWOWmG2CLw=
