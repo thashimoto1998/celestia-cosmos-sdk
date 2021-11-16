@@ -36,7 +36,7 @@ import (
 	opticonf "github.com/celestiaorg/optimint/config"
 	opticonv "github.com/celestiaorg/optimint/conv"
 	optinode "github.com/celestiaorg/optimint/node"
-	"github.com/celestiaorg/optimint/rpcclient"
+	optirpc "github.com/celestiaorg/optimint/rpc"
 )
 
 // Tendermint full-node start flags
@@ -296,6 +296,12 @@ func startInProcess(ctx *Context, clientCtx client.Context, appCreator types.App
 		return err
 	}
 
+	server := optirpc.NewServer(tmNode, cfg.RPC)
+	err = server.Start()
+	if err != nil {
+		return err
+	}
+
 	ctx.Logger.Debug("initialization: tmNode created")
 	if err := tmNode.Start(); err != nil {
 		return err
@@ -306,7 +312,7 @@ func startInProcess(ctx *Context, clientCtx client.Context, appCreator types.App
 	// service if API or gRPC is enabled, and avoid doing so in the general
 	// case, because it spawns a new local tendermint RPC client.
 	if config.API.Enable || config.GRPC.Enable {
-		clientCtx = clientCtx.WithClient(rpcclient.NewLocal(tmNode))
+		clientCtx = clientCtx.WithClient(server.Client())
 
 		app.RegisterTxService(clientCtx)
 		app.RegisterTendermintService(clientCtx)
