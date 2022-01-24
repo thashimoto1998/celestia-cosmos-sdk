@@ -14,19 +14,22 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth/vesting/types"
 )
 
+// msgServer holds the state to serve vesting messages.
 type msgServer struct {
 	keeper.AccountKeeper
 	types.BankKeeper
+	types.StakingKeeper
 }
 
 // NewMsgServerImpl returns an implementation of the vesting MsgServer interface,
-// wrapping the corresponding AccountKeeper and BankKeeper.
-func NewMsgServerImpl(k keeper.AccountKeeper, bk types.BankKeeper) types.MsgServer {
-	return &msgServer{AccountKeeper: k, BankKeeper: bk}
+// wrapping the corresponding keepers.
+func NewMsgServerImpl(k keeper.AccountKeeper, bk types.BankKeeper, sk types.StakingKeeper) types.MsgServer {
+	return &msgServer{AccountKeeper: k, BankKeeper: bk, StakingKeeper: sk}
 }
 
 var _ types.MsgServer = msgServer{}
 
+// CreateVestingAccount creates a new delayed or continuous vesting account.
 func (s msgServer) CreateVestingAccount(goCtx context.Context, msg *types.MsgCreateVestingAccount) (*types.MsgCreateVestingAccountResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	ak := s.AccountKeeper
@@ -99,6 +102,7 @@ func (s msgServer) CreateVestingAccount(goCtx context.Context, msg *types.MsgCre
 	return &types.MsgCreateVestingAccountResponse{}, nil
 }
 
+// CreatePeriodicVestingAccount creates a new periodic vesting account, or merges a grant into an existing one.
 func (s msgServer) CreatePeriodicVestingAccount(goCtx context.Context, msg *types.MsgCreatePeriodicVestingAccount) (*types.MsgCreatePeriodicVestingAccountResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
@@ -118,35 +122,54 @@ func (s msgServer) CreatePeriodicVestingAccount(goCtx context.Context, msg *type
 		return nil, sdkerrors.Wrapf(sdkerrors.ErrUnauthorized, "%s is not allowed to receive funds", msg.ToAddress)
 	}
 
-	if acc := ak.GetAccount(ctx, to); acc != nil {
-		return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "account %s already exists", msg.ToAddress)
-	}
-
 	var totalCoins sdk.Coins
-
 	for _, period := range msg.VestingPeriods {
 		totalCoins = totalCoins.Add(period.Amount...)
 	}
+	totalCoins = totalCoins.Sort()
 
-	baseAccount := ak.NewAccountWithAddress(ctx, to)
+	madeNewAcc := false
+	acc := ak.GetAccount(ctx, to)
 
-	acc := types.NewPeriodicVestingAccount(baseAccount.(*authtypes.BaseAccount), totalCoins.Sort(), msg.StartTime, msg.VestingPeriods)
+	if acc != nil {
+		pva, isPeriodic := acc.(*types.PeriodicVestingAccount)
+		switch {
+		case !msg.Merge && isPeriodic:
+			return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "account %s already exists; consider using --merge", msg.ToAddress)
+		case !msg.Merge && !isPeriodic:
+			return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "account %s already exists", msg.ToAddress)
+		case msg.Merge && !isPeriodic:
+			return nil, sdkerrors.Wrapf(sdkerrors.ErrNotSupported, "account %s must be a periodic vesting account", msg.ToAddress)
+		}
+		newStart, newEnd, newPeriods := types.DisjunctPeriods(pva.StartTime, msg.GetStartTime(),
+			pva.GetVestingPeriods(), msg.GetVestingPeriods())
+		pva.StartTime = newStart
+		pva.EndTime = newEnd
+		pva.VestingPeriods = newPeriods
+		pva.OriginalVesting = pva.OriginalVesting.Add(totalCoins...)
+	} else {
+		baseAccount := ak.NewAccountWithAddress(ctx, to)
+		acc = types.NewPeriodicVestingAccount(baseAccount.(*authtypes.BaseAccount), totalCoins, msg.StartTime, msg.VestingPeriods)
+		madeNewAcc = true
+	}
 
 	ak.SetAccount(ctx, acc)
 
-	defer func() {
-		telemetry.IncrCounter(1, "new", "account")
+	if madeNewAcc {
+		defer func() {
+			telemetry.IncrCounter(1, "new", "account")
 
-		for _, a := range totalCoins {
-			if a.Amount.IsInt64() {
-				telemetry.SetGaugeWithLabels(
-					[]string{"tx", "msg", "create_periodic_vesting_account"},
-					float32(a.Amount.Int64()),
-					[]metrics.Label{telemetry.NewLabel("denom", a.Denom)},
-				)
+			for _, a := range totalCoins {
+				if a.Amount.IsInt64() {
+					telemetry.SetGaugeWithLabels(
+						[]string{"tx", "msg", "create_periodic_vesting_account"},
+						float32(a.Amount.Int64()),
+						[]metrics.Label{telemetry.NewLabel("denom", a.Denom)},
+					)
+				}
 			}
-		}
-	}()
+		}()
+	}
 
 	err = bk.SendCoins(ctx, from, to, totalCoins)
 	if err != nil {
@@ -160,5 +183,178 @@ func (s msgServer) CreatePeriodicVestingAccount(goCtx context.Context, msg *type
 		),
 	)
 	return &types.MsgCreatePeriodicVestingAccountResponse{}, nil
+}
 
+func max64(a, b int64) int64 {
+	if a > b {
+		return a
+	}
+	return b
+}
+
+// CreateClawbackVestingAccount creates a new ClawbackVestingAccount, or merges a grant into an existing one.
+func (s msgServer) CreateClawbackVestingAccount(goCtx context.Context, msg *types.MsgCreateClawbackVestingAccount) (*types.MsgCreateClawbackVestingAccountResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	ak := s.AccountKeeper
+	bk := s.BankKeeper
+
+	from, err := sdk.AccAddressFromBech32(msg.FromAddress)
+	if err != nil {
+		return nil, err
+	}
+	to, err := sdk.AccAddressFromBech32(msg.ToAddress)
+	if err != nil {
+		return nil, err
+	}
+
+	if bk.BlockedAddr(to) {
+		return nil, sdkerrors.Wrapf(sdkerrors.ErrUnauthorized, "%s is not allowed to receive funds", msg.ToAddress)
+	}
+
+	vestingCoins := sdk.NewCoins()
+	for _, period := range msg.VestingPeriods {
+		vestingCoins = vestingCoins.Add(period.Amount...)
+	}
+
+	lockupCoins := sdk.NewCoins()
+	for _, period := range msg.LockupPeriods {
+		lockupCoins = lockupCoins.Add(period.Amount...)
+	}
+
+	if !vestingCoins.IsZero() && len(msg.LockupPeriods) == 0 {
+		// If lockup absent, default to an instant unlock schedule
+		msg.LockupPeriods = []types.Period{
+			{Length: 0, Amount: vestingCoins},
+		}
+		lockupCoins = vestingCoins
+	}
+
+	if !lockupCoins.IsZero() && len(msg.VestingPeriods) == 0 {
+		// If vesting absent, default to an instant vesting schedule
+		msg.VestingPeriods = []types.Period{
+			{Length: 0, Amount: lockupCoins},
+		}
+		vestingCoins = lockupCoins
+	}
+
+	// The vesting and lockup schedules must describe the same total amount.
+	// IsEqual can panic, so use (a == b) <=> (a <= b && b <= a).
+	if !(vestingCoins.IsAllLTE(lockupCoins) && lockupCoins.IsAllLTE(vestingCoins)) {
+		return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "lockup and vesting amounts must be equal")
+	}
+
+	madeNewAcc := false
+	acc := ak.GetAccount(ctx, to)
+	var va *types.ClawbackVestingAccount
+
+	if acc != nil {
+		var isClawback bool
+		va, isClawback = acc.(*types.ClawbackVestingAccount)
+		switch {
+		case !msg.Merge && isClawback:
+			return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "account %s already exists; consider using --merge", msg.ToAddress)
+		case !msg.Merge && !isClawback:
+			return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "account %s already exists", msg.ToAddress)
+		case msg.Merge && !isClawback:
+			return nil, sdkerrors.Wrapf(sdkerrors.ErrNotSupported, "account %s must be a clawback vesting account", msg.ToAddress)
+		case msg.FromAddress != va.FunderAddress:
+			return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "account %s can only accept grants from account %s", msg.ToAddress, va.FunderAddress)
+		}
+		newLockupStart, newLockupEnd, newLockupPeriods := types.DisjunctPeriods(va.StartTime, msg.GetStartTime(), va.LockupPeriods, msg.LockupPeriods)
+		newVestingStart, newVestingEnd, newVestingPeriods := types.DisjunctPeriods(va.StartTime, msg.GetStartTime(),
+			va.GetVestingPeriods(), msg.GetVestingPeriods())
+		if newLockupStart != newVestingStart {
+			panic("bad start time calculation")
+		}
+		va.StartTime = newLockupStart
+		va.EndTime = max64(newLockupEnd, newVestingEnd)
+		va.LockupPeriods = newLockupPeriods
+		va.VestingPeriods = newVestingPeriods
+		va.OriginalVesting = va.OriginalVesting.Add(vestingCoins...)
+	} else {
+		baseAccount := ak.NewAccountWithAddress(ctx, to)
+		va = types.NewClawbackVestingAccount(baseAccount.(*authtypes.BaseAccount), from, vestingCoins, msg.StartTime, msg.LockupPeriods, msg.VestingPeriods)
+		madeNewAcc = true
+	}
+
+	ak.SetAccount(ctx, va)
+
+	if madeNewAcc {
+		defer func() {
+			telemetry.IncrCounter(1, "new", "account")
+
+			for _, a := range vestingCoins {
+				if a.Amount.IsInt64() {
+					telemetry.SetGaugeWithLabels(
+						[]string{"tx", "msg", "create_clawback_vesting_account"},
+						float32(a.Amount.Int64()),
+						[]metrics.Label{telemetry.NewLabel("denom", a.Denom)},
+					)
+				}
+			}
+		}()
+	}
+
+	err = bk.SendCoins(ctx, from, to, vestingCoins)
+	if err != nil {
+		return nil, err
+	}
+
+	ctx.EventManager().EmitEvent(
+		sdk.NewEvent(
+			sdk.EventTypeMessage,
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+		),
+	)
+
+	return &types.MsgCreateClawbackVestingAccountResponse{}, nil
+}
+
+// Clawback removes the unvested amount from a ClawbackVestingAccount.
+// The destination defaults to the funder address, but can be overridden.
+func (s msgServer) Clawback(goCtx context.Context, msg *types.MsgClawback) (*types.MsgClawbackResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	ak := s.AccountKeeper
+	bk := s.BankKeeper
+
+	funder, err := sdk.AccAddressFromBech32(msg.GetFunderAddress())
+	if err != nil {
+		return nil, err
+	}
+	addr, err := sdk.AccAddressFromBech32(msg.GetAddress())
+	if err != nil {
+		return nil, err
+	}
+	dest := funder
+	if msg.GetDestAddress() != "" {
+		dest, err = sdk.AccAddressFromBech32(msg.GetDestAddress())
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	if bk.BlockedAddr(dest) {
+		return nil, sdkerrors.Wrapf(sdkerrors.ErrUnauthorized, "%s is not allowed to receive funds", msg.DestAddress)
+	}
+
+	acc := ak.GetAccount(ctx, addr)
+	if acc == nil {
+		return nil, sdkerrors.Wrapf(sdkerrors.ErrNotFound, "account %s does not exist", msg.Address)
+	}
+	va, ok := acc.(*types.ClawbackVestingAccount)
+	if !ok {
+		return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "account not subject to clawback: %s", msg.Address)
+	}
+
+	if va.FunderAddress != msg.GetFunderAddress() {
+		return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "clawback can only be requested by original funder %s", va.FunderAddress)
+	}
+
+	err = va.Clawback(ctx, dest, ak, bk, s.StakingKeeper)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.MsgClawbackResponse{}, nil
 }

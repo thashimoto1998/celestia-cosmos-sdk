@@ -2,6 +2,7 @@ package types
 
 import (
 	"errors"
+	"math"
 	"time"
 
 	yaml "gopkg.in/yaml.v2"
@@ -351,34 +352,11 @@ func NewPeriodicVestingAccount(baseAcc *authtypes.BaseAccount, originalVesting s
 // GetVestedCoins returns the total number of vested coins. If no coins are vested,
 // nil is returned.
 func (pva PeriodicVestingAccount) GetVestedCoins(blockTime time.Time) sdk.Coins {
-	var vestedCoins sdk.Coins
-
-	// We must handle the case where the start time for a vesting account has
-	// been set into the future or when the start of the chain is not exactly
-	// known.
-	if blockTime.Unix() <= pva.StartTime {
-		return vestedCoins
-	} else if blockTime.Unix() >= pva.EndTime {
-		return pva.OriginalVesting
+	coins := ReadSchedule(pva.StartTime, pva.EndTime, pva.VestingPeriods, pva.OriginalVesting, blockTime.Unix())
+	if coins.IsZero() {
+		return nil
 	}
-
-	// track the start time of the next period
-	currentPeriodStartTime := pva.StartTime
-
-	// for each period, if the period is over, add those coins as vested and check the next period.
-	for _, period := range pva.VestingPeriods {
-		x := blockTime.Unix() - currentPeriodStartTime
-		if x < period.Length {
-			break
-		}
-
-		vestedCoins = vestedCoins.Add(period.Amount...)
-
-		// update the start time of the next period
-		currentPeriodStartTime += period.Length
-	}
-
-	return vestedCoins
+	return coins
 }
 
 // GetVestingCoins returns the total number of vesting coins. If no coins are
@@ -610,4 +588,415 @@ func marshalYaml(i interface{}) (interface{}, error) {
 		return nil, err
 	}
 	return string(bz), nil
+}
+
+// Clawback Vesting Account
+
+var _ vestexported.VestingAccount = (*ClawbackVestingAccount)(nil)
+var _ authtypes.GenesisAccount = (*ClawbackVestingAccount)(nil)
+
+// NewClawbackVestingAccount returns a new ClawbackVestingAccount
+func NewClawbackVestingAccount(baseAcc *authtypes.BaseAccount, funder sdk.AccAddress, originalVesting sdk.Coins, startTime int64, lockupPeriods, vestingPeriods Periods) *ClawbackVestingAccount {
+	// copy and align schedules to avoid mutating inputs
+	lp := make(Periods, len(lockupPeriods))
+	copy(lp, lockupPeriods)
+	vp := make(Periods, len(vestingPeriods))
+	copy(vp, vestingPeriods)
+	_, endTime := AlignSchedules(startTime, startTime, lp, vp)
+	baseVestingAcc := &BaseVestingAccount{
+		BaseAccount:     baseAcc,
+		OriginalVesting: originalVesting,
+		EndTime:         endTime,
+	}
+
+	return (&ClawbackVestingAccount{
+		BaseVestingAccount: baseVestingAcc,
+		FunderAddress:      funder.String(),
+		StartTime:          startTime,
+		LockupPeriods:      lp,
+		VestingPeriods:     vp,
+	}).UpdateCombined()
+}
+
+func (va *ClawbackVestingAccount) UpdateCombined() *ClawbackVestingAccount {
+	start, end, combined := ConjunctPeriods(va.StartTime, va.StartTime, va.LockupPeriods, va.VestingPeriods)
+	va.StartTime = start
+	va.EndTime = end
+	va.CombinedPeriods = combined
+	return va
+}
+
+// GetVestedCoins returns the total number of vested coins. If no coins are vested,
+// nil is returned.
+func (va ClawbackVestingAccount) GetVestedCoins(blockTime time.Time) sdk.Coins {
+	// XXX consider not precomputing the combined schedule and just take the
+	// min of the lockup and vesting separately. It's likely that one or the
+	// other schedule will be nearly trivial, so there should be little overhead
+	// in recomputing the conjunction each time.
+	coins := ReadSchedule(va.StartTime, va.EndTime, va.CombinedPeriods, va.OriginalVesting, blockTime.Unix())
+	if coins.IsZero() {
+		return nil
+	}
+	return coins
+}
+
+// GetVestingCoins returns the total number of vesting coins. If no coins are
+// vesting, nil is returned.
+func (va ClawbackVestingAccount) GetVestingCoins(blockTime time.Time) sdk.Coins {
+	return va.OriginalVesting.Sub(va.GetVestedCoins(blockTime))
+}
+
+// LockedCoins returns the set of coins that are not spendable (i.e. locked),
+// defined as the vesting coins that are not delegated.
+func (va ClawbackVestingAccount) LockedCoins(ctx sdk.Context) sdk.Coins {
+	return va.BaseVestingAccount.LockedCoinsFromVesting(va.GetVestingCoins(ctx.BlockTime()))
+}
+
+// TrackDelegation tracks a desired delegation amount by setting the appropriate
+// values for the amount of delegated vesting, delegated free, and reducing the
+// overall amount of base coins.
+func (va *ClawbackVestingAccount) TrackDelegation(blockTime time.Time, balance, amount sdk.Coins) {
+	va.BaseVestingAccount.TrackDelegation(balance, va.GetVestingCoins(blockTime), amount)
+}
+
+// GetStartTime returns the time when vesting starts for a periodic vesting
+// account.
+func (va ClawbackVestingAccount) GetStartTime() int64 {
+	return va.StartTime
+}
+
+// GetVestingPeriods returns vesting periods associated with periodic vesting account.
+func (va ClawbackVestingAccount) GetVestingPeriods() Periods {
+	return va.VestingPeriods
+}
+
+// coinEq returns whether two Coins are equal.
+// The IsEqual() method can panic.
+func coinEq(a, b sdk.Coins) bool {
+	return a.IsAllLTE(b) && b.IsAllLTE(a)
+}
+
+// Validate checks for errors on the account fields
+func (va ClawbackVestingAccount) Validate() error {
+	if va.GetStartTime() >= va.GetEndTime() {
+		return errors.New("vesting start-time must be before end-time")
+	}
+
+	lockupEnd := va.StartTime
+	lockupCoins := sdk.NewCoins()
+	for _, p := range va.LockupPeriods {
+		lockupEnd += p.Length
+		lockupCoins = lockupCoins.Add(p.Amount...)
+	}
+	if lockupEnd > va.EndTime {
+		return errors.New("lockup schedule extends beyond account end time")
+	}
+	if !coinEq(lockupCoins, va.OriginalVesting) {
+		return errors.New("original vesting coins does not match the sum of all coins in lockup periods")
+	}
+
+	vestingEnd := va.StartTime
+	vestingCoins := sdk.NewCoins()
+	for _, p := range va.VestingPeriods {
+		vestingEnd += p.Length
+		vestingCoins = vestingCoins.Add(p.Amount...)
+	}
+	if vestingEnd > va.EndTime {
+		return errors.New("vesting schedule exteds beyond account end time")
+	}
+	if !coinEq(vestingCoins, va.OriginalVesting) {
+		return errors.New("original vesting coins does not match the sum of all coins in vesting periods")
+	}
+
+	return va.BaseVestingAccount.Validate()
+}
+
+func (va ClawbackVestingAccount) String() string {
+	out, _ := va.MarshalYAML()
+	return out.(string)
+}
+
+// MarshalYAML returns the YAML representation of a ClawbackVestingAccount.
+func (va ClawbackVestingAccount) MarshalYAML() (interface{}, error) {
+	accAddr, err := sdk.AccAddressFromBech32(va.Address)
+	if err != nil {
+		return nil, err
+	}
+
+	out := vestingAccountYAML{
+		Address:          accAddr,
+		AccountNumber:    va.AccountNumber,
+		PubKey:           getPKString(va),
+		Sequence:         va.Sequence,
+		OriginalVesting:  va.OriginalVesting,
+		DelegatedFree:    va.DelegatedFree,
+		DelegatedVesting: va.DelegatedVesting,
+		EndTime:          va.EndTime,
+		StartTime:        va.StartTime,
+		VestingPeriods:   va.VestingPeriods,
+	}
+	return marshalYaml(out)
+}
+
+// ComputeClawback returns an account with all future vesting events removed,
+// plus the total sum of these events. When removing the future vesting events,
+// the lockup schedule will also have to be capped to keep the total sums the same.
+// (But future unlocking events might be preserved if they unlock currently vested coins.)
+// If the amount returned is zero, then the returned account should be unchanged.
+// Does not adjust DelegatedVesting
+func (va ClawbackVestingAccount) ComputeClawback(clawbackTime int64) (ClawbackVestingAccount, sdk.Coins) {
+	// Compute the truncated vesting schedule and amounts.
+	// Work with the schedule as the primary data and recompute derived fields, e.g. OriginalVesting.
+	t := va.StartTime
+	totalVested := sdk.NewCoins()
+	totalUnvested := sdk.NewCoins()
+	unvestedIdx := 0
+	for i, period := range va.VestingPeriods {
+		t += period.Length
+		// tie in time goes to clawback
+		if t < clawbackTime {
+			totalVested = totalVested.Add(period.Amount...)
+			unvestedIdx = i + 1
+		} else {
+			totalUnvested = totalUnvested.Add(period.Amount...)
+		}
+	}
+	newVestingPeriods := va.VestingPeriods[:unvestedIdx]
+
+	// To cap the unlocking schedule to the new total vested, conjunct with a limiting schedule
+	capPeriods := []Period{
+		{
+			Length: 0,
+			Amount: totalVested,
+		},
+	}
+	_, _, newLockupPeriods := ConjunctPeriods(va.StartTime, va.StartTime, va.LockupPeriods, capPeriods)
+
+	_, _, newCombinedPeriods := ConjunctPeriods(va.StartTime, va.StartTime, newLockupPeriods, newVestingPeriods)
+
+	// Now construct the new account state
+	va.OriginalVesting = totalVested
+	va.EndTime = t
+	va.LockupPeriods = newLockupPeriods
+	va.VestingPeriods = newVestingPeriods
+	va.CombinedPeriods = newCombinedPeriods
+	// DelegatedVesting will be adjusted elsewhere
+
+	return va, totalUnvested
+}
+
+// Clawback transfers unvested tokens in a ClawbackVestingAccount to dest.
+// Future vesting events are removed. Unstaked tokens are simply sent.
+// Unbonding and staked tokens are transferred with their staking state
+// intact.  Account state is updated to reflect the removals.
+func (va ClawbackVestingAccount) Clawback(ctx sdk.Context, dest sdk.AccAddress, ak AccountKeeper, bk BankKeeper, sk StakingKeeper) error {
+	updatedAcc, toClawBack := va.ComputeClawback(ctx.BlockTime().Unix())
+	if toClawBack.IsZero() {
+		return nil
+	}
+	addr := updatedAcc.GetAddress()
+
+	// Write now now so that the bank module sees unvested tokens are unlocked.
+	// Note that all store writes are aborted if there is a panic, so there is
+	// no danger in writing incomplete results.
+	ak.SetAccount(ctx, &updatedAcc)
+
+	// Now that future vesting events (and associated lockup) are removed,
+	// the balance of the account is unlocked and can be freely transferred.
+	spendable := bk.SpendableCoins(ctx, addr)
+	toXfer := coinsMin(toClawBack, spendable)
+	err := bk.SendCoins(ctx, addr, dest, toXfer)
+	if err != nil {
+		return err // shouldn't happen, given spendable check
+	}
+	toClawBack = toClawBack.Sub(toXfer)
+
+	// We need to traverse the staking data structures to update the
+	// vesting account bookkeeping, and to recover more funds if necessary.
+	// Staking is the only way unvested tokens should be missing from the bank balance.
+	bondDenom := sk.BondDenom(ctx)
+
+	// If we need more, transfer UnbondingDelegations.
+	want := toClawBack.AmountOf(bondDenom)
+	unbondings := sk.GetUnbondingDelegations(ctx, addr, math.MaxUint16)
+	for _, unbonding := range unbondings {
+		transferred := sk.TransferUnbonding(ctx, addr, dest, sdk.ValAddress(unbonding.ValidatorAddress), want)
+		want = want.Sub(transferred)
+		if !want.IsPositive() {
+			break
+		}
+	}
+
+	// If we need more, transfer Delegations.
+	if want.IsPositive() {
+		delegations := sk.GetDelegatorDelegations(ctx, addr, math.MaxUint16)
+		for _, delegation := range delegations {
+			validatorAddr, err := sdk.ValAddressFromBech32(delegation.ValidatorAddress)
+			if err != nil {
+				panic(err) // shouldn't happen
+			}
+			validator, found := sk.GetValidator(ctx, validatorAddr)
+			if !found {
+				// validator has been removed
+				continue
+			}
+			wantShares, err := validator.SharesFromTokensTruncated(want)
+			if err != nil {
+				// validator has no tokens
+				continue
+			}
+			transferredShares := sk.TransferDelegation(ctx, addr, dest, delegation.GetValidatorAddr(), wantShares)
+			// to be conservative in what we're clawing back, round transferred shares up
+			transferred := validator.TokensFromSharesRoundUp(transferredShares).RoundInt()
+			want = want.Sub(transferred)
+			if !want.IsPositive() {
+				// Could be slightly negative, due to rounding?
+				// Don't think so, due to the precautions above.
+				break
+			}
+		}
+	}
+
+	// Update the account bookkeeping. All delegated and undelegating amounts are free.
+	bonded, unbonding, _ := updatedAcc.findBalance(ctx, bk, sk)
+	updatedAcc.DelegatedFree = sdk.NewCoins(sdk.NewCoin(bondDenom, bonded.Add(unbonding)))
+	updatedAcc.DelegatedVesting = sdk.NewCoins()
+	ak.SetAccount(ctx, &updatedAcc)
+
+	// If we've transferred everything and still haven't transferred the desired clawback amount,
+	// then the account must have most some unvested tokens from slashing.
+	return nil
+}
+
+// findBalance computes the current account balance on the staking dimension.
+// Returns the number of bonded, unbonding, and unbonded statking tokens.
+// Rounds down when computing the bonded tokens to err on the side of vested fraction
+// (smaller number of bonded tokens means vested amount covers more of them).
+func (va ClawbackVestingAccount) findBalance(ctx sdk.Context, bk BankKeeper, sk StakingKeeper) (bonded, unbonding, unbonded sdk.Int) {
+	bondDenom := sk.BondDenom(ctx)
+	unbonded = bk.GetBalance(ctx, va.GetAddress(), bondDenom).Amount
+
+	unbonding = sdk.ZeroInt()
+	unbondings := sk.GetUnbondingDelegations(ctx, va.GetAddress(), math.MaxUint16)
+	for _, ubd := range unbondings {
+		for _, entry := range ubd.Entries {
+			unbonding = unbonding.Add(entry.Balance)
+		}
+	}
+
+	bonded = sdk.ZeroInt()
+	delegations := sk.GetDelegatorDelegations(ctx, va.GetAddress(), math.MaxUint16)
+	for _, delegation := range delegations {
+		validatorAddr, err := sdk.ValAddressFromBech32(delegation.ValidatorAddress)
+		if err != nil {
+			panic(err) // shouldn't happen
+		}
+		validator, found := sk.GetValidator(ctx, validatorAddr)
+		if !found {
+			// validator has been removed
+			continue
+		}
+		shares := delegation.Shares
+		tokens := validator.TokensFromSharesTruncated(shares).RoundInt()
+		bonded = bonded.Add(tokens)
+	}
+	return bonded, unbonding, unbonded
+}
+
+// distributeReward adds the reward to the future vesting schedule in proportion to the future vesting
+// staking tokens.
+func (va ClawbackVestingAccount) distributeReward(ctx sdk.Context, ak AccountKeeper, bondDenom string, reward sdk.Coins) {
+	now := ctx.BlockTime().Unix()
+	t := va.StartTime
+	firstUnvestedPeriod := 0
+	unvestedTokens := sdk.ZeroInt()
+	for i, period := range va.VestingPeriods {
+		t += period.Length
+		if t <= now {
+			firstUnvestedPeriod = i + 1
+			continue
+		}
+		unvestedTokens = unvestedTokens.Add(period.Amount.AmountOf(bondDenom))
+	}
+
+	runningTotReward := sdk.NewCoins()
+	runningTotStaking := sdk.ZeroInt()
+	for i := firstUnvestedPeriod; i < len(va.VestingPeriods); i++ {
+		period := va.VestingPeriods[i]
+		runningTotStaking = runningTotStaking.Add(period.Amount.AmountOf(bondDenom))
+		runningTotRatio := runningTotStaking.ToDec().Quo(unvestedTokens.ToDec())
+		targetCoins := scaleCoins(reward, runningTotRatio)
+		thisReward := targetCoins.Sub(runningTotReward)
+		runningTotReward = targetCoins
+		period.Amount = period.Amount.Add(thisReward...)
+		va.VestingPeriods[i] = period
+	}
+
+	va.OriginalVesting = va.OriginalVesting.Add(reward...)
+	ak.SetAccount(ctx, &va)
+}
+
+// scaleCoins scales the given coins, rounding down.
+func scaleCoins(coins sdk.Coins, scale sdk.Dec) sdk.Coins {
+	scaledCoins := sdk.NewCoins()
+	for _, coin := range coins {
+		amt := coin.Amount.ToDec().Mul(scale).TruncateInt() // round down
+		scaledCoins = scaledCoins.Add(sdk.NewCoin(coin.Denom, amt))
+	}
+	return scaledCoins
+}
+
+// PostReward encumbers a previously-deposited reward according to the current vesting apportionment of staking.
+// Note that rewards might be unvested, but are unlocked.
+func (va ClawbackVestingAccount) PostReward(ctx sdk.Context, reward sdk.Coins, rak, rbk, rsk interface{}) {
+	// Cast keepers to expected interfaces.
+	// Necessary due to difference in expected keepers between us and caller.
+	ak := rak.(AccountKeeper)
+	bk := rbk.(BankKeeper)
+	sk := rsk.(StakingKeeper)
+
+	// Find the scheduled amount of vested and unvested staking tokens
+	bondDenom := sk.BondDenom(ctx)
+	vested := ReadSchedule(va.StartTime, va.EndTime, va.VestingPeriods, va.OriginalVesting, ctx.BlockTime().Unix()).AmountOf(bondDenom)
+	unvested := va.OriginalVesting.AmountOf(bondDenom).Sub(vested)
+
+	if unvested.IsZero() {
+		// no need to adjust the vesting schedule
+		return
+	}
+
+	if vested.IsZero() {
+		// all staked tokens must be unvested
+		va.distributeReward(ctx, ak, bondDenom, reward)
+		return
+	}
+
+	// Find current split of account balance on staking axis
+	bonded, unbonding, unbonded := va.findBalance(ctx, bk, sk)
+	total := bonded.Add(unbonding).Add(unbonded)
+
+	// Adjust vested/unvested for the actual amount in the account (transfers, slashing)
+	if unvested.GT(total) {
+		// must have been reduced by slashing
+		unvested = total
+	}
+	vested = total.Sub(unvested)
+
+	// Now restrict to just the bonded tokens, preferring them to be vested
+	if vested.GT(bonded) {
+		vested = bonded
+	}
+	unvested = bonded.Sub(vested)
+
+	// Compute the unvested amount of reward and add to vesting schedule
+	if unvested.IsZero() {
+		return
+	}
+	if vested.IsZero() {
+		va.distributeReward(ctx, ak, bondDenom, reward)
+		return
+	}
+	unvestedRatio := unvested.ToDec().QuoTruncate(bonded.ToDec()) // round down
+	unvestedReward := scaleCoins(reward, unvestedRatio)
+	va.distributeReward(ctx, ak, bondDenom, unvestedReward)
 }
