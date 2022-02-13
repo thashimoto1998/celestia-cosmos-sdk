@@ -292,6 +292,27 @@ func (app *BaseApp) DeliverTx(req abci.RequestDeliverTx) abci.ResponseDeliverTx 
 
 }
 
+func (app *BaseApp) PrepareProposal(req abci.RequestPrepareProposal) abci.ResponsePrepareProposal {
+	return abci.ResponsePrepareProposal{
+		BlockData: req.BlockData,
+	}
+}
+
+func (app *BaseApp) ProcessProposal(req abci.RequestProcessProposal) abci.ResponseProcessProposal {
+	return abci.ResponseProcessProposal{
+		Result: abci.ResponseProcessProposal_ACCEPT,
+	}
+}
+
+func (app *BaseApp) ExtendVote(req abci.RequestExtendVote) abci.ResponseExtendVote {
+	return abci.ResponseExtendVote{}
+}
+
+// Verify application's vote extension data
+func (app *BaseApp) VerifyVoteExtension(req abci.RequestVerifyVoteExtension) abci.ResponseVerifyVoteExtension {
+	return abci.ResponseVerifyVoteExtension{}
+}
+
 // Commit implements the ABCI interface. It will commit all state that exists in
 // the deliver state's multi-store and includes the resulting commit ID in the
 // returned abci.ResponseCommit. Commit will set the check state based on the

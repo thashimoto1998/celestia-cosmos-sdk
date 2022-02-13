@@ -1,6 +1,7 @@
 package network
 
 import (
+	"context"
 	"encoding/json"
 	"io/ioutil"
 	"path/filepath"
@@ -22,7 +23,7 @@ import (
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 )
 
-func startInProcess(cfg Config, val *Validator) error {
+func startInProcess(ctx context.Context, cfg Config, val *Validator) error {
 	logger := val.Ctx.Logger
 	tmCfg := val.Ctx.Config
 	tmCfg.Instrumentation.Prometheus = false
@@ -39,6 +40,7 @@ func startInProcess(cfg Config, val *Validator) error {
 	}
 
 	val.tmNode, err = node.New(
+		ctx,
 		tmCfg,
 		logger.With("module", val.Moniker),
 		abciclient.NewLocalCreator(app),
@@ -48,7 +50,7 @@ func startInProcess(cfg Config, val *Validator) error {
 		return err
 	}
 
-	if err := val.tmNode.Start(); err != nil {
+	if err := val.tmNode.Start(ctx); err != nil {
 		return err
 	}
 
@@ -57,7 +59,7 @@ func startInProcess(cfg Config, val *Validator) error {
 		if !ok {
 			panic("can't cast service.Service to NodeService")
 		}
-		val.RPCClient, err = local.New(node)
+		val.RPCClient, err = local.New(logger, node)
 		if err != nil {
 			panic("cant create a local node")
 		}
@@ -82,7 +84,7 @@ func startInProcess(cfg Config, val *Validator) error {
 		errCh := make(chan error)
 
 		go func() {
-			if err := apiSrv.Start(*val.AppConfig); err != nil {
+			if err := apiSrv.Start(ctx, *val.AppConfig); err != nil {
 				errCh <- err
 			}
 		}()

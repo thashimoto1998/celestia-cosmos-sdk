@@ -300,7 +300,7 @@ func (c *Client) GetTx(ctx context.Context, hash string) (*rosettatypes.Transact
 
 // GetUnconfirmedTx gets an unconfirmed transaction given its hash
 func (c *Client) GetUnconfirmedTx(ctx context.Context, hash string) (*rosettatypes.Transaction, error) {
-	res, err := c.tmRPC.UnconfirmedTxs(ctx, nil)
+	res, err := c.tmRPC.UnconfirmedTxs(ctx, nil, nil)
 	if err != nil {
 		return nil, crgerrs.WrapError(crgerrs.ErrNotFound, "unconfirmed tx not found")
 	}
@@ -333,7 +333,7 @@ func (c *Client) GetUnconfirmedTx(ctx context.Context, hash string) (*rosettatyp
 
 // Mempool returns the unconfirmed transactions in the mempool
 func (c *Client) Mempool(ctx context.Context) ([]*rosettatypes.TransactionIdentifier, error) {
-	txs, err := c.tmRPC.UnconfirmedTxs(ctx, nil)
+	txs, err := c.tmRPC.UnconfirmedTxs(ctx, nil, nil)
 	if err != nil {
 		return nil, err
 	}

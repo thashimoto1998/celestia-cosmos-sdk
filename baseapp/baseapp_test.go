@@ -87,7 +87,7 @@ func (ps *paramStore) Get(_ sdk.Context, key []byte, ptr interface{}) {
 }
 
 func defaultLogger() log.Logger {
-	logger, _ := log.NewDefaultLogger("plain", "info", false)
+	logger, _ := log.NewDefaultLogger("plain", "info")
 	return logger.With("module", "sdk/app")
 }
 

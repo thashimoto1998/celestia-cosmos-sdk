@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/suite"
 
@@ -26,6 +27,7 @@ type IntegrationTestSuite struct {
 }
 
 func (s *IntegrationTestSuite) SetupSuite() {
+	fmt.Println("setting up suite ===================================================================")
 	s.T().Log("setting up integration test suite")
 
 	cfg := network.DefaultConfig()
@@ -38,6 +40,7 @@ func (s *IntegrationTestSuite) SetupSuite() {
 	s.Require().NoError(err)
 
 	_, err = s.network.WaitForHeight(1)
+	fmt.Println("done waiting for height 1 ------")
 	s.Require().NoError(err)
 
 	s.queryClient = tmservice.NewServiceClient(s.network.Validators[0].ClientCtx)
@@ -45,10 +48,12 @@ func (s *IntegrationTestSuite) SetupSuite() {
 
 func (s *IntegrationTestSuite) TearDownSuite() {
 	s.T().Log("tearing down integration test suite")
+	fmt.Println("cleaning up -----------------------------------------------------------------------------------------")
 	s.network.Cleanup()
 }
 
 func (s IntegrationTestSuite) TestQueryNodeInfo() {
+	fmt.Println("testing query node info")
 	val := s.network.Validators[0]
 
 	res, err := s.queryClient.GetNodeInfo(context.Background(), &tmservice.GetNodeInfoRequest{})
@@ -63,6 +68,7 @@ func (s IntegrationTestSuite) TestQueryNodeInfo() {
 }
 
 func (s IntegrationTestSuite) TestQuerySyncing() {
+	fmt.Println("testing syncing query")
 	val := s.network.Validators[0]
 
 	_, err := s.queryClient.GetSyncing(context.Background(), &tmservice.GetSyncingRequest{})
@@ -75,6 +81,7 @@ func (s IntegrationTestSuite) TestQuerySyncing() {
 }
 
 func (s IntegrationTestSuite) TestQueryLatestBlock() {
+	fmt.Println("testing latest BLOCK height")
 	val := s.network.Validators[0]
 
 	_, err := s.queryClient.GetLatestBlock(context.Background(), &tmservice.GetLatestBlockRequest{})
@@ -87,10 +94,14 @@ func (s IntegrationTestSuite) TestQueryLatestBlock() {
 }
 
 func (s IntegrationTestSuite) TestQueryBlockByHeight() {
+	fmt.Println("querying by block height")
 	val := s.network.Validators[0]
-	_, err := s.queryClient.GetBlockByHeight(context.Background(), &tmservice.GetBlockByHeightRequest{Height: 1})
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+	_, err := s.queryClient.GetBlockByHeight(ctx, &tmservice.GetBlockByHeightRequest{Height: 1})
 	s.Require().NoError(err)
 
+	fmt.Println("doing the rest thing")
 	restRes, err := rest.GetRequest(fmt.Sprintf("%s/cosmos/base/tendermint/v1beta1/blocks/%d", val.APIAddress, 1))
 	s.Require().NoError(err)
 	var blockInfoRes tmservice.GetBlockByHeightResponse
@@ -98,6 +109,7 @@ func (s IntegrationTestSuite) TestQueryBlockByHeight() {
 }
 
 func (s IntegrationTestSuite) TestQueryLatestValidatorSet() {
+	fmt.Println("testing query latest validator set")
 	val := s.network.Validators[0]
 
 	// nil pagination
@@ -133,6 +145,7 @@ func (s IntegrationTestSuite) TestQueryLatestValidatorSet() {
 }
 
 func (s IntegrationTestSuite) TestLatestValidatorSet_GRPC() {
+	fmt.Println("testing latest validator set grpc")
 	vals := s.network.Validators
 	testCases := []struct {
 		name      string
@@ -164,6 +177,7 @@ func (s IntegrationTestSuite) TestLatestValidatorSet_GRPC() {
 }
 
 func (s IntegrationTestSuite) TestLatestValidatorSet_GRPCGateway() {
+	fmt.Println("testing latest validator set by gateway")
 	vals := s.network.Validators
 	testCases := []struct {
 		name      string
@@ -196,6 +210,7 @@ func (s IntegrationTestSuite) TestLatestValidatorSet_GRPCGateway() {
 }
 
 func (s IntegrationTestSuite) TestValidatorSetByHeight_GRPC() {
+	fmt.Println("testing latest validator set by height")
 	vals := s.network.Validators
 	testCases := []struct {
 		name      string
@@ -225,6 +240,7 @@ func (s IntegrationTestSuite) TestValidatorSetByHeight_GRPC() {
 }
 
 func (s IntegrationTestSuite) TestValidatorSetByHeight_GRPCGateway() {
+	fmt.Println("testing latest validator set gprc")
 	vals := s.network.Validators
 	testCases := []struct {
 		name      string

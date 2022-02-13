@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"net/http"
@@ -82,7 +83,7 @@ func New(clientCtx client.Context, logger log.Logger) *Server {
 // JSON RPC server. Configuration options are provided via config.APIConfig
 // and are delegated to the Tendermint JSON RPC server. The process is
 // non-blocking, so an external signal handler must be used.
-func (s *Server) Start(cfg config.Config) error {
+func (s *Server) Start(ctx context.Context, cfg config.Config) error {
 	if cfg.Telemetry.Enabled {
 		m, err := telemetry.New(cfg.Telemetry)
 		if err != nil {
@@ -111,11 +112,11 @@ func (s *Server) Start(cfg config.Config) error {
 
 	if cfg.API.EnableUnsafeCORS {
 		allowAllCORS := handlers.CORS(handlers.AllowedHeaders([]string{"Content-Type"}))
-		return tmrpcserver.Serve(s.listener, allowAllCORS(h), s.logger, tmCfg)
+		return tmrpcserver.Serve(ctx, s.listener, allowAllCORS(h), s.logger, tmCfg)
 	}
 
 	s.logger.Info("starting API server...")
-	return tmrpcserver.Serve(s.listener, s.Router, s.logger, tmCfg)
+	return tmrpcserver.Serve(ctx, s.listener, s.Router, s.logger, tmCfg)
 }
 
 // Close closes the API server.

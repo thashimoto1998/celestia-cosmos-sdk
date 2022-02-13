@@ -144,6 +144,9 @@ type (
 		Validators []*Validator
 
 		Config Config
+
+		ctx    context.Context
+		cancel context.CancelFunc
 	}
 
 	// Validator defines an in-process Tendermint validator node. Through this object,
@@ -199,6 +202,7 @@ func NewCLILogger(cmd *cobra.Command) CLILogger {
 
 // New creates a new Network for integration tests or in-process testnets run via the CLI
 func New(l Logger, baseDir string, cfg Config) (*Network, error) {
+	ctx, cancel := context.WithCancel(context.TODO())
 	// only one caller/test can create and use a network at a time
 	l.Log("acquiring test network lock")
 	lock.Lock()
@@ -208,6 +212,8 @@ func New(l Logger, baseDir string, cfg Config) (*Network, error) {
 		BaseDir:    baseDir,
 		Validators: make([]*Validator, cfg.NumValidators),
 		Config:     cfg,
+		ctx:        ctx,
+		cancel:     cancel,
 	}
 
 	l.Logf("preparing test network with chain-id \"%s\"\n", cfg.ChainID)
@@ -331,7 +337,7 @@ func New(l Logger, baseDir string, cfg Config) (*Network, error) {
 		}
 
 		tmCfg.P2P.ListenAddress = p2pAddr
-		tmCfg.P2P.AddrBookStrict = false
+		// tmCfg.P2P.AddrBookStrict = false
 		tmCfg.P2P.AllowDuplicateIP = true
 
 		nodeID, pubKey, err := genutil.InitializeNodeValidatorFiles(tmCfg)
@@ -483,7 +489,7 @@ func New(l Logger, baseDir string, cfg Config) (*Network, error) {
 
 	l.Log("starting test network...")
 	for idx, v := range network.Validators {
-		err := startInProcess(cfg, v)
+		err := startInProcess(ctx, cfg, v)
 		if err != nil {
 			return nil, err
 		}
@@ -584,13 +590,11 @@ func (n *Network) Cleanup() {
 		n.Logger.Log("released test network lock")
 	}()
 
+	n.cancel()
+
 	n.Logger.Log("cleaning up test network...")
 
 	for _, v := range n.Validators {
-		if v.tmNode != nil && v.tmNode.IsRunning() {
-			_ = v.tmNode.Stop()
-		}
-
 		if v.api != nil {
 			_ = v.api.Close()
 		}
