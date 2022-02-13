@@ -154,4 +154,4 @@ replace github.com/gin-gonic/gin => github.com/gin-gonic/gin v1.7.0
 
 replace github.com/cosmos/cosmos-sdk/db => ./db
 
-replace github.com/tendermint/tendermint => /home/evan/go/src/github.com/celestiaorg/celestia-core
+replace github.com/tendermint/tendermint => github.com/celestiaorg/celestia-core v0.0.2-0.20220213210438-e45fc9406561
