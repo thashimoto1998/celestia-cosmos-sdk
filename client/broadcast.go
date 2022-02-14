@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/tendermint/tendermint/mempool"
+	"github.com/pkg/errors"
 	tmtypes "github.com/tendermint/tendermint/types"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -55,7 +55,7 @@ func CheckTendermintError(err error, tx tmtypes.Tx) *sdk.TxResponse {
 	txHash := fmt.Sprintf("%X", tx.Hash())
 
 	switch {
-	case strings.Contains(errStr, strings.ToLower(mempool.ErrTxInCache.Error())):
+	case strings.Contains(errStr, strings.ToLower(ErrTxInCache.Error())):
 		return &sdk.TxResponse{
 			Code:      sdkerrors.ErrTxInMempoolCache.ABCICode(),
 			Codespace: sdkerrors.ErrTxInMempoolCache.Codespace(),
@@ -80,6 +80,11 @@ func CheckTendermintError(err error, tx tmtypes.Tx) *sdk.TxResponse {
 		return nil
 	}
 }
+
+var (
+	// ErrTxInCache is returned to the client if we saw tx earlier
+	ErrTxInCache = errors.New("tx already exists in cache")
+)
 
 // BroadcastTxCommit broadcasts transaction bytes to a Tendermint node and
 // waits for a commit. An error is only returned if there is no RPC node

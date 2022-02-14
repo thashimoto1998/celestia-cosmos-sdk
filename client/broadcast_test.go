@@ -7,7 +7,6 @@ import (
 
 	"github.com/stretchr/testify/require"
 	"github.com/tendermint/tendermint/crypto/tmhash"
-	"github.com/tendermint/tendermint/mempool"
 	"github.com/tendermint/tendermint/rpc/client/mock"
 	ctypes "github.com/tendermint/tendermint/rpc/core/types"
 	tmtypes "github.com/tendermint/tendermint/types"
@@ -40,12 +39,38 @@ func CreateContextWithErrorAndMode(err error, mode string) Context {
 	}
 }
 
+// ErrTxTooLarge means the tx is too big to be sent in a message to other peers
+type ErrTxTooLarge struct {
+	max    int
+	actual int
+}
+
+func (e ErrTxTooLarge) Error() string {
+	return fmt.Sprintf("Tx too large. Max size is %d, but got %d", e.max, e.actual)
+}
+
+// ErrMempoolIsFull means Tendermint & an application can't handle that much load
+type ErrMempoolIsFull struct {
+	numTxs int
+	maxTxs int
+
+	txsBytes    int64
+	maxTxsBytes int64
+}
+
+func (e ErrMempoolIsFull) Error() string {
+	return fmt.Sprintf(
+		"mempool is full: number of txs %d (max: %d), total txs bytes %d (max: %d)",
+		e.numTxs, e.maxTxs,
+		e.txsBytes, e.maxTxsBytes)
+}
+
 // Test the correct code is returned when
 func TestBroadcastError(t *testing.T) {
 	errors := map[error]uint32{
-		mempool.ErrTxInCache:       sdkerrors.ErrTxInMempoolCache.ABCICode(),
-		mempool.ErrTxTooLarge{}:    sdkerrors.ErrTxTooLarge.ABCICode(),
-		mempool.ErrMempoolIsFull{}: sdkerrors.ErrMempoolIsFull.ABCICode(),
+		ErrTxInCache:       sdkerrors.ErrTxInMempoolCache.ABCICode(),
+		ErrTxTooLarge{}:    sdkerrors.ErrTxTooLarge.ABCICode(),
+		ErrMempoolIsFull{}: sdkerrors.ErrMempoolIsFull.ABCICode(),
 	}
 
 	modes := []string{
