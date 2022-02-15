@@ -5,15 +5,22 @@ import (
 	"io/ioutil"
 	"os"
 
+	"github.com/cosmos/cosmos-sdk/server"
+	"github.com/rs/zerolog"
 	abci "github.com/tendermint/tendermint/abci/types"
-	"github.com/tendermint/tendermint/libs/log"
+	tmlog "github.com/tendermint/tendermint/libs/log"
 )
 
 // SetupApp returns an application as well as a clean-up function
 // to be used to quickly setup a test case with an app
 func SetupApp() (abci.Application, func(), error) {
-	logger := log.NewTMLogger(log.NewSyncWriter(os.Stdout)).
-		With("module", "mock")
+	var logger tmlog.Logger
+
+	logWriter := zerolog.ConsoleWriter{Out: os.Stderr}
+	logger = server.ZeroLogWrapper{
+		Logger: zerolog.New(logWriter).Level(zerolog.InfoLevel).With().Timestamp().Logger(),
+	}
+	logger = logger.With("module", "mock")
 	rootDir, err := ioutil.TempDir("", "mock-sdk")
 	if err != nil {
 		return nil, nil, err

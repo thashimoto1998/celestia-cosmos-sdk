@@ -180,17 +180,16 @@ func TestStartStandAlone(t *testing.T) {
 	svrAddr, _, err := server.FreeTCPAddr()
 	require.NoError(t, err)
 
-	svr, err := abci_server.NewServer(svrAddr, "socket", app)
+	svr, err := abci_server.NewServer(logger, svrAddr, "socket", app)
 	require.NoError(t, err, "error creating listener")
-
-	svr.SetLogger(logger.With("module", "abci-server"))
-	err = svr.Start()
+	ctx, cancel := context.WithCancel(context.TODO())
+	defer cancel()
+	err = svr.Start(ctx)
 	require.NoError(t, err)
 
 	timer := time.NewTimer(time.Duration(2) * time.Second)
 	for range timer.C {
-		err = svr.Stop()
-		require.NoError(t, err)
+		cancel()
 		break
 	}
 }

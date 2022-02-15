@@ -20,7 +20,7 @@ import (
 	tmcfg "github.com/tendermint/tendermint/config"
 	"github.com/tendermint/tendermint/libs/log"
 	tmrand "github.com/tendermint/tendermint/libs/rand"
-	"github.com/tendermint/tendermint/node"
+	"github.com/tendermint/tendermint/libs/service"
 	tmclient "github.com/tendermint/tendermint/rpc/client"
 	dbm "github.com/tendermint/tm-db"
 	"google.golang.org/grpc"
@@ -100,6 +100,8 @@ type Config struct {
 func DefaultConfig() Config {
 	encCfg := simapp.MakeTestEncodingConfig()
 
+	rnd := tmrand.NewRand().Int63()
+
 	return Config{
 		Codec:             encCfg.Marshaler,
 		TxConfig:          encCfg.TxConfig,
@@ -109,7 +111,7 @@ func DefaultConfig() Config {
 		AppConstructor:    NewAppConstructor(encCfg),
 		GenesisState:      simapp.ModuleBasics.DefaultGenesis(encCfg.Marshaler),
 		TimeoutCommit:     2 * time.Second,
-		ChainID:           "chain-" + tmrand.NewRand().Str(6),
+		ChainID:           "chain-" + fmt.Sprintf("%s", rnd),
 		NumValidators:     4,
 		BondDenom:         sdk.DefaultBondDenom,
 		MinGasPrices:      fmt.Sprintf("0.000006%s", sdk.DefaultBondDenom),
@@ -160,7 +162,7 @@ type (
 		ValAddress sdk.ValAddress
 		RPCClient  tmclient.Client
 
-		tmNode  *node.Node
+		tmNode  service.Service
 		api     *api.Server
 		grpc    *grpc.Server
 		grpcWeb *http.Server
@@ -243,7 +245,7 @@ func New(t *testing.T, cfg Config) *Network {
 
 		logger := log.NewNopLogger()
 		if cfg.EnableLogging {
-			logger = log.NewTMLogger(log.NewSyncWriter(os.Stdout))
+			logger = log.MustNewDefaultLogger("plain", "info")
 			logger, _ = tmflags.ParseLogLevel("info", logger, tmcfg.DefaultLogLevel)
 		}
 
@@ -269,7 +271,7 @@ func New(t *testing.T, cfg Config) *Network {
 		require.NoError(t, err)
 
 		tmCfg.P2P.ListenAddress = p2pAddr
-		tmCfg.P2P.AddrBookStrict = false
+		// tmCfg.P2P.AddrBookStrict = false
 		tmCfg.P2P.AllowDuplicateIP = true
 
 		nodeID, pubKey, err := genutil.InitializeNodeValidatorFiles(tmCfg)
@@ -380,7 +382,7 @@ func New(t *testing.T, cfg Config) *Network {
 
 	t.Log("starting test network...")
 	for _, v := range network.Validators {
-		require.NoError(t, startInProcess(cfg, v))
+		require.NoError(t, startInProcess(context.TODO(), cfg, v))
 	}
 
 	t.Log("started test network")
@@ -474,7 +476,7 @@ func (n *Network) Cleanup() {
 
 	for _, v := range n.Validators {
 		if v.tmNode != nil && v.tmNode.IsRunning() {
-			_ = v.tmNode.Stop()
+			// _ = v.tmNode.Stop()
 		}
 
 		if v.api != nil {

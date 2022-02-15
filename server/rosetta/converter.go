@@ -571,9 +571,9 @@ func (c converter) Peers(peers []tmcoretypes.Peer) []*rosettatypes.Peer {
 
 	for i, peer := range peers {
 		converted[i] = &rosettatypes.Peer{
-			PeerID: peer.NodeInfo.Moniker,
+			PeerID: string(peer.ID),
 			Metadata: map[string]interface{}{
-				"addr": peer.NodeInfo.ListenAddr,
+				"addr": peer.URL,
 			},
 		}
 	}

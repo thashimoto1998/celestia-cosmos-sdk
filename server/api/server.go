@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"net/http"
@@ -33,6 +34,9 @@ type Server struct {
 	logger   log.Logger
 	metrics  *telemetry.Metrics
 	listener net.Listener
+
+	ctx    context.Context
+	cancel context.CancelFunc
 }
 
 // CustomGRPCHeaderMatcher for mapping request headers to
@@ -59,6 +63,8 @@ func New(clientCtx client.Context, logger log.Logger) *Server {
 		AnyResolver:  clientCtx.InterfaceRegistry,
 	}
 
+	ctx, cancel := context.WithCancel(context.TODO())
+
 	return &Server{
 		Router:    mux.NewRouter(),
 		ClientCtx: clientCtx,
@@ -75,6 +81,8 @@ func New(clientCtx client.Context, logger log.Logger) *Server {
 			// GRPC metadata
 			runtime.WithIncomingHeaderMatcher(CustomGRPCHeaderMatcher),
 		),
+		ctx:    ctx,
+		cancel: cancel,
 	}
 }
 
@@ -99,7 +107,7 @@ func (s *Server) Start(cfg config.Config) error {
 	tmCfg.WriteTimeout = time.Duration(cfg.API.RPCWriteTimeout) * time.Second
 	tmCfg.MaxBodyBytes = int64(cfg.API.RPCMaxBodyBytes)
 
-	listener, err := tmrpcserver.Listen(cfg.API.Address, tmCfg)
+	listener, err := tmrpcserver.Listen(cfg.API.Address, tmCfg.MaxOpenConnections)
 	if err != nil {
 		return err
 	}
@@ -111,15 +119,16 @@ func (s *Server) Start(cfg config.Config) error {
 
 	if cfg.API.EnableUnsafeCORS {
 		allowAllCORS := handlers.CORS(handlers.AllowedHeaders([]string{"Content-Type"}))
-		return tmrpcserver.Serve(s.listener, allowAllCORS(h), s.logger, tmCfg)
+		return tmrpcserver.Serve(s.ctx, s.listener, allowAllCORS(h), s.logger, tmCfg)
 	}
 
 	s.logger.Info("starting API server...")
-	return tmrpcserver.Serve(s.listener, s.Router, s.logger, tmCfg)
+	return tmrpcserver.Serve(s.ctx, s.listener, s.Router, s.logger, tmCfg)
 }
 
 // Close closes the API server.
 func (s *Server) Close() error {
+	s.cancel()
 	return s.listener.Close()
 }
 

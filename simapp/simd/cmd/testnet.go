@@ -6,6 +6,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net"
 	"os"
 	"path/filepath"
@@ -114,9 +115,10 @@ func InitTestnet(
 	algoStr string,
 	numValidators int,
 ) error {
+	rnd := tmrand.NewRand().Int63()
 
 	if chainID == "" {
-		chainID = "chain-" + tmrand.NewRand().Str(6)
+		chainID = "chain-" + fmt.Sprintf("%d", rnd)
 	}
 
 	nodeIDs := make([]string, numValidators)
@@ -395,7 +397,7 @@ func writeFile(name string, dir string, contents []byte) error {
 		return err
 	}
 
-	err = tmos.WriteFile(file, contents, 0644)
+	err = ioutil.WriteFile(file, contents, 0644) // nolint: gosec
 	if err != nil {
 		return err
 	}

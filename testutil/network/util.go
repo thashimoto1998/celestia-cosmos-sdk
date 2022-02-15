@@ -1,14 +1,15 @@
 package network
 
 import (
+	"context"
 	"encoding/json"
+	"io/ioutil"
 	"path/filepath"
 	"time"
 
 	tmtime "github.com/cosmos/cosmos-sdk/libs/time"
 	tmos "github.com/tendermint/tendermint/libs/os"
 	"github.com/tendermint/tendermint/node"
-	pvm "github.com/tendermint/tendermint/privval"
 	"github.com/tendermint/tendermint/rpc/client/local"
 	"github.com/tendermint/tendermint/types"
 
@@ -19,9 +20,10 @@ import (
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
+	abciclient "github.com/tendermint/tendermint/abci/client"
 )
 
-func startInProcess(cfg Config, val *Validator) error {
+func startInProcess(ctx context.Context, cfg Config, val *Validator) error {
 	logger := val.Ctx.Logger
 	tmCfg := val.Ctx.Config
 	tmCfg.Instrumentation.Prometheus = false
@@ -30,21 +32,17 @@ func startInProcess(cfg Config, val *Validator) error {
 		return err
 	}
 
-	nodeKey, err := tmCfg.LoadOrGenNodeKey(tmCfg.NodeKeyFile())
-	if err != nil {
-		return err
-	}
-
 	app := cfg.AppConstructor(*val)
 
-	genDoc, err := tmtypes.GenesisDocFromFile(cfg.GenesisFile())
+	genDoc, err := types.GenesisDocFromFile(tmCfg.GenesisFile())
 	if err != nil {
 		return err
 	}
 
-	tmNode, err := node.New(
-		cfg,
-		ctx.Logger,
+	val.tmNode, err = node.New(
+		ctx,
+		tmCfg,
+		logger.With("module", val.Moniker),
 		abciclient.NewLocalCreator(app),
 		genDoc,
 	)
@@ -52,14 +50,19 @@ func startInProcess(cfg Config, val *Validator) error {
 		return err
 	}
 
-	if err := tmNode.Start(); err != nil {
+	if err := val.tmNode.Start(ctx); err != nil {
 		return err
 	}
 
-	val.tmNode = tmNode
-
 	if val.RPCAddress != "" {
-		val.RPCClient = local.New(tmNode)
+		node, ok := val.tmNode.(local.NodeService)
+		if !ok {
+			panic("can't cast service.Service to NodeService")
+		}
+		val.RPCClient, err = local.New(logger, node)
+		if err != nil {
+			panic("cant create a local node")
+		}
 	}
 
 	// We'll need a RPC client if the validator exposes a gRPC or REST endpoint.
@@ -200,7 +203,7 @@ func writeFile(name string, dir string, contents []byte) error {
 		return err
 	}
 
-	err = tmos.WriteFile(file, contents, 0644)
+	err = ioutil.WriteFile(file, contents, 0644) // nolint: gosec
 	if err != nil {
 		return err
 	}

@@ -15,6 +15,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/server/api"
 	"github.com/cosmos/cosmos-sdk/server/config"
+	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 )
 
 // ServerStartTime defines the time duration that the server need to stay running after startup
@@ -70,7 +71,7 @@ type (
 		// Height is the app's latest block height.
 		Height int64
 		// ConsensusParams are the exported consensus params for ABCI.
-		ConsensusParams *abci.ConsensusParams
+		ConsensusParams *tmproto.ConsensusParams
 	}
 
 	// AppExporter is a function that dumps all app state to

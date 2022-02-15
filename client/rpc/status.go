@@ -8,6 +8,7 @@ import (
 
 	"github.com/tendermint/tendermint/libs/bytes"
 	ctypes "github.com/tendermint/tendermint/rpc/coretypes"
+	"github.com/tendermint/tendermint/types"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
@@ -92,7 +93,7 @@ func getNodeStatus(clientCtx client.Context) (*ctypes.ResultStatus, error) {
 // NodeInfoResponse defines a response type that contains node status and version
 // information.
 type NodeInfoResponse struct {
-	p2p.DefaultNodeInfo `json:"node_info"`
+	types.NodeInfo `json:"node_info"`
 
 	ApplicationVersion version.Info `json:"application_version"`
 }
@@ -106,7 +107,7 @@ func NodeInfoRequestHandlerFn(clientCtx client.Context) http.HandlerFunc {
 		}
 
 		resp := NodeInfoResponse{
-			DefaultNodeInfo:    status.NodeInfo,
+			NodeInfo:           status.NodeInfo,
 			ApplicationVersion: version.NewInfo(),
 		}
 

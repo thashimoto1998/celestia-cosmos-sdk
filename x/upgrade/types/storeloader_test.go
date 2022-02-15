@@ -26,7 +26,7 @@ func useUpgradeLoader(height int64, upgrades *store.StoreUpgrades) func(*baseapp
 }
 
 func defaultLogger() log.Logger {
-	return log.NewTMLogger(log.NewSyncWriter(os.Stdout)).With("module", "sdk/app")
+	return log.MustNewDefaultLogger("plain", "info")
 }
 
 func initStore(t *testing.T, db dbm.DB, storeKey string, k, v []byte) {

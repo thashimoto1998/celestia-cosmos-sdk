@@ -3,6 +3,7 @@ package server
 // DONTCOVER
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"os"
@@ -10,6 +11,7 @@ import (
 	"time"
 
 	"github.com/cosmos/cosmos-sdk/codec"
+	abciclient "github.com/tendermint/tendermint/abci/client"
 
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc"
@@ -18,8 +20,8 @@ import (
 	tcmd "github.com/tendermint/tendermint/cmd/tendermint/commands"
 	tmos "github.com/tendermint/tendermint/libs/os"
 	"github.com/tendermint/tendermint/node"
-	pvm "github.com/tendermint/tendermint/privval"
 	"github.com/tendermint/tendermint/rpc/client/local"
+	tmtypes "github.com/tendermint/tendermint/types"
 
 	"github.com/cosmos/cosmos-sdk/server/rosetta"
 	crgserver "github.com/cosmos/cosmos-sdk/server/rosetta/lib/server"
@@ -118,13 +120,13 @@ which accepts a path for the resulting pprof file.
 			withTM, _ := cmd.Flags().GetBool(flagWithTendermint)
 			if !withTM {
 				serverCtx.Logger.Info("starting ABCI without Tendermint")
-				return startStandAlone(serverCtx, appCreator)
+				return startStandAlone(cmd.Context(), serverCtx, appCreator)
 			}
 
 			serverCtx.Logger.Info("starting ABCI with Tendermint")
 
 			// amino is needed here for backwards compatibility of REST routes
-			err = startInProcess(serverCtx, clientCtx, appCreator)
+			err = startInProcess(cmd.Context(), serverCtx, clientCtx, appCreator)
 			errCode, ok := err.(ErrorCode)
 			if !ok {
 				return err
@@ -163,12 +165,14 @@ which accepts a path for the resulting pprof file.
 	cmd.Flags().Uint64(FlagStateSyncSnapshotInterval, 0, "State sync snapshot interval")
 	cmd.Flags().Uint32(FlagStateSyncSnapshotKeepRecent, 2, "State sync snapshot to keep")
 
+	serverCtx := GetServerContextFromCmd(cmd)
+
 	// add support for all Tendermint-specific command line options
-	tcmd.AddNodeFlags(cmd)
+	tcmd.AddNodeFlags(cmd, serverCtx.Config)
 	return cmd
 }
 
-func startStandAlone(ctx *Context, appCreator types.AppCreator) error {
+func startStandAlone(goCtx context.Context, ctx *Context, appCreator types.AppCreator) error {
 	addr := ctx.Viper.GetString(flagAddress)
 	transport := ctx.Viper.GetString(flagTransport)
 	home := ctx.Viper.GetString(flags.FlagHome)
@@ -186,30 +190,22 @@ func startStandAlone(ctx *Context, appCreator types.AppCreator) error {
 
 	app := appCreator(ctx.Logger, db, traceWriter, ctx.Viper)
 
-	svr, err := server.NewServer(addr, transport, app)
+	svr, err := server.NewServer(ctx.Logger.With("module", "abci-server"), addr, transport, app)
 	if err != nil {
 		return fmt.Errorf("error creating listener: %v", err)
 	}
 
-	svr.SetLogger(ctx.Logger.With("module", "abci-server"))
-
-	err = svr.Start()
+	err = svr.Start(goCtx)
 	if err != nil {
 		tmos.Exit(err.Error())
 	}
-
-	defer func() {
-		if err = svr.Stop(); err != nil {
-			tmos.Exit(err.Error())
-		}
-	}()
 
 	// Wait for SIGINT or SIGTERM signal
 	return WaitForQuitSignals()
 }
 
 // legacyAminoCdc is used for the legacy REST API
-func startInProcess(ctx *Context, clientCtx client.Context, appCreator types.AppCreator) error {
+func startInProcess(goCtx context.Context, ctx *Context, clientCtx client.Context, appCreator types.AppCreator) error {
 	cfg := ctx.Config
 	home := cfg.RootDir
 	var cpuProfileCleanup func()
@@ -252,17 +248,13 @@ func startInProcess(ctx *Context, clientCtx client.Context, appCreator types.App
 
 	app := appCreator(ctx.Logger, db, traceWriter, ctx.Viper)
 
-	nodeKey, err := cfg.LoadOrGenNodeKey(cfg.NodeKeyFile())
-	if err != nil {
-		return err
-	}
-
 	genDoc, err := tmtypes.GenesisDocFromFile(cfg.GenesisFile())
 	if err != nil {
 		return err
 	}
 
 	tmNode, err := node.New(
+		goCtx,
 		cfg,
 		ctx.Logger,
 		abciclient.NewLocalCreator(app),
@@ -273,7 +265,7 @@ func startInProcess(ctx *Context, clientCtx client.Context, appCreator types.App
 	}
 
 	ctx.Logger.Debug("initialization: tmNode created")
-	if err := tmNode.Start(); err != nil {
+	if err := tmNode.Start(goCtx); err != nil {
 		return err
 	}
 	ctx.Logger.Debug("initialization: tmNode started")
@@ -282,7 +274,15 @@ func startInProcess(ctx *Context, clientCtx client.Context, appCreator types.App
 	// service if API or gRPC is enabled, and avoid doing so in the general
 	// case, because it spawns a new local tendermint RPC client.
 	if config.API.Enable || config.GRPC.Enable {
-		clientCtx = clientCtx.WithClient(local.New(tmNode))
+		node, ok := tmNode.(local.NodeService)
+		if !ok {
+			panic("unable to set node type. Please try reinstalling the binary.")
+		}
+		localNode, err := local.New(ctx.Logger, node)
+		if err != nil {
+			panic(err)
+		}
+		clientCtx = clientCtx.WithClient(localNode)
 
 		app.RegisterTxService(clientCtx)
 		app.RegisterTendermintService(clientCtx)
@@ -290,7 +290,7 @@ func startInProcess(ctx *Context, clientCtx client.Context, appCreator types.App
 
 	var apiSrv *api.Server
 	if config.API.Enable {
-		genDoc, err := genDocProvider()
+		genDoc, err := tmtypes.GenesisDocFromFile(cfg.GenesisFile())
 		if err != nil {
 			return err
 		}
@@ -371,9 +371,6 @@ func startInProcess(ctx *Context, clientCtx client.Context, appCreator types.App
 	}
 
 	defer func() {
-		if tmNode.IsRunning() {
-			_ = tmNode.Stop()
-		}
 
 		if cpuProfileCleanup != nil {
 			cpuProfileCleanup()
