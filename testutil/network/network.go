@@ -15,9 +15,9 @@ import (
 	"testing"
 	"time"
 
+	tmflags "github.com/cosmos/cosmos-sdk/libs/flags"
 	"github.com/stretchr/testify/require"
 	tmcfg "github.com/tendermint/tendermint/config"
-	tmflags "github.com/tendermint/tendermint/libs/cli/flags"
 	"github.com/tendermint/tendermint/libs/log"
 	tmrand "github.com/tendermint/tendermint/libs/rand"
 	"github.com/tendermint/tendermint/node"
