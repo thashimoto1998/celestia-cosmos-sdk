@@ -1,3 +1,4 @@
+//go:build norace
 // +build norace
 
 package rest_test
@@ -40,7 +41,7 @@ func (s *IntegrationTestSuite) SetupSuite() {
 
 	cfg.NumValidators = 1
 	s.cfg = cfg
-	s.network = network.New(s.T(), cfg)
+	s.network, _ = network.New(s.T(), s.T().TempDir(), cfg)
 
 	val := s.network.Validators[0]
 	// Create new account in the keyring.

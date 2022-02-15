@@ -28,7 +28,7 @@ func NewDepositTestSuite(cfg network.Config) *DepositTestSuite {
 func (s *DepositTestSuite) SetupSuite() {
 	s.T().Log("setting up test suite")
 
-	s.network = network.New(s.T(), s.cfg)
+	s.network, _ = network.New(s.T(), s.T().TempDir(), s.cfg)
 
 	_, err := s.network.WaitForHeight(1)
 	s.Require().NoError(err)

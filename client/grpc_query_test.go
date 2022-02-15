@@ -1,3 +1,4 @@
+//go:build norace
 // +build norace
 
 package client_test
@@ -27,7 +28,7 @@ type IntegrationTestSuite struct {
 func (s *IntegrationTestSuite) SetupSuite() {
 	s.T().Log("setting up integration test suite")
 
-	s.network = network.New(s.T(), network.DefaultConfig())
+	s.network, _ = network.New(s.T(), s.T().TempDir(), network.DefaultConfig())
 	s.Require().NotNil(s.network)
 
 	_, err := s.network.WaitForHeight(2)

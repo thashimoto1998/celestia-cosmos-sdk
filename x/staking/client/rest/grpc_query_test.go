@@ -1,3 +1,4 @@
+//go:build norace
 // +build norace
 
 package rest_test
@@ -37,7 +38,7 @@ func (s *IntegrationTestSuite) SetupSuite() {
 	cfg.NumValidators = 2
 
 	s.cfg = cfg
-	s.network = network.New(s.T(), cfg)
+	s.network, _ = network.New(s.T(), s.T().TempDir(), cfg)
 
 	_, err := s.network.WaitForHeight(1)
 	s.Require().NoError(err)

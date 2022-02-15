@@ -63,4 +63,4 @@ replace github.com/99designs/keyring => github.com/cosmos/keyring v1.1.7-0.20210
 // TODO Remove it: https://github.com/cosmos/cosmos-sdk/issues/10409
 replace github.com/gin-gonic/gin => github.com/gin-gonic/gin v1.7.0
 
-replace github.com/tendermint/tendermint => github.com/celestiaorg/celestia-core v0.0.2-0.20220215024343-11120b432118
+replace github.com/tendermint/tendermint => /home/evan/go/src/github.com/celestiaorg/celestia-core // v0.0.2-0.20220215024343-11120b432118

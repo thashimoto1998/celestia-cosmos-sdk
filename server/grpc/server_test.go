@@ -1,3 +1,4 @@
+//go:build norace
 // +build norace
 
 package grpc_test
@@ -48,7 +49,7 @@ func (s *IntegrationTestSuite) SetupSuite() {
 	s.app = simapp.Setup(false)
 	s.cfg = network.DefaultConfig()
 	s.cfg.NumValidators = 1
-	s.network = network.New(s.T(), s.cfg)
+	s.network, _ = network.New(s.T(), s.T().TempDir(), s.cfg)
 	s.Require().NotNil(s.network)
 
 	_, err := s.network.WaitForHeight(2)
