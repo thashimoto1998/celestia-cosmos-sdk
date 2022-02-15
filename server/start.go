@@ -12,6 +12,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	abciclient "github.com/tendermint/tendermint/abci/client"
+	tmcfg "github.com/tendermint/tendermint/config"
 
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc"
@@ -165,10 +166,8 @@ which accepts a path for the resulting pprof file.
 	cmd.Flags().Uint64(FlagStateSyncSnapshotInterval, 0, "State sync snapshot interval")
 	cmd.Flags().Uint32(FlagStateSyncSnapshotKeepRecent, 2, "State sync snapshot to keep")
 
-	serverCtx := GetServerContextFromCmd(cmd)
-
 	// add support for all Tendermint-specific command line options
-	tcmd.AddNodeFlags(cmd, serverCtx.Config)
+	tcmd.AddNodeFlags(cmd, tmcfg.DefaultConfig())
 	return cmd
 }
 
