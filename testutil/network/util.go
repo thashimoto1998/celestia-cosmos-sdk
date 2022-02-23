@@ -1,16 +1,16 @@
 package network
 
 import (
+	"context"
 	"encoding/json"
+	opticonf "github.com/celestiaorg/optimint/config"
 	"path/filepath"
 	"time"
 
 	tmos "github.com/tendermint/tendermint/libs/os"
 	"github.com/tendermint/tendermint/node"
 	"github.com/tendermint/tendermint/p2p"
-	pvm "github.com/tendermint/tendermint/privval"
 	"github.com/tendermint/tendermint/proxy"
-	"github.com/tendermint/tendermint/rpc/client/local"
 	"github.com/tendermint/tendermint/types"
 	tmtime "github.com/tendermint/tendermint/types/time"
 
@@ -21,6 +21,10 @@ import (
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
+
+	opticonv "github.com/celestiaorg/optimint/conv"
+	optinode "github.com/celestiaorg/optimint/node"
+	rpcclient "github.com/celestiaorg/optimint/rpc/client"
 )
 
 func startInProcess(cfg Config, val *Validator) error {
@@ -40,28 +44,47 @@ func startInProcess(cfg Config, val *Validator) error {
 	app := cfg.AppConstructor(*val)
 
 	genDocProvider := node.DefaultGenesisDocProviderFunc(tmCfg)
-	tmNode, err := node.NewNode(
-		tmCfg,
-		pvm.LoadOrGenFilePV(tmCfg.PrivValidatorKeyFile(), tmCfg.PrivValidatorStateFile()),
-		nodeKey,
+	// node key in optimint format
+	oNodeKey, err := opticonv.GetNodeKey(nodeKey)
+	if err != nil {
+		return err
+	}
+	genesis, err := genDocProvider()
+	if err != nil {
+		return err
+	}
+	nodeConfig := opticonf.NodeConfig{}
+	err = nodeConfig.GetViperConfig(val.Ctx.Viper)
+	if err != nil {
+		return err
+	}
+	opticonv.GetNodeConfig(&nodeConfig, tmCfg)
+	err = opticonv.TranslateAddresses(&nodeConfig)
+	if err != nil {
+		return err
+	}
+	nodeConfig.DALayer = "mock"
+	nodeConfig.Aggregator = true
+	optiNode, err := optinode.NewNode(
+		context.Background(),
+		nodeConfig,
+		oNodeKey,
 		proxy.NewLocalClientCreator(app),
-		genDocProvider,
-		node.DefaultDBProvider,
-		node.DefaultMetricsProvider(tmCfg.Instrumentation),
-		logger.With("module", val.Moniker),
+		genesis,
+		logger,
 	)
 	if err != nil {
 		return err
 	}
 
-	if err := tmNode.Start(); err != nil {
+	if err := optiNode.Start(); err != nil {
 		return err
 	}
 
-	val.tmNode = tmNode
+	val.tmNode = optiNode
 
 	if val.RPCAddress != "" {
-		val.RPCClient = local.New(tmNode)
+		val.RPCClient = rpcclient.NewClient(optiNode)
 	}
 
 	// We'll need a RPC client if the validator exposes a gRPC or REST endpoint.

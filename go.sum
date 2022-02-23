@@ -180,8 +180,8 @@ github.com/btcsuite/winsvc v1.0.0/go.mod h1:jsenWakMcC0zFBFurPLEAyrnc/teJEM1O46f
 github.com/buger/jsonparser v0.0.0-20181115193947-bf1c66bbce23/go.mod h1:bbYlZJ7hK1yFx9hf58LP0zeX7UjIGs20ufpu3evjr+s=
 github.com/casbin/casbin/v2 v2.1.2/go.mod h1:YcPU1XXisHhLzuxH9coDNf2FbKpjGlbCg3n9yuLkIJQ=
 github.com/casbin/casbin/v2 v2.37.0/go.mod h1:vByNa/Fchek0KZUgG5wEsl7iFsiviAYKRtgrQfcJqHg=
-github.com/celestiaorg/optimint v0.0.0-20220207224629-970f146c3b34 h1:JqeYsGbpYiQsESLX3pmtMhsxau4EYP75ec6sD0m9aS8=
-github.com/celestiaorg/optimint v0.0.0-20220207224629-970f146c3b34/go.mod h1:ejcMDzIj8i7DvMBcdKflFNyFnUisfZfHt6T5r1t7qYM=
+github.com/celestiaorg/optimint v0.0.0-20220223083935-a85b6da665f4 h1:sMIYXVsFWXs9QRAoEmxTlt70Kk3nDysDDvWwG8k6uVU=
+github.com/celestiaorg/optimint v0.0.0-20220223083935-a85b6da665f4/go.mod h1:ejcMDzIj8i7DvMBcdKflFNyFnUisfZfHt6T5r1t7qYM=
 github.com/cenkalti/backoff v2.2.1+incompatible h1:tNowT99t7UNflLxfYYSlKYsBpXdEet03Pg2g16Swow4=
 github.com/cenkalti/backoff v2.2.1+incompatible/go.mod h1:90ReRw6GdpyfrHakVjL/QHaoyV4aDUVVkXQJJJ3NXXM=
 github.com/cenkalti/backoff/v4 v4.1.1/go.mod h1:scbssz8iZGpm3xbr14ovlUdkxfGXNInqkPWOWmG2CLw=

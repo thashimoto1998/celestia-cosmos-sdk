@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	optinode "github.com/celestiaorg/optimint/node"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -20,7 +21,6 @@ import (
 	tmflags "github.com/tendermint/tendermint/libs/cli/flags"
 	"github.com/tendermint/tendermint/libs/log"
 	tmrand "github.com/tendermint/tendermint/libs/rand"
-	"github.com/tendermint/tendermint/node"
 	tmclient "github.com/tendermint/tendermint/rpc/client"
 	dbm "github.com/tendermint/tm-db"
 	"google.golang.org/grpc"
@@ -158,7 +158,7 @@ type (
 		ValAddress sdk.ValAddress
 		RPCClient  tmclient.Client
 
-		tmNode  *node.Node
+		tmNode  *optinode.Node
 		api     *api.Server
 		grpc    *grpc.Server
 		grpcWeb *http.Server
