@@ -40,12 +40,20 @@ func startInProcess(cfg Config, val *Validator) error {
 	if err != nil {
 		return err
 	}
+	privValKey, err := p2p.LoadOrGenNodeKey(tmCfg.PrivValidatorKeyFile())
+	if err != nil {
+		return err
+	}
 
 	app := cfg.AppConstructor(*val)
 
 	genDocProvider := node.DefaultGenesisDocProviderFunc(tmCfg)
 	// node key in optimint format
-	oNodeKey, err := opticonv.GetNodeKey(nodeKey)
+	p2pKey, err := opticonv.GetNodeKey(nodeKey)
+	if err != nil {
+		return err
+	}
+	signingKey, err := opticonv.GetNodeKey(privValKey)
 	if err != nil {
 		return err
 	}
@@ -68,7 +76,8 @@ func startInProcess(cfg Config, val *Validator) error {
 	optiNode, err := optinode.NewNode(
 		context.Background(),
 		nodeConfig,
-		oNodeKey,
+		p2pKey,
+		signingKey,
 		proxy.NewLocalClientCreator(app),
 		genesis,
 		logger,

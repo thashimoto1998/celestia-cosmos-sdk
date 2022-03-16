@@ -263,10 +263,18 @@ func startInProcess(ctx *Context, clientCtx client.Context, appCreator types.App
 	if err != nil {
 		return err
 	}
+	privValKey, err := p2p.LoadOrGenNodeKey(cfg.PrivValidatorKeyFile())
+	if err != nil {
+		return err
+	}
 
 	genDocProvider := node.DefaultGenesisDocProviderFunc(cfg)
-	// node key in optimint format
-	oNodeKey, err := opticonv.GetNodeKey(nodeKey)
+	// keys in optimint format
+	p2pKey, err := opticonv.GetNodeKey(nodeKey)
+	if err != nil {
+		return err
+	}
+	signingKey, err := opticonv.GetNodeKey(privValKey)
 	if err != nil {
 		return err
 	}
@@ -287,7 +295,8 @@ func startInProcess(ctx *Context, clientCtx client.Context, appCreator types.App
 	tmNode, err := optinode.NewNode(
 		context.Background(),
 		nodeConfig,
-		oNodeKey,
+		p2pKey,
+		signingKey,
 		proxy.NewLocalClientCreator(app),
 		genesis,
 		ctx.Logger,
