@@ -18,7 +18,6 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/spf13/cobra"
 	tmrand "github.com/tendermint/tendermint/libs/rand"
-	"github.com/tendermint/tendermint/node"
 	tmclient "github.com/tendermint/tendermint/rpc/client"
 	dbm "github.com/tendermint/tm-db"
 	"google.golang.org/grpc"
@@ -44,6 +43,8 @@ import (
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+
+	optinode "github.com/celestiaorg/optimint/node"
 )
 
 // package-wide network lock to only allow one test network at a time
@@ -163,7 +164,7 @@ type (
 		ValAddress sdk.ValAddress
 		RPCClient  tmclient.Client
 
-		tmNode  *node.Node
+		tmNode  *optinode.Node
 		api     *api.Server
 		grpc    *grpc.Server
 		grpcWeb *http.Server

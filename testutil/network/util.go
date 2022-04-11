@@ -1,17 +1,21 @@
 package network
 
 import (
+	"context"
 	"encoding/json"
+	opticonf "github.com/celestiaorg/optimint/config"
+	opticonv "github.com/celestiaorg/optimint/conv"
+	optinode "github.com/celestiaorg/optimint/node"
+	optirpc "github.com/celestiaorg/optimint/rpc"
+	abciclient "github.com/tendermint/tendermint/abci/client"
+	"github.com/tendermint/tendermint/node"
+	"github.com/tendermint/tendermint/p2p"
+	"github.com/tendermint/tendermint/privval"
 	"io/ioutil"
 	"path/filepath"
 	"time"
 
 	tmos "github.com/tendermint/tendermint/libs/os"
-	"github.com/tendermint/tendermint/node"
-	"github.com/tendermint/tendermint/p2p"
-	pvm "github.com/tendermint/tendermint/privval"
-	"github.com/tendermint/tendermint/proxy"
-	"github.com/tendermint/tendermint/rpc/client/local"
 	"github.com/tendermint/tendermint/types"
 	tmtime "github.com/tendermint/tendermint/types/time"
 
@@ -37,32 +41,60 @@ func startInProcess(cfg Config, val *Validator) error {
 	if err != nil {
 		return err
 	}
+	pval := privval.LoadOrGenFilePV(tmCfg.PrivValidatorKeyFile(), tmCfg.PrivValidatorStateFile())
+	// keys in optimint format
+	p2pKey, err := opticonv.GetNodeKey(nodeKey)
+	if err != nil {
+		return err
+	}
+	signingKey, err := opticonv.GetNodeKey(&p2p.NodeKey{PrivKey: pval.Key.PrivKey})
+	if err != nil {
+		return err
+	}
 
 	app := cfg.AppConstructor(*val)
 	genDocProvider := node.DefaultGenesisDocProviderFunc(tmCfg)
+	genDoc, err := genDocProvider()
+	if err != nil {
+		return err
+	}
 
-	tmNode, err := node.NewNode(
-		tmCfg,
-		pvm.LoadOrGenFilePV(tmCfg.PrivValidatorKeyFile(), tmCfg.PrivValidatorStateFile()),
-		nodeKey,
-		proxy.NewLocalClientCreator(app),
-		genDocProvider,
-		node.DefaultDBProvider,
-		node.DefaultMetricsProvider(tmCfg.Instrumentation),
-		logger.With("module", val.Moniker),
+	nodeConfig := opticonf.NodeConfig{}
+	err = nodeConfig.GetViperConfig(val.Ctx.Viper)
+	nodeConfig.Aggregator = true
+	nodeConfig.DALayer = "mock"
+	if err != nil {
+		return err
+	}
+	opticonv.GetNodeConfig(&nodeConfig, tmCfg)
+	err = opticonv.TranslateAddresses(&nodeConfig)
+	if err != nil {
+		return err
+	}
+	val.tmNode, err = optinode.NewNode(
+		context.Background(),
+		nodeConfig,
+		p2pKey,
+		signingKey,
+		abciclient.NewLocalClient(nil, app),
+		genDoc,
+		logger,
 	)
 	if err != nil {
 		return err
 	}
 
-	if err := tmNode.Start(); err != nil {
+	if err := val.tmNode.Start(); err != nil {
 		return err
 	}
 
-	val.tmNode = tmNode
-
 	if val.RPCAddress != "" {
-		val.RPCClient = local.New(tmNode)
+		server := optirpc.NewServer(val.tmNode, tmCfg.RPC, logger)
+		err = server.Start()
+		if err != nil {
+			return err
+		}
+		val.RPCClient = server.Client()
 	}
 
 	// We'll need a RPC client if the validator exposes a gRPC or REST endpoint.
