@@ -19,7 +19,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/tendermint/tendermint/config"
 	tmrand "github.com/tendermint/tendermint/libs/rand"
-	"github.com/tendermint/tendermint/libs/service"
 	tmclient "github.com/tendermint/tendermint/rpc/client"
 	dbm "github.com/tendermint/tm-db"
 	"google.golang.org/grpc"
@@ -45,6 +44,8 @@ import (
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+
+	optinode "github.com/celestiaorg/optimint/node"
 )
 
 // package-wide network lock to only allow one test network at a time
@@ -164,7 +165,7 @@ type (
 		ValAddress sdk.ValAddress
 		RPCClient  tmclient.Client
 
-		tmNode  service.Service
+		tmNode  *optinode.Node
 		api     *api.Server
 		grpc    *grpc.Server
 		grpcWeb *http.Server
