@@ -67,6 +67,8 @@ func (s *IntegrationTestSuite) TestGenTxCmd() {
 		fmt.Sprintf("--%s=%s", flags.FlagOutputDocument, genTxFile),
 		val.Moniker,
 		amount.String(),
+		fmt.Sprintf("--%s=%s", flags.FlagEthereumAddress, val.EthereumAddr.GetAddress()),
+		fmt.Sprintf("--%s=%s", flags.FlagOrchestratorAddress, val.OrchestratorAddr.String()),
 	})
 
 	err := cmd.ExecuteContext(ctx)
@@ -117,6 +119,8 @@ func (s *IntegrationTestSuite) TestGenTxCmdPubkey() {
 		fmt.Sprintf("--%s={\"key\":\"BOIkjkFruMpfOFC9oNPhiJGfmY2pHF/gwHdLDLnrnS0=\"}", stakingcli.FlagPubKey),
 		val.Moniker,
 		amount.String(),
+		fmt.Sprintf("--%s=%s", flags.FlagEthereumAddress, val.EthereumAddr.GetAddress()),
+		fmt.Sprintf("--%s=%s", flags.FlagOrchestratorAddress, val.OrchestratorAddr.String()),
 	})
 	s.Require().Error(cmd.ExecuteContext(ctx))
 
@@ -126,6 +130,8 @@ func (s *IntegrationTestSuite) TestGenTxCmdPubkey() {
 		fmt.Sprintf("--%s={\"@type\":\"/cosmos.crypto.ed25519.PubKey\",\"key\":\"BOIkjkFruMpfOFC9oNPhiJGfmY2pHF/gwHdLDLnrnS0=\"}", stakingcli.FlagPubKey),
 		val.Moniker,
 		amount.String(),
+		fmt.Sprintf("--%s=%s", flags.FlagEthereumAddress, val.EthereumAddr.GetAddress()),
+		fmt.Sprintf("--%s=%s", flags.FlagOrchestratorAddress, val.OrchestratorAddr.String()),
 	})
 	s.Require().NoError(cmd.ExecuteContext(ctx))
 }
