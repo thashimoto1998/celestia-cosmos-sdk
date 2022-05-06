@@ -6,6 +6,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"github.com/cosmos/cosmos-sdk/x/staking/teststaking"
 	"net"
 	"os"
 	"path/filepath"
@@ -76,7 +77,8 @@ Example:
 
 			return InitTestnet(
 				clientCtx, cmd, config, mbm, genBalIterator, outputDir, chainID, minGasPrices,
-				nodeDirPrefix, nodeDaemonHome, startingIPAddress, keyringBackend, algo, numValidators,
+				nodeDirPrefix, nodeDaemonHome, startingIPAddress, keyringBackend, algo,
+				numValidators,
 			)
 		},
 	}
@@ -206,9 +208,12 @@ func InitTestnet(
 		genBalances = append(genBalances, banktypes.Balance{Address: addr.String(), Coins: coins.Sort()})
 		genAccounts = append(genAccounts, authtypes.NewBaseAccount(addr, nil, 0, 0))
 
-		// TODO make these come from the test command
-		orchAddr, _ := sdk.AccAddressFromBech32("celes1qktu8009djs6uym9uwj84ead24exkezsaqrmn5")
-		ethAddr, _ := stakingtypes.NewEthAddress("0x91DEd26b5f38B065FC0204c7929Da6b2A21277Cd")
+		orchAddress := sdk.AccAddress(valPubKeys[i].Address())
+
+		ethAddress, err := teststaking.RandomEthAddress()
+		if err != nil {
+			return err
+		}
 
 		valTokens := sdk.TokensFromConsensusPower(100, sdk.DefaultPowerReduction)
 		createValMsg, err := stakingtypes.NewMsgCreateValidator(
@@ -217,7 +222,7 @@ func InitTestnet(
 			sdk.NewCoin(sdk.DefaultBondDenom, valTokens),
 			stakingtypes.NewDescription(nodeDirName, "", "", "", ""),
 			stakingtypes.NewCommissionRates(sdk.OneDec(), sdk.OneDec(), sdk.OneDec()),
-			sdk.OneInt(), orchAddr, *ethAddr,
+			sdk.OneInt(), orchAddress, *ethAddress,
 		)
 		if err != nil {
 			return err

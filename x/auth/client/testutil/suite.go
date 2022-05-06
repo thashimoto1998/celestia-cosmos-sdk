@@ -454,7 +454,7 @@ func (s *IntegrationTestSuite) TestCLIQueryTxsCmdByEvents() {
 		expectEmpty bool
 		expectError string
 	}{
-		{
+		{ // Multiple shares failing test
 			"fee event happy case",
 			[]string{
 				fmt.Sprintf("--events=tx.fee=%s",
