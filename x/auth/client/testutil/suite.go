@@ -488,6 +488,7 @@ func (s *IntegrationTestSuite) TestCLIQueryTxsCmdByEvents() {
 				s.Require().Equal(tc.expectError, err.Error())
 				return
 			}
+			s.Require().NoError(err)
 
 			var result sdk.SearchTxsResult
 			s.Require().NoError(val.ClientCtx.Codec.UnmarshalJSON(out.Bytes(), &result))
