@@ -93,6 +93,7 @@ func InitCmd(mbm module.BasicManager, defaultNodeHome string) *cobra.Command {
 			config.P2P.MaxNumOutboundPeers = 70
 			config.P2P.MaxConnections = 320
 			config.P2P.Seeds = "a46bbdb81e66c950e3cdbe5ee748a2d6bdb185dd@161.97.168.77:26656,f0c58d904dec824605ac36114db28f1bf84f6ea3@144.76.112.238:26656" // nolint:lll
+			config.RPC.TimeoutBroadcastTxCommit = time.Second * 40
 
 			config.SetRoot(clientCtx.HomeDir)
 
