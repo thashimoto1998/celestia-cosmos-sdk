@@ -4,12 +4,13 @@ module github.com/cosmos/cosmos-sdk
 
 require (
 	github.com/99designs/keyring v1.1.6
+	github.com/Microsoft/go-winio v0.5.1 // indirect
 	github.com/adlio/schema v1.1.14 // indirect
 	github.com/armon/go-metrics v0.3.10
 	github.com/bgentry/speakeasy v0.1.0
 	github.com/btcsuite/btcd v0.22.0-beta
 	github.com/btcsuite/btcutil v1.0.3-0.20201208143702-a53e38424cce
-	github.com/celestiaorg/optimint v0.2.0
+	github.com/celestiaorg/optimint v0.3.1
 	github.com/coinbase/rosetta-sdk-go v0.6.10
 	github.com/confio/ics23/go v0.6.6
 	github.com/cosmos/go-bip39 v1.0.0
@@ -28,29 +29,30 @@ require (
 	github.com/hdevalence/ed25519consensus v0.0.0-20210204194344-59a8610d2b87
 	github.com/improbable-eng/grpc-web v0.14.1
 	github.com/jhump/protoreflect v1.9.0
-	github.com/magiconair/properties v1.8.5
+	github.com/magiconair/properties v1.8.6
 	github.com/mattn/go-isatty v0.0.14
+	github.com/opencontainers/image-spec v1.0.2 // indirect
 	github.com/otiai10/copy v1.6.0
 	github.com/pkg/errors v0.9.1
-	github.com/prometheus/client_golang v1.12.1
-	github.com/prometheus/common v0.32.1
+	github.com/prometheus/client_golang v1.12.2
+	github.com/prometheus/common v0.33.0
 	github.com/rakyll/statik v0.1.7
 	github.com/regen-network/cosmos-proto v0.3.1
 	github.com/rs/zerolog v1.23.0
-	github.com/spf13/cast v1.4.1
+	github.com/spf13/cast v1.5.0
 	github.com/spf13/cobra v1.4.0
 	github.com/spf13/pflag v1.0.5
-	github.com/spf13/viper v1.10.1
+	github.com/spf13/viper v1.12.0
 	github.com/stretchr/testify v1.7.1
 	github.com/tendermint/btcd v0.1.1
 	github.com/tendermint/crypto v0.0.0-20191022145703-50d29ede1e15
 	github.com/tendermint/go-amino v0.16.0
 	github.com/tendermint/tendermint v0.34.14
 	github.com/tendermint/tm-db v0.6.6
-	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519
-	google.golang.org/genproto v0.0.0-20211208223120-3a66f561d7aa
-	google.golang.org/grpc v1.44.0
-	google.golang.org/protobuf v1.27.1
+	golang.org/x/crypto v0.0.0-20220411220226-7b82a4e95df4
+	google.golang.org/genproto v0.0.0-20220519153652-3a47de7e79bd
+	google.golang.org/grpc v1.46.2
+	google.golang.org/protobuf v1.28.0
 	gopkg.in/yaml.v2 v2.4.0
 )
 
