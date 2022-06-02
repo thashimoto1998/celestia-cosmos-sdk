@@ -3,26 +3,19 @@ package server
 // DONTCOVER
 
 import (
+	"context"
 	"fmt"
+	"github.com/cosmos/cosmos-sdk/codec"
 	"net/http"
 	"os"
 	"runtime/pprof"
 	"time"
 
 	"github.com/spf13/cobra"
-	"github.com/tendermint/tendermint/abci/server"
-	tcmd "github.com/tendermint/tendermint/cmd/tendermint/commands"
-	tmos "github.com/tendermint/tendermint/libs/os"
-	"github.com/tendermint/tendermint/node"
-	"github.com/tendermint/tendermint/p2p"
-	pvm "github.com/tendermint/tendermint/privval"
-	"github.com/tendermint/tendermint/proxy"
-	"github.com/tendermint/tendermint/rpc/client/local"
 	"google.golang.org/grpc"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
-	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/server/api"
 	"github.com/cosmos/cosmos-sdk/server/config"
 	servergrpc "github.com/cosmos/cosmos-sdk/server/grpc"
@@ -30,6 +23,17 @@ import (
 	crgserver "github.com/cosmos/cosmos-sdk/server/rosetta/lib/server"
 	"github.com/cosmos/cosmos-sdk/server/types"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
+	"github.com/tendermint/tendermint/abci/server"
+	tcmd "github.com/tendermint/tendermint/cmd/tendermint/commands"
+	tmos "github.com/tendermint/tendermint/libs/os"
+	"github.com/tendermint/tendermint/node"
+	"github.com/tendermint/tendermint/p2p"
+	"github.com/tendermint/tendermint/proxy"
+
+	opticonf "github.com/celestiaorg/optimint/config"
+	opticonv "github.com/celestiaorg/optimint/conv"
+	optinode "github.com/celestiaorg/optimint/node"
+	optirpc "github.com/celestiaorg/optimint/rpc"
 )
 
 const (
@@ -165,6 +169,7 @@ is performed. Note, when enabled, gRPC will also be automatically enabled.
 
 	// add support for all Tendermint-specific command line options
 	tcmd.AddNodeFlags(cmd)
+	opticonf.AddFlags(cmd)
 	return cmd
 }
 
@@ -255,11 +260,15 @@ func startInProcess(ctx *Context, clientCtx client.Context, appCreator types.App
 	if err != nil {
 		return err
 	}
+	privValKey, err := p2p.LoadOrGenNodeKey(cfg.PrivValidatorKeyFile())
+	if err != nil {
+		return err
+	}
 
 	genDocProvider := node.DefaultGenesisDocProviderFunc(cfg)
-
 	var (
-		tmNode   *node.Node
+		tmNode   *optinode.Node
+		server   *optirpc.Server
 		gRPCOnly = ctx.Viper.GetBool(flagGRPCOnly)
 	)
 
@@ -267,31 +276,62 @@ func startInProcess(ctx *Context, clientCtx client.Context, appCreator types.App
 		ctx.Logger.Info("starting node in gRPC only mode; Tendermint is disabled")
 		config.GRPC.Enable = true
 	} else {
-		ctx.Logger.Info("starting node with ABCI Tendermint in-process")
+		ctx.Logger.Info("starting node with ABCI Optimint in-process")
 
-		tmNode, err = node.NewNode(
-			cfg,
-			pvm.LoadOrGenFilePV(cfg.PrivValidatorKeyFile(), cfg.PrivValidatorStateFile()),
-			nodeKey,
+		// keys in optimint format
+		p2pKey, err := opticonv.GetNodeKey(nodeKey)
+		if err != nil {
+			return err
+		}
+		signingKey, err := opticonv.GetNodeKey(privValKey)
+		if err != nil {
+			return err
+		}
+		genesis, err := genDocProvider()
+		if err != nil {
+			return err
+		}
+		nodeConfig := opticonf.NodeConfig{}
+		err = nodeConfig.GetViperConfig(ctx.Viper)
+		if err != nil {
+			return err
+		}
+		opticonv.GetNodeConfig(&nodeConfig, cfg)
+		err = opticonv.TranslateAddresses(&nodeConfig)
+		if err != nil {
+			return err
+		}
+		tmNode, err = optinode.NewNode(
+			context.Background(),
+			nodeConfig,
+			p2pKey,
+			signingKey,
 			proxy.NewLocalClientCreator(app),
-			genDocProvider,
-			node.DefaultDBProvider,
-			node.DefaultMetricsProvider(cfg.Instrumentation),
+			genesis,
 			ctx.Logger,
 		)
 		if err != nil {
 			return err
 		}
+
+		server = optirpc.NewServer(tmNode, cfg.RPC, ctx.Logger)
+		err = server.Start()
+		if err != nil {
+			return err
+		}
+
+		ctx.Logger.Debug("initialization: tmNode created")
 		if err := tmNode.Start(); err != nil {
 			return err
 		}
+		ctx.Logger.Debug("initialization: tmNode started")
 	}
 
 	// Add the tx service to the gRPC router. We only need to register this
 	// service if API or gRPC is enabled, and avoid doing so in the general
 	// case, because it spawns a new local tendermint RPC client.
-	if (config.API.Enable || config.GRPC.Enable) && tmNode != nil {
-		clientCtx = clientCtx.WithClient(local.New(tmNode))
+	if config.API.Enable || config.GRPC.Enable {
+		clientCtx = clientCtx.WithClient(server.Client())
 
 		app.RegisterTxService(clientCtx)
 		app.RegisterTendermintService(clientCtx)
