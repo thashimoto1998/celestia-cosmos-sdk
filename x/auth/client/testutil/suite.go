@@ -609,8 +609,7 @@ func (s *IntegrationTestSuite) TestCLIQueryTxsCmdByEvents() {
 				fmt.Sprintf("--%s=json", tmcli.OutputFlag),
 			},
 			false,
-			"transaction spanned more than two shares, this is not yet supported",
-			// TODO: change this to not expect an error when functionality is added to celestia-core
+			"",
 		},
 		{
 			"no matching fee event",
