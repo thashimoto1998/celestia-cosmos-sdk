@@ -529,22 +529,6 @@ func (k Keeper) IterateRedelegations(ctx sdk.Context, fn func(index int64, red t
 	}
 }
 
-// iterate through one delegator's redelegations
-func (k Keeper) IterateDelegatorRedelegations(ctx sdk.Context, delegator sdk.AccAddress, fn func(red types.Redelegation) (stop bool)) {
-	store := ctx.KVStore(k.storeKey)
-	delegatorPrefixKey := types.GetREDsKey(delegator)
-
-	iterator := sdk.KVStorePrefixIterator(store, delegatorPrefixKey)
-	defer iterator.Close()
-
-	for ; iterator.Valid(); iterator.Next() {
-		red := types.MustUnmarshalRED(k.cdc, iterator.Value())
-		if stop := fn(red); stop {
-			break
-		}
-	}
-}
-
 // RemoveRedelegation removes a redelegation object and associated index.
 func (k Keeper) RemoveRedelegation(ctx sdk.Context, red types.Redelegation) {
 	delegatorAddress, err := sdk.AccAddressFromBech32(red.DelegatorAddress)
