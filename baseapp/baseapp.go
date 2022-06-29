@@ -76,8 +76,10 @@ type BaseApp struct { // nolint: maligned
 	//
 	// checkState is set on InitChain and reset on Commit
 	// deliverState is set on InitChain and BeginBlock and set to nil on Commit
-	checkState   *state // for CheckTx
-	deliverState *state // for DeliverTx
+	// lastDeliverState is set before a DeliverTx and used in case a fraud proof is needed
+	checkState       *state // for CheckTx
+	deliverState     *state // for DeliverTx
+	lastDeliverState *state // for DeliverTx
 
 	// an inter-block write-through cache provided to the context during deliverState
 	interBlockCache sdk.MultiStorePersistentCache
@@ -391,6 +393,15 @@ func (app *BaseApp) setCheckState(header tmproto.Header) {
 func (app *BaseApp) setDeliverState(header tmproto.Header) {
 	ms := app.cms.CacheMultiStore()
 	app.deliverState = &state{
+		ms:  ms,
+		ctx: sdk.NewContext(ms, header, false, app.logger),
+	}
+}
+
+func (app *BaseApp) updateLastDeliverState() {
+	ms := app.deliverState.ms.CacheMultiStore()
+	header := app.deliverState.ctx.BlockHeader()
+	app.lastDeliverState = &state{
 		ms:  ms,
 		ctx: sdk.NewContext(ms, header, false, app.logger),
 	}

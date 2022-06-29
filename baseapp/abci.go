@@ -182,6 +182,8 @@ func (app *BaseApp) BeginBlock(req abci.RequestBeginBlock) (res abci.ResponseBeg
 		WithHeaderHash(req.Hash).
 		WithConsensusParams(app.GetConsensusParams(app.deliverState.ctx))
 
+	app.updateLastDeliverState()
+
 	// we also set block gas meter to checkState in case the application needs to
 	// verify gas consumption during (Re)CheckTx
 	if app.checkState != nil {
@@ -286,6 +288,17 @@ func (app *BaseApp) DeliverTx(req abci.RequestDeliverTx) abci.ResponseDeliverTx 
 		Data:      result.Data,
 		Events:    sdk.MarkEventsToIndex(result.Events, app.indexEvents),
 	}
+}
+
+func (app *BaseApp) GenerateFraudProof() {
+	blockHeight := app.lastDeliverState.ctx.BlockHeight()
+	cms := app.lastDeliverState.CacheMultiStore()
+	if cms.GetStoreType() == sdk.StoreTypeIAVL {
+		for i, v := range cms.stores {
+			// Export lastDeliverState's IAVL tree here and create a fraud proof struct to export
+		}
+	}
+
 }
 
 // Commit implements the ABCI interface. It will commit all state that exists in
