@@ -10,6 +10,7 @@ require (
 	github.com/coinbase/rosetta-sdk-go v0.7.0
 	github.com/confio/ics23/go v0.6.6
 	github.com/cosmos/btcutil v1.0.4
+	github.com/cosmos/cosmos-sdk/db v1.0.0-beta.1
 	github.com/cosmos/go-bip39 v1.0.0
 	github.com/cosmos/iavl v0.17.3
 	github.com/cosmos/ledger-cosmos-go v0.11.1
@@ -27,8 +28,8 @@ require (
 	github.com/hdevalence/ed25519consensus v0.0.0-20210204194344-59a8610d2b87
 	github.com/improbable-eng/grpc-web v0.14.1
 	github.com/jhump/protoreflect v1.9.0
-	github.com/klauspost/compress v1.13.5 // indirect
 	github.com/kr/text v0.2.0 // indirect
+	github.com/lazyledger/smt v0.2.0
 	github.com/lib/pq v1.10.4 // indirect
 	github.com/magiconair/properties v1.8.6
 	github.com/mattn/go-isatty v0.0.14
