@@ -3,7 +3,9 @@ package types
 import (
 	"io"
 
+	pruningtypes "github.com/cosmos/cosmos-sdk/pruning/types"
 	snapshottypes "github.com/cosmos/cosmos-sdk/snapshots/types"
+
 	v1 "github.com/cosmos/cosmos-sdk/store/types"
 )
 
@@ -21,7 +23,6 @@ type (
 
 	BasicKVStore  = v1.BasicKVStore
 	KVStore       = v1.KVStore
-	Committer     = v1.Committer
 	CommitKVStore = v1.CommitKVStore
 	CacheKVStore  = v1.CacheKVStore
 	Queryable     = v1.Queryable
@@ -107,6 +108,15 @@ type CacheMultiStore interface {
 
 	// Write all cached changes back to the source store. Note: this overwrites any intervening changes.
 	Write()
+}
+
+// something that can persist to disk
+type Committer interface {
+	Commit() CommitID
+	LastCommitID() CommitID
+
+	SetPruning(pruningtypes.PruningOptions)
+	GetPruning() pruningtypes.PruningOptions
 }
 
 // MultiStorePersistentCache provides inter-block (persistent) caching capabilities for a CommitMultiStore.

@@ -4,12 +4,11 @@ import (
 	"fmt"
 	"io"
 
+	snapshottypes "github.com/cosmos/cosmos-sdk/snapshots/types"
+	"github.com/cosmos/cosmos-sdk/types/kv"
 	abci "github.com/tendermint/tendermint/abci/types"
 	tmstrings "github.com/tendermint/tendermint/libs/strings"
 	dbm "github.com/tendermint/tm-db"
-
-	snapshottypes "github.com/cosmos/cosmos-sdk/snapshots/types"
-	"github.com/cosmos/cosmos-sdk/types/kv"
 )
 
 type Store interface {
@@ -196,11 +195,9 @@ type CommitMultiStore interface {
 //---------subsp-------------------------------
 // KVStore
 
-// KVStore is a simple interface to get/set data
-type KVStore interface {
-	Store
-
-	// Get returns nil iff key doesn't exist. Panics on nil key.
+// BasicKVStore is a simple interface to get/set data
+type BasicKVStore interface {
+	// Get returns nil if key doesn't exist. Panics on nil key.
 	Get(key []byte) []byte
 
 	// Has checks if a key exists. Panics on nil key.
@@ -211,6 +208,12 @@ type KVStore interface {
 
 	// Delete deletes the key. Panics on nil key.
 	Delete(key []byte)
+}
+
+// KVStore is a simple interface to get/set data
+type KVStore interface {
+	Store
+	BasicKVStore
 
 	// Iterator over a domain of keys in ascending order. End is exclusive.
 	// Start must be less than end, or the Iterator is invalid.
@@ -299,6 +302,8 @@ const (
 	StoreTypeIAVL
 	StoreTypeTransient
 	StoreTypeMemory
+	StoreTypeSMT
+	StoreTypePersistent
 )
 
 func (st StoreType) String() string {
