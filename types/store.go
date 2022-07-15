@@ -6,24 +6,18 @@ import (
 	"strings"
 
 	"github.com/cosmos/cosmos-sdk/store/types"
+	types2 "github.com/cosmos/cosmos-sdk/store/v2alpha1"
 	"github.com/cosmos/cosmos-sdk/types/kv"
 )
 
 type (
-	PruningOptions = types.PruningOptions
-)
-
-type (
-	Store                     = types.Store
-	Committer                 = types.Committer
-	CommitStore               = types.CommitStore
-	Queryable                 = types.Queryable
-	MultiStore                = types.MultiStore
-	CacheMultiStore           = types.CacheMultiStore
-	CommitMultiStore          = types.CommitMultiStore
-	MultiStorePersistentCache = types.MultiStorePersistentCache
-	KVStore                   = types.KVStore
-	Iterator                  = types.Iterator
+	Queryable                 = types2.Queryable
+	KVStore                   = types2.KVStore
+	Iterator                  = types2.Iterator
+	MultiStore                = types2.MultiStore
+	CommitMultiStore          = types2.CommitMultiStore
+	CacheMultiStore           = types2.CacheMultiStore
+	MultiStorePersistentCache = types2.MultiStorePersistentCache
 )
 
 // StoreDecoderRegistry defines each of the modules store decoders. Used for ImportExport
@@ -58,32 +52,6 @@ func DiffKVStores(a KVStore, b KVStore, prefixesToSkip [][]byte) (kvAs, kvBs []k
 	return types.DiffKVStores(a, b, prefixesToSkip)
 }
 
-type (
-	CacheKVStore  = types.CacheKVStore
-	CommitKVStore = types.CommitKVStore
-	CacheWrap     = types.CacheWrap
-	CacheWrapper  = types.CacheWrapper
-	CommitID      = types.CommitID
-)
-
-type StoreType = types.StoreType
-
-const (
-	StoreTypeMulti     = types.StoreTypeMulti
-	StoreTypeDB        = types.StoreTypeDB
-	StoreTypeIAVL      = types.StoreTypeIAVL
-	StoreTypeTransient = types.StoreTypeTransient
-	StoreTypeMemory    = types.StoreTypeMemory
-)
-
-type (
-	StoreKey          = types.StoreKey
-	CapabilityKey     = types.CapabilityKey
-	KVStoreKey        = types.KVStoreKey
-	TransientStoreKey = types.TransientStoreKey
-	MemoryStoreKey    = types.MemoryStoreKey
-)
-
 // assertNoCommonPrefix will panic if there are two keys: k1 and k2 in keys, such that
 // k1 is a prefix of k2
 func assertNoPrefix(keys []string) {
@@ -98,16 +66,16 @@ func assertNoPrefix(keys []string) {
 }
 
 // NewKVStoreKey returns a new pointer to a KVStoreKey.
-func NewKVStoreKey(name string) *KVStoreKey {
+func NewKVStoreKey(name string) *types.KVStoreKey {
 	return types.NewKVStoreKey(name)
 }
 
 // NewKVStoreKeys returns a map of new  pointers to KVStoreKey's.
 // The function will panic if there is a potential conflict in names (see `assertNoPrefix`
 // function for more details).
-func NewKVStoreKeys(names ...string) map[string]*KVStoreKey {
+func NewKVStoreKeys(names ...string) map[string]*types.KVStoreKey {
 	assertNoPrefix(names)
-	keys := make(map[string]*KVStoreKey, len(names))
+	keys := make(map[string]*types.KVStoreKey, len(names))
 	for _, n := range names {
 		keys[n] = NewKVStoreKey(n)
 	}
@@ -117,7 +85,7 @@ func NewKVStoreKeys(names ...string) map[string]*KVStoreKey {
 
 // Constructs new TransientStoreKey
 // Must return a pointer according to the ocap principle
-func NewTransientStoreKey(name string) *TransientStoreKey {
+func NewTransientStoreKey(name string) *types.TransientStoreKey {
 	return types.NewTransientStoreKey(name)
 }
 
@@ -125,9 +93,9 @@ func NewTransientStoreKey(name string) *TransientStoreKey {
 // Must return pointers according to the ocap principle
 // The function will panic if there is a potential conflict in names (see `assertNoPrefix`
 // function for more details).
-func NewTransientStoreKeys(names ...string) map[string]*TransientStoreKey {
+func NewTransientStoreKeys(names ...string) map[string]*types.TransientStoreKey {
 	assertNoPrefix(names)
-	keys := make(map[string]*TransientStoreKey)
+	keys := make(map[string]*types.TransientStoreKey)
 	for _, n := range names {
 		keys[n] = NewTransientStoreKey(n)
 	}
@@ -139,9 +107,9 @@ func NewTransientStoreKeys(names ...string) map[string]*TransientStoreKey {
 // respective MemoryStoreKey references.
 // The function will panic if there is a potential conflict in names (see `assertNoPrefix`
 // function for more details).
-func NewMemoryStoreKeys(names ...string) map[string]*MemoryStoreKey {
+func NewMemoryStoreKeys(names ...string) map[string]*types.MemoryStoreKey {
 	assertNoPrefix(names)
-	keys := make(map[string]*MemoryStoreKey)
+	keys := make(map[string]*types.MemoryStoreKey)
 	for _, n := range names {
 		keys[n] = types.NewMemoryStoreKey(n)
 	}
@@ -181,14 +149,14 @@ type (
 	GasConfig = types.GasConfig
 )
 
-func NewGasMeter(limit Gas) GasMeter {
-	return types.NewGasMeter(limit)
-}
-
 type (
 	ErrorOutOfGas    = types.ErrorOutOfGas
 	ErrorGasOverflow = types.ErrorGasOverflow
 )
+
+func NewGasMeter(limit Gas) GasMeter {
+	return types.NewGasMeter(limit)
+}
 
 func NewInfiniteGasMeter() GasMeter {
 	return types.NewInfiniteGasMeter()

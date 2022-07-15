@@ -6,17 +6,17 @@ import (
 	"reflect"
 	"strings"
 
+	dbm "github.com/cosmos/cosmos-sdk/db"
 	"github.com/gogo/protobuf/proto"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/crypto/tmhash"
 	"github.com/tendermint/tendermint/libs/log"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
-	dbm "github.com/tendermint/tm-db"
 
 	"github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/snapshots"
-	"github.com/cosmos/cosmos-sdk/store"
 	"github.com/cosmos/cosmos-sdk/store/rootmulti"
+	"github.com/cosmos/cosmos-sdk/store/v2alpha1/multi"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/auth/legacy/legacytx"
@@ -27,6 +27,9 @@ const (
 	runTxModeReCheck                   // Recheck a (pending) transaction after a commit
 	runTxModeSimulate                  // Simulate a transaction
 	runTxModeDeliver                   // Deliver a transaction
+
+	OptionOrderDefault = iota
+	OptionOrderAfterStore
 )
 
 var (
@@ -42,6 +45,29 @@ type (
 	// an older version of the software. In particular, if a module changed the substore key name
 	// (or removed a substore) between two versions of the software.
 	StoreLoader func(ms sdk.CommitMultiStore) error
+
+	// StoreOption provides a functional callback to modify StoreParams.
+	// The callback is passed the loaded height as uint64.
+	// This can be used to control how we load the CommitMultiStore from disk. This is useful for
+	// state migration, when loading a datastore written with an older version of the software.
+	// In particular, if a module changed the substore key name (or removed a substore) between
+	// two versions of the software.
+	StoreOption func(*multi.StoreParams, uint64) error
+
+	// AppOption provides a configuration option for a BaseApp
+	AppOption interface {
+		Apply(*BaseApp)
+		Order() OptionOrder
+	}
+	// OptionOrder represents the required ordering for order dependent options
+	OptionOrder int
+	// AppOptionFunc wraps a functional option for BaseApp
+	AppOptionFunc func(*BaseApp)
+	// AppOptionOrdered wraps an order-dependent functional option
+	AppOptionOrdered struct {
+		AppOptionFunc
+		order OptionOrder
+	}
 )
 
 // BaseApp reflects the ABCI application implementation.
@@ -49,9 +75,9 @@ type BaseApp struct { // nolint: maligned
 	// initialized on creation
 	logger            log.Logger
 	name              string               // application name from abci.Info
-	db                dbm.DB               // common DB backend
-	cms               sdk.CommitMultiStore // Main (uncached) state
-	storeLoader       StoreLoader          // function to handle store loading, may be overridden with SetStoreLoader()
+	db                dbm.DBConnection     // common DB backend
+	storeOpts         []StoreOption        // options to configure root store
+	store             sdk.CommitMultiStore // Main (uncached) state
 	router            sdk.Router           // handle any kind of message
 	queryRouter       sdk.QueryRouter      // router for redirecting query calls
 	grpcQueryRouter   *GRPCQueryRouter     // router for redirecting gRPC query calls
@@ -68,9 +94,7 @@ type BaseApp struct { // nolint: maligned
 	fauxMerkleMode bool             // if true, IAVL MountStores uses MountStoresDB for simulation speed.
 
 	// manages snapshots, i.e. dumps of app state at certain intervals
-	snapshotManager    *snapshots.Manager
-	snapshotInterval   uint64 // block interval between state sync snapshots
-	snapshotKeepRecent uint32 // recent state sync snapshots to keep
+	snapshotManager *snapshots.Manager
 
 	// volatile states:
 	//
@@ -135,20 +159,27 @@ type BaseApp struct { // nolint: maligned
 	indexEvents map[string]struct{}
 }
 
+func (opt AppOptionOrdered) Order() OptionOrder { return opt.order }
+
+func (opt AppOptionFunc) Apply(app *BaseApp) { opt(app) }
+func (opt AppOptionFunc) Order() OptionOrder { return OptionOrderDefault }
+
+// StoreOption implements AppOption, and can be passed to the app constructor.
+func (opt StoreOption) Apply(app *BaseApp) { app.storeOpts = append(app.storeOpts, opt) }
+func (opt StoreOption) Order() OptionOrder { return OptionOrderDefault }
+
 // NewBaseApp returns a reference to an initialized BaseApp. It accepts a
 // variadic number of option functions, which act on the BaseApp to set
 // configuration choices.
 //
 // NOTE: The db is used to store the version number for now.
 func NewBaseApp(
-	name string, logger log.Logger, db dbm.DB, txDecoder sdk.TxDecoder, options ...func(*BaseApp),
+	name string, logger log.Logger, db dbm.DBConnection, txDecoder sdk.TxDecoder, options ...func(*BaseApp),
 ) *BaseApp {
 	app := &BaseApp{
 		logger:           logger,
 		name:             name,
 		db:               db,
-		cms:              store.NewCommitMultiStore(db),
-		storeLoader:      DefaultStoreLoader,
 		router:           NewRouter(),
 		queryRouter:      NewQueryRouter(),
 		grpcQueryRouter:  NewGRPCQueryRouter(),
@@ -157,12 +188,21 @@ func NewBaseApp(
 		fauxMerkleMode:   false,
 	}
 
+	var afterStoreOpts []AppOption
 	for _, option := range options {
-		option(app)
+		if int(option.Order()) > int(OptionOrderDefault) {
+			afterStoreOpts = append(afterStoreOpts, option)
+		} else {
+			option.Apply(app)
+		}
 	}
 
-	if app.interBlockCache != nil {
-		app.cms.SetInterBlockCache(app.interBlockCache)
+	err := app.loadStore()
+	if err != nil {
+		panic(err)
+	}
+	for _, option := range afterStoreOpts {
+		option.Apply(app)
 	}
 
 	app.runTxRecoveryMiddleware = newDefaultRecoveryMiddleware()
@@ -193,6 +233,23 @@ func (app *BaseApp) Logger() log.Logger {
 // Trace returns the boolean value for logging error stack traces.
 func (app *BaseApp) Trace() bool {
 	return app.trace
+}
+
+func (app *BaseApp) loadStore() error {
+	versions, err := app.db.Versions()
+	if err != nil {
+		return err
+	}
+	latest := versions.Last()
+	config := multi.DefaultStoreParams()
+	for _, opt := range app.storeOpts {
+		opt(&config, latest)
+	}
+	app.store, err = multi.NewV1MultiStoreAsV2(app.db, config)
+	if err != nil {
+		return fmt.Errorf("failed to load store: %w", err)
+	}
+	return nil
 }
 
 // MsgServiceRouter returns the MsgServiceRouter of a BaseApp.
@@ -389,7 +446,7 @@ func (app *BaseApp) setCheckState(header tmproto.Header) {
 // and provided header. It is set on InitChain and BeginBlock and set to nil on
 // Commit.
 func (app *BaseApp) setDeliverState(header tmproto.Header) {
-	ms := app.cms.CacheMultiStore()
+	ms := app.cms.CacheWrap()
 	app.deliverState = &state{
 		ms:  ms,
 		ctx: sdk.NewContext(ms, header, false, app.logger),

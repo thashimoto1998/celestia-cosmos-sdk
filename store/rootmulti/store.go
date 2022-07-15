@@ -10,10 +10,12 @@ import (
 	"sort"
 	"strings"
 
+	pruningtypes "github.com/cosmos/cosmos-sdk/pruning/types"
 	iavltree "github.com/cosmos/iavl"
 	protoio "github.com/gogo/protobuf/io"
 	gogotypes "github.com/gogo/protobuf/types"
 	"github.com/pkg/errors"
+
 	abci "github.com/tendermint/tendermint/abci/types"
 	dbm "github.com/tendermint/tm-db"
 
@@ -47,7 +49,7 @@ const (
 type Store struct {
 	db             dbm.DB
 	lastCommitInfo *types.CommitInfo
-	pruningOpts    types.PruningOptions
+	pruningOpts    pruningtypes.PruningOptions
 	iavlCacheSize  int
 	storesParams   map[types.StoreKey]storeParams
 	stores         map[types.StoreKey]types.CommitKVStore
@@ -76,7 +78,7 @@ var (
 func NewStore(db dbm.DB) *Store {
 	return &Store{
 		db:            db,
-		pruningOpts:   types.PruneNothing,
+		pruningOpts:   pruningtypes.NewPruningOptionsFromString("nothing"),
 		iavlCacheSize: iavl.DefaultIAVLCacheSize,
 		storesParams:  make(map[types.StoreKey]storeParams),
 		stores:        make(map[types.StoreKey]types.CommitKVStore),
@@ -87,14 +89,14 @@ func NewStore(db dbm.DB) *Store {
 }
 
 // GetPruning fetches the pruning strategy from the root store.
-func (rs *Store) GetPruning() types.PruningOptions {
+func (rs *Store) GetPruning() pruningtypes.PruningOptions {
 	return rs.pruningOpts
 }
 
 // SetPruning sets the pruning strategy on the root store and all the sub-stores.
 // Note, calling SetPruning on the root store prior to LoadVersion or
 // LoadLatestVersion performs a no-op as the stores aren't mounted yet.
-func (rs *Store) SetPruning(pruningOpts types.PruningOptions) {
+func (rs *Store) SetPruning(pruningOpts pruningtypes.PruningOptions) {
 	rs.pruningOpts = pruningOpts
 }
 
@@ -388,15 +390,15 @@ func (rs *Store) Commit() types.CommitID {
 	// Determine if pruneHeight height needs to be added to the list of heights to
 	// be pruned, where pruneHeight = (commitHeight - 1) - KeepRecent.
 	if int64(rs.pruningOpts.KeepRecent) < previousHeight {
-		pruneHeight := previousHeight - int64(rs.pruningOpts.KeepRecent)
+		// pruneHeight := previousHeight - int64(rs.pruningOpts.KeepRecent)
 		// We consider this height to be pruned iff:
 		//
 		// - KeepEvery is zero as that means that all heights should be pruned.
 		// - KeepEvery % (height - KeepRecent) != 0 as that means the height is not
 		// a 'snapshot' height.
-		if rs.pruningOpts.KeepEvery == 0 || pruneHeight%int64(rs.pruningOpts.KeepEvery) != 0 {
-			rs.pruneHeights = append(rs.pruneHeights, pruneHeight)
-		}
+		// if rs.pruningOpts.KeepEvery == 0 || pruneHeight%int64(rs.pruningOpts.KeepEvery) != 0 {
+		// 	rs.pruneHeights = append(rs.pruneHeights, pruneHeight)
+		// }
 	}
 
 	// batch prune if the current height is a pruning interval height

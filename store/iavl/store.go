@@ -7,6 +7,7 @@ import (
 	"time"
 
 	ics23 "github.com/confio/ics23/go"
+	pruningtypes "github.com/cosmos/cosmos-sdk/pruning/types"
 	"github.com/cosmos/iavl"
 	abci "github.com/tendermint/tendermint/abci/types"
 	tmcrypto "github.com/tendermint/tendermint/proto/tendermint/crypto"
@@ -128,13 +129,13 @@ func (st *Store) LastCommitID() types.CommitID {
 
 // SetPruning panics as pruning options should be provided at initialization
 // since IAVl accepts pruning options directly.
-func (st *Store) SetPruning(_ types.PruningOptions) {
+func (st *Store) SetPruning(_ pruningtypes.PruningOptions) {
 	panic("cannot set pruning options on an initialized IAVL store")
 }
 
 // SetPruning panics as pruning options should be provided at initialization
 // since IAVl accepts pruning options directly.
-func (st *Store) GetPruning() types.PruningOptions {
+func (st *Store) GetPruning() pruningtypes.PruningOptions {
 	panic("cannot get pruning options on an initialized IAVL store")
 }
 
