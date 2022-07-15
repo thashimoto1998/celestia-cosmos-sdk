@@ -5,12 +5,13 @@ import (
 	"github.com/cosmos/cosmos-sdk/db/memdb"
 	pruningtypes "github.com/cosmos/cosmos-sdk/pruning/types"
 	"github.com/cosmos/cosmos-sdk/store/types"
+	v2 "github.com/cosmos/cosmos-sdk/store/v2alpha1"
 	"github.com/cosmos/cosmos-sdk/store/v2alpha1/dbadapter"
 )
 
 var (
-	_ types.KVStore   = (*Store)(nil)
-	_ types.Committer = (*Store)(nil)
+	_ v2.KVStore   = (*Store)(nil)
+	_ v2.Committer = (*Store)(nil)
 )
 
 // Store implements an in-memory only KVStore. Entries are persisted between

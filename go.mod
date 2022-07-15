@@ -8,7 +8,7 @@ require (
 	github.com/bgentry/speakeasy v0.1.0
 	github.com/btcsuite/btcd v0.22.0-beta
 	github.com/coinbase/rosetta-sdk-go v0.7.0
-	github.com/confio/ics23/go v0.6.6
+	github.com/confio/ics23/go v0.7.0
 	github.com/cosmos/btcutil v1.0.4
 	github.com/cosmos/cosmos-sdk/db v1.0.0-beta.1
 	github.com/cosmos/go-bip39 v1.0.0
@@ -19,7 +19,6 @@ require (
 	github.com/gogo/protobuf v1.3.3
 	github.com/golang/mock v1.6.0
 	github.com/golang/protobuf v1.5.2
-	github.com/golangci/golangci-lint v1.46.2 // indirect
 	github.com/gorilla/handlers v1.5.1
 	github.com/gorilla/mux v1.8.0
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
@@ -29,7 +28,7 @@ require (
 	github.com/improbable-eng/grpc-web v0.14.1
 	github.com/jhump/protoreflect v1.9.0
 	github.com/kr/text v0.2.0 // indirect
-	github.com/lazyledger/smt v0.2.0
+	github.com/lazyledger/smt v0.2.1-0.20210709230900-03ea40719554
 	github.com/lib/pq v1.10.4 // indirect
 	github.com/magiconair/properties v1.8.6
 	github.com/mattn/go-isatty v0.0.14
