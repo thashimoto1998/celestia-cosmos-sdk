@@ -5,12 +5,14 @@ import (
 	"sort"
 	"strings"
 
+	pruningtypes "github.com/cosmos/cosmos-sdk/pruning/types"
 	"github.com/cosmos/cosmos-sdk/store/types"
+
 	"github.com/cosmos/cosmos-sdk/types/kv"
 )
 
 type (
-	PruningOptions = types.PruningOptions
+	PruningOptions = pruningtypes.PruningOptions
 )
 
 type (

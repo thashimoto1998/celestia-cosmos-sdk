@@ -8,58 +8,22 @@ import (
 
 func TestPruningOptions_Validate(t *testing.T) {
 	testCases := []struct {
-		opts      PruningOptions
-		expectErr error
+		keepRecent uint64
+		keepEvery  uint64
+		interval   uint64
+		expectErr  bool
 	}{
-		{NewPruningOptions(PruningDefault), nil},
-		{NewPruningOptions(PruningEverything), nil},
-		{NewPruningOptions(PruningNothing), nil},
-		{NewPruningOptions(PruningCustom), ErrPruningIntervalZero},
-		{NewCustomPruningOptions(2, 10), nil},
-		{NewCustomPruningOptions(100, 15), nil},
-		{NewCustomPruningOptions(1, 10), ErrPruningKeepRecentTooSmall},
-		{NewCustomPruningOptions(2, 9), ErrPruningIntervalTooSmall},
-		{NewCustomPruningOptions(2, 0), ErrPruningIntervalZero},
-		{NewCustomPruningOptions(2, 0), ErrPruningIntervalZero},
+		{100, 500, 10, false}, // default
+		{0, 0, 10, false},     // everything
+		{0, 1, 0, false},      // nothing
+		{0, 10, 10, false},
+		{100, 0, 0, true}, // invalid interval
+		{0, 1, 5, true},   // invalid interval
 	}
 
 	for _, tc := range testCases {
-		err := tc.opts.Validate()
-		require.Equal(t, tc.expectErr, err, "options: %v, err: %s", tc.opts, err)
-	}
-}
-
-func TestPruningOptions_GetStrategy(t *testing.T) {
-	testCases := []struct {
-		opts             PruningOptions
-		expectedStrategy PruningStrategy
-	}{
-		{NewPruningOptions(PruningDefault), PruningDefault},
-		{NewPruningOptions(PruningEverything), PruningEverything},
-		{NewPruningOptions(PruningNothing), PruningNothing},
-		{NewPruningOptions(PruningCustom), PruningCustom},
-		{NewCustomPruningOptions(2, 10), PruningCustom},
-	}
-
-	for _, tc := range testCases {
-		actualStrategy := tc.opts.GetPruningStrategy()
-		require.Equal(t, tc.expectedStrategy, actualStrategy)
-	}
-}
-
-func TestNewPruningOptionsFromString(t *testing.T) {
-	testCases := []struct {
-		optString string
-		expect    PruningOptions
-	}{
-		{PruningOptionDefault, NewPruningOptions(PruningDefault)},
-		{PruningOptionEverything, NewPruningOptions(PruningEverything)},
-		{PruningOptionNothing, NewPruningOptions(PruningNothing)},
-		{"invalid", NewPruningOptions(PruningDefault)},
-	}
-
-	for _, tc := range testCases {
-		actual := NewPruningOptionsFromString(tc.optString)
-		require.Equal(t, tc.expect, actual)
+		po := NewPruningOptions(tc.keepRecent, tc.keepEvery, tc.interval)
+		err := po.Validate()
+		require.Equal(t, tc.expectErr, err != nil, "options: %v, err: %s", po, err)
 	}
 }
