@@ -1,12 +1,13 @@
 package store
 
 import (
+	pruningtypes "github.com/cosmos/cosmos-sdk/pruning/types"
 	"github.com/cosmos/cosmos-sdk/store/types"
 )
 
 // Import cosmos-sdk/types/store.go for convenience.
 type (
-	PruningOptions   = types.PruningOptions
+	PruningOptions   = pruningtypes.PruningOptions
 	Store            = types.Store
 	Committer        = types.Committer
 	CommitStore      = types.CommitStore
