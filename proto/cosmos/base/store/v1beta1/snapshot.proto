@@ -31,20 +31,28 @@ message SnapshotIAVLItem {
   int32 height  = 4;
 }
 
-message SnapshotSchema {
-  repeated bytes keys = 1;
+// SnapshotExtensionMeta contains metadata about an external snapshotter.
+
+message SnapshotExtensionMeta {
+  string name   = 1;
+  uint32 format = 2;
 }
+
+// SnapshotExtensionPayload contains payloads of an external snapshotter.
+
+message SnapshotExtensionPayload {
+  bytes payload = 1;
+}
+
+// SnapshotKVItem is an exported Key/Value Pair
 
 message SnapshotKVItem {
   bytes key   = 1;
   bytes value = 2;
 }
 
-message SnapshotExtensionPayload {
-  bytes payload = 1;
-}
+// SnapshotSchema is an exported schema of smt store
 
-message SnapshotExtensionMeta {
-  string name   = 1;
-  uint32 format = 2;
+message SnapshotSchema {
+  repeated bytes keys = 1;
 }
