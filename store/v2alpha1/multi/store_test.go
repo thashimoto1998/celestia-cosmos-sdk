@@ -454,7 +454,7 @@ func doTestPruning(t *testing.T, ctor storeConstructor, sepDBs bool) {
 		pruningtypes.PruningOptions
 		kept []uint64
 	}{
-		{pruningtypes.PruneEverything, []uint64{8, 9, 10}},
+		{pruningtypes.PruneEverything, []uint64{10}},
 		{pruningtypes.PruneNothing, []uint64{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}},
 	}
 
