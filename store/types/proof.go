@@ -70,8 +70,10 @@ func CommitmentOpDecoder(pop tmmerkle.ProofOp) (merkle.ProofOperator, error) {
 		spec = ics23.IavlSpec
 	case ProofOpSimpleMerkleCommitment:
 		spec = ics23.TendermintSpec
+	case ProofOpSMTCommitment:
+		spec = ics23.SmtSpec
 	default:
-		return nil, sdkerrors.Wrapf(ErrInvalidProof, "unexpected ProofOp.Type; got %s, want supported ics23 subtypes 'ProofOpIAVLCommitment' or 'ProofOpSimpleMerkleCommitment'", pop.Type)
+		return nil, sdkerrors.Wrapf(ErrInvalidProof, "unexpected ProofOp.Type; got %s, want supported ics23 subtypes 'ProofOpSimpleMerkleCommitment', 'ProofOpIAVLCommitment', or 'ProofOpSMTCommitment'", pop.Type)
 	}
 
 	proof := &ics23.CommitmentProof{}
