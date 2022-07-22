@@ -169,8 +169,12 @@
     - [StoreKVPair](#cosmos.base.store.v1beta1.StoreKVPair)
   
 - [cosmos/base/store/v1beta1/snapshot.proto](#cosmos/base/store/v1beta1/snapshot.proto)
+    - [SnapshotExtensionMeta](#cosmos.base.store.v1beta1.SnapshotExtensionMeta)
+    - [SnapshotExtensionPayload](#cosmos.base.store.v1beta1.SnapshotExtensionPayload)
     - [SnapshotIAVLItem](#cosmos.base.store.v1beta1.SnapshotIAVLItem)
     - [SnapshotItem](#cosmos.base.store.v1beta1.SnapshotItem)
+    - [SnapshotKVItem](#cosmos.base.store.v1beta1.SnapshotKVItem)
+    - [SnapshotSchema](#cosmos.base.store.v1beta1.SnapshotSchema)
     - [SnapshotStoreItem](#cosmos.base.store.v1beta1.SnapshotStoreItem)
   
 - [cosmos/base/tendermint/v1beta1/query.proto](#cosmos/base/tendermint/v1beta1/query.proto)
@@ -1268,6 +1272,9 @@ tags are stringified and the log is JSON decoded.
 | `gas_used` | [int64](#int64) |  | Amount of gas consumed by transaction. |
 | `tx` | [google.protobuf.Any](#google.protobuf.Any) |  | The request transaction bytes. |
 | `timestamp` | [string](#string) |  | Time of the previous block. For heights > 1, it's the weighted median of the timestamps of the valid votes in the block.LastCommit. For height == 1, it's genesis time. |
+| `events` | [tendermint.abci.Event](#tendermint.abci.Event) | repeated | Events defines all the events emitted by processing a transaction. Note, these events include those emitted by processing all the messages and those emitted from the ante handler. Whereas Logs contains the events, with additional metadata, emitted only by processing the messages.
+
+Since: cosmos-sdk 0.42.11, 0.44.5, 0.45 |
 
 
 
@@ -2747,6 +2754,37 @@ Since: cosmos-sdk 0.43
 
 
 
+<a name="cosmos.base.store.v1beta1.SnapshotExtensionMeta"></a>
+
+### SnapshotExtensionMeta
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `name` | [string](#string) |  |  |
+| `format` | [uint32](#uint32) |  |  |
+
+
+
+
+
+
+<a name="cosmos.base.store.v1beta1.SnapshotExtensionPayload"></a>
+
+### SnapshotExtensionPayload
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `payload` | [bytes](#bytes) |  |  |
+
+
+
+
+
+
 <a name="cosmos.base.store.v1beta1.SnapshotIAVLItem"></a>
 
 ### SnapshotIAVLItem
@@ -2775,6 +2813,41 @@ SnapshotItem is an item contained in a rootmulti.Store snapshot.
 | ----- | ---- | ----- | ----------- |
 | `store` | [SnapshotStoreItem](#cosmos.base.store.v1beta1.SnapshotStoreItem) |  |  |
 | `iavl` | [SnapshotIAVLItem](#cosmos.base.store.v1beta1.SnapshotIAVLItem) |  |  |
+| `extension` | [SnapshotExtensionMeta](#cosmos.base.store.v1beta1.SnapshotExtensionMeta) |  |  |
+| `extension_payload` | [SnapshotExtensionPayload](#cosmos.base.store.v1beta1.SnapshotExtensionPayload) |  |  |
+| `kv` | [SnapshotKVItem](#cosmos.base.store.v1beta1.SnapshotKVItem) |  |  |
+| `schema` | [SnapshotSchema](#cosmos.base.store.v1beta1.SnapshotSchema) |  |  |
+
+
+
+
+
+
+<a name="cosmos.base.store.v1beta1.SnapshotKVItem"></a>
+
+### SnapshotKVItem
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `key` | [bytes](#bytes) |  |  |
+| `value` | [bytes](#bytes) |  |  |
+
+
+
+
+
+
+<a name="cosmos.base.store.v1beta1.SnapshotSchema"></a>
+
+### SnapshotSchema
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `keys` | [bytes](#bytes) | repeated |  |
 
 
 

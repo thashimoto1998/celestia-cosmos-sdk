@@ -536,11 +536,11 @@ func (rs *Store) GetKVStore(key types.StoreKey) types.KVStore {
 	return store
 }
 
-// getStoreByName performs a lookup of a StoreKey given a store name typically
+// GetStoreByName performs a lookup of a StoreKey given a store name typically
 // provided in a path. The StoreKey is then used to perform a lookup and return
 // a Store. If the Store is wrapped in an inter-block cache, it will be unwrapped
 // prior to being returned. If the StoreKey does not exist, nil is returned.
-func (rs *Store) getStoreByName(name string) types.Store {
+func (rs *Store) GetStoreByName(name string) types.Store {
 	key := rs.keysByName[name]
 	if key == nil {
 		return nil
@@ -560,7 +560,7 @@ func (rs *Store) Query(req abci.RequestQuery) abci.ResponseQuery {
 		return sdkerrors.QueryResult(err)
 	}
 
-	store := rs.getStoreByName(storeName)
+	store := rs.GetStoreByName(storeName)
 	if store == nil {
 		return sdkerrors.QueryResult(sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "no such store: %s", storeName))
 	}
@@ -816,7 +816,7 @@ func (rs *Store) Restore(
 				}
 				importer.Close()
 			}
-			store, ok := rs.getStoreByName(item.Store.Name).(*iavl.Store)
+			store, ok := rs.GetStoreByName(item.Store.Name).(*iavl.Store)
 			if !ok || store == nil {
 				return sdkerrors.Wrapf(sdkerrors.ErrLogic, "cannot import into non-IAVL store %q", item.Store.Name)
 			}

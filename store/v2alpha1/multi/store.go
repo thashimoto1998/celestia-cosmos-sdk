@@ -142,7 +142,7 @@ func newSchemaBuilder() SchemaBuilder {
 // pruning with PruneDefault, no listeners and no tracer.
 func DefaultStoreParams() StoreParams {
 	return StoreParams{
-		Pruning:          pruningtypes.NewPruningOptions(pruningtypes.PruningDefault),
+		Pruning:          pruningtypes.PruneDefault,
 		SchemaBuilder:    newSchemaBuilder(),
 		storeKeys:        storeKeys{},
 		traceListenMixin: newTraceListenMixin(),

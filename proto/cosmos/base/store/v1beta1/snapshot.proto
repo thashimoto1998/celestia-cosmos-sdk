@@ -9,15 +9,21 @@ option go_package = "github.com/cosmos/cosmos-sdk/store/types";
 message SnapshotItem {
   // item is the specific type of snapshot item.
   oneof item {
-    SnapshotStoreItem store = 1;
-    SnapshotIAVLItem  iavl  = 2 [(gogoproto.customname) = "IAVL"];
+    SnapshotStoreItem         store = 1;
+    SnapshotIAVLItem          iavl = 2 [(gogoproto.customname) = "IAVL"];
+    SnapshotExtensionMeta     extension = 3;
+    SnapshotExtensionPayload  extension_payload = 4;
+    SnapshotKVItem            kv = 5 [(gogoproto.customname) = "KV"];
+    SnapshotSchema            schema = 6;
   }
 }
+
 
 // SnapshotStoreItem contains metadata about a snapshotted store.
 message SnapshotStoreItem {
   string name = 1;
 }
+
 
 // SnapshotIAVLItem is an exported IAVL node.
 message SnapshotIAVLItem {
@@ -25,4 +31,22 @@ message SnapshotIAVLItem {
   bytes value   = 2;
   int64 version = 3;
   int32 height  = 4;
+}
+
+message SnapshotSchema{
+  repeated bytes keys = 1;
+}
+
+message SnapshotKVItem {
+  bytes key = 1;
+  bytes value = 2;
+}
+
+message SnapshotExtensionPayload {
+  bytes payload = 1;
+}
+
+message SnapshotExtensionMeta {
+  string name = 1;
+  uint32 format = 2;
 }
