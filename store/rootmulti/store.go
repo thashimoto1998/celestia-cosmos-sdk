@@ -548,6 +548,11 @@ func (rs *Store) GetKVStore(key types.StoreKey) types.KVStore {
 	return store
 }
 
+// GetStores returns mounted stores
+func (rs *Store) GetStores() map[types.StoreKey]types.CommitKVStore {
+	return rs.stores
+}
+
 // GetStoreByName performs a lookup of a StoreKey given a store name typically
 // provided in a path. The StoreKey is then used to perform a lookup and return
 // a Store. If the Store is wrapped in an inter-block cache, it will be unwrapped

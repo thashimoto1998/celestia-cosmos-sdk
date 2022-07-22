@@ -51,7 +51,7 @@ func storeParams1(t *testing.T) StoreParams {
 
 func storeParams123(t *testing.T) StoreParams {
 	opts := DefaultStoreParams()
-	opts.Pruning = pruningtypes.NewPruningOptions(pruningtypes.PruningNothing)
+	opts.Pruning = pruningtypes.PruneNothing
 	require.NoError(t, opts.RegisterSubstore(skey_1, types.StoreTypePersistent))
 	require.NoError(t, opts.RegisterSubstore(skey_2, types.StoreTypePersistent))
 	require.NoError(t, opts.RegisterSubstore(skey_3, types.StoreTypePersistent))
@@ -208,7 +208,7 @@ func TestConstructors(t *testing.T) {
 	require.NoError(t, store.Close())
 
 	t.Run("fail to load if InitialVersion > lowest existing version", func(t *testing.T) {
-		opts := StoreParams{InitialVersion: 5, Pruning: pruningtypes.NewPruningOptions(pruningtypes.PruningNothing)}
+		opts := StoreParams{InitialVersion: 5, Pruning: pruningtypes.PruneNothing}
 		store, err = NewStore(db, opts)
 		require.Error(t, err)
 		db.Close()
@@ -299,7 +299,7 @@ func TestCommit(t *testing.T) {
 		}
 	}
 	basicOpts := storeParams1(t)
-	basicOpts.Pruning = pruningtypes.NewPruningOptions(pruningtypes.PruningNothing)
+	basicOpts.Pruning = pruningtypes.PruneNothing
 	t.Run("sanity tests for Merkle hashing", func(t *testing.T) {
 		testBasic(basicOpts)
 	})
@@ -338,7 +338,7 @@ func TestCommit(t *testing.T) {
 	}
 
 	opts := storeParams1(t)
-	opts.Pruning = pruningtypes.NewPruningOptions(pruningtypes.PruningNothing)
+	opts.Pruning = pruningtypes.PruneNothing
 
 	// Ensure Store's commit is rolled back in each failure case...
 	t.Run("recover after failed Commit", func(t *testing.T) {
@@ -401,7 +401,7 @@ func TestCommit(t *testing.T) {
 	t.Run("height overflow triggers failure", func(t *testing.T) {
 		opts.StateCommitmentDB = nil
 		opts.InitialVersion = math.MaxInt64
-		opts.Pruning = pruningtypes.NewPruningOptions(pruningtypes.PruningNothing)
+		opts.Pruning = pruningtypes.PruneNothing
 		store, err := NewStore(memdb.NewDB(), opts)
 		require.NoError(t, err)
 		require.Equal(t, int64(math.MaxInt64), store.Commit().Version)
@@ -412,7 +412,7 @@ func TestCommit(t *testing.T) {
 	t.Run("first commit version matches InitialVersion", func(t *testing.T) {
 		opts = storeParams1(t)
 		opts.InitialVersion = 5
-		opts.Pruning = pruningtypes.NewPruningOptions(pruningtypes.PruningNothing)
+		opts.Pruning = pruningtypes.PruneNothing
 		opts.StateCommitmentDB = memdb.NewDB()
 		store, err := NewStore(memdb.NewDB(), opts)
 		require.NoError(t, err)
@@ -454,10 +454,8 @@ func doTestPruning(t *testing.T, ctor storeConstructor, sepDBs bool) {
 		pruningtypes.PruningOptions
 		kept []uint64
 	}{
-		{pruningtypes.NewCustomPruningOptions(2, 10), []uint64{8, 9, 10}},
-		{pruningtypes.NewCustomPruningOptions(0, 10), []uint64{10}},
-		{pruningtypes.NewPruningOptions(pruningtypes.PruningEverything), []uint64{8, 9, 10}},
-		{pruningtypes.NewPruningOptions(pruningtypes.PruningNothing), []uint64{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}},
+		{pruningtypes.PruneEverything, []uint64{8, 9, 10}},
+		{pruningtypes.PruneNothing, []uint64{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}},
 	}
 
 	for tci, tc := range testCases {
@@ -488,43 +486,6 @@ func doTestPruning(t *testing.T, ctor storeConstructor, sepDBs bool) {
 				_, has := kept[v]
 				require.Equal(t, has, versions.Exists(v), "Version = %v; tc #%d", v, tci)
 			}
-		}
-	}
-
-	// Test pruning interval
-	// Save up to 20th version while checking history at specific version checkpoints
-	testCheckPoints := map[uint64][]uint64{
-		5:  {1, 2, 3, 4, 5},
-		10: {10},
-		15: {10, 11, 12, 13, 14, 15},
-		20: {20},
-	}
-
-	db := memdb.NewDB()
-	opts := storeParams1(t)
-	opts.Pruning = pruningtypes.NewCustomPruningOptions(0, 10)
-	store, err := ctor(db, opts)
-	require.NoError(t, err)
-
-	for i := byte(1); i <= 20; i++ {
-		store.GetKVStore(skey_1).Set([]byte{i}, []byte{i})
-
-		cid := store.Commit()
-		latest := uint64(i)
-		require.Equal(t, latest, uint64(cid.Version))
-
-		kept, has := testCheckPoints[latest]
-		if !has {
-			continue
-		}
-
-		versions, err := db.Versions()
-		require.NoError(t, err)
-
-		keptMap := sliceToSet(kept)
-		for v := uint64(1); v <= latest; v++ {
-			_, has := keptMap[v]
-			require.Equal(t, has, versions.Exists(v), "Version = %v; tc #%d", v, i)
 		}
 	}
 }

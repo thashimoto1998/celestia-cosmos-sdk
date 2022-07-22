@@ -11,7 +11,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/store/rootmulti"
 	"github.com/cosmos/cosmos-sdk/store/types"
 	"github.com/stretchr/testify/require"
-	"github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
 )
 
@@ -20,7 +19,7 @@ func TestMigrationV2(t *testing.T) {
 
 	// setup a rootmulti store
 	db := dbm.NewMemDB()
-	v1Store := rootmulti.NewStore(db, log.NewNopLogger())
+	v1Store := rootmulti.NewStore(db)
 
 	// mount the kvStores
 	var keys []*types.KVStoreKey
@@ -95,7 +94,7 @@ func TestMigrationV2(t *testing.T) {
 func TestMigrateV2ForEmptyStore(t *testing.T) {
 	// setup a rootmulti store
 	db := dbm.NewMemDB()
-	v1Store := rootmulti.NewStore(db, log.NewNopLogger())
+	v1Store := rootmulti.NewStore(db)
 	err := v1Store.LoadLatestVersion()
 	require.Nil(t, err)
 	db2 := memdb.NewDB()

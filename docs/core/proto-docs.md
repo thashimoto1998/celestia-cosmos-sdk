@@ -179,6 +179,15 @@
 - [cosmos/base/store/v1beta1/listening.proto](#cosmos/base/store/v1beta1/listening.proto)
     - [StoreKVPair](#cosmos.base.store.v1beta1.StoreKVPair)
   
+- [cosmos/base/store/v1beta1/snapshot.proto](#cosmos/base/store/v1beta1/snapshot.proto)
+    - [SnapshotExtensionMeta](#cosmos.base.store.v1beta1.SnapshotExtensionMeta)
+    - [SnapshotExtensionPayload](#cosmos.base.store.v1beta1.SnapshotExtensionPayload)
+    - [SnapshotIAVLItem](#cosmos.base.store.v1beta1.SnapshotIAVLItem)
+    - [SnapshotItem](#cosmos.base.store.v1beta1.SnapshotItem)
+    - [SnapshotKVItem](#cosmos.base.store.v1beta1.SnapshotKVItem)
+    - [SnapshotSchema](#cosmos.base.store.v1beta1.SnapshotSchema)
+    - [SnapshotStoreItem](#cosmos.base.store.v1beta1.SnapshotStoreItem)
+  
 - [cosmos/base/tendermint/v1beta1/query.proto](#cosmos/base/tendermint/v1beta1/query.proto)
     - [GetBlockByHeightRequest](#cosmos.base.tendermint.v1beta1.GetBlockByHeightRequest)
     - [GetBlockByHeightResponse](#cosmos.base.tendermint.v1beta1.GetBlockByHeightResponse)
@@ -2928,6 +2937,137 @@ Since: cosmos-sdk 0.43
 | `delete` | [bool](#bool) |  | true indicates a delete operation, false indicates a set operation |
 | `key` | [bytes](#bytes) |  |  |
 | `value` | [bytes](#bytes) |  |  |
+
+
+
+
+
+ <!-- end messages -->
+
+ <!-- end enums -->
+
+ <!-- end HasExtensions -->
+
+ <!-- end services -->
+
+
+
+<a name="cosmos/base/store/v1beta1/snapshot.proto"></a>
+<p align="right"><a href="#top">Top</a></p>
+
+## cosmos/base/store/v1beta1/snapshot.proto
+
+
+
+<a name="cosmos.base.store.v1beta1.SnapshotExtensionMeta"></a>
+
+### SnapshotExtensionMeta
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `name` | [string](#string) |  |  |
+| `format` | [uint32](#uint32) |  |  |
+
+
+
+
+
+
+<a name="cosmos.base.store.v1beta1.SnapshotExtensionPayload"></a>
+
+### SnapshotExtensionPayload
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `payload` | [bytes](#bytes) |  |  |
+
+
+
+
+
+
+<a name="cosmos.base.store.v1beta1.SnapshotIAVLItem"></a>
+
+### SnapshotIAVLItem
+SnapshotIAVLItem is an exported IAVL node.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `key` | [bytes](#bytes) |  |  |
+| `value` | [bytes](#bytes) |  |  |
+| `version` | [int64](#int64) |  |  |
+| `height` | [int32](#int32) |  |  |
+
+
+
+
+
+
+<a name="cosmos.base.store.v1beta1.SnapshotItem"></a>
+
+### SnapshotItem
+SnapshotItem is an item contained in a rootmulti.Store snapshot.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `store` | [SnapshotStoreItem](#cosmos.base.store.v1beta1.SnapshotStoreItem) |  |  |
+| `iavl` | [SnapshotIAVLItem](#cosmos.base.store.v1beta1.SnapshotIAVLItem) |  |  |
+| `extension` | [SnapshotExtensionMeta](#cosmos.base.store.v1beta1.SnapshotExtensionMeta) |  |  |
+| `extension_payload` | [SnapshotExtensionPayload](#cosmos.base.store.v1beta1.SnapshotExtensionPayload) |  |  |
+| `kv` | [SnapshotKVItem](#cosmos.base.store.v1beta1.SnapshotKVItem) |  |  |
+| `schema` | [SnapshotSchema](#cosmos.base.store.v1beta1.SnapshotSchema) |  |  |
+
+
+
+
+
+
+<a name="cosmos.base.store.v1beta1.SnapshotKVItem"></a>
+
+### SnapshotKVItem
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `key` | [bytes](#bytes) |  |  |
+| `value` | [bytes](#bytes) |  |  |
+
+
+
+
+
+
+<a name="cosmos.base.store.v1beta1.SnapshotSchema"></a>
+
+### SnapshotSchema
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `keys` | [bytes](#bytes) | repeated |  |
+
+
+
+
+
+
+<a name="cosmos.base.store.v1beta1.SnapshotStoreItem"></a>
+
+### SnapshotStoreItem
+SnapshotStoreItem contains metadata about a snapshotted store.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `name` | [string](#string) |  |  |
 
 
 
