@@ -8,14 +8,13 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	codecTypes "github.com/cosmos/cosmos-sdk/codec/types"
+	"github.com/cosmos/cosmos-sdk/db/memdb"
 	"github.com/cosmos/cosmos-sdk/store/dbadapter"
 	"github.com/cosmos/cosmos-sdk/store/listenkv"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	"github.com/cosmos/cosmos-sdk/store/types"
 
 	"github.com/stretchr/testify/require"
-
-	dbm "github.com/tendermint/tm-db"
 )
 
 func bz(s string) []byte { return []byte(s) }
@@ -45,7 +44,7 @@ func newListenKVStore(w io.Writer) *listenkv.Store {
 
 func newEmptyListenKVStore(w io.Writer) *listenkv.Store {
 	listener := types.NewStoreKVPairWriteListener(w, testMarshaller)
-	memDB := dbadapter.Store{DB: dbm.NewMemDB()}
+	memDB := dbadapter.Store{DB: memdb.NewDB()}
 
 	return listenkv.NewStore(memDB, testStoreKey, []types.WriteListener{listener})
 }
@@ -277,7 +276,7 @@ func TestListenKVStorePrefix(t *testing.T) {
 }
 
 func TestListenKVStoreGetStoreType(t *testing.T) {
-	memDB := dbadapter.Store{DB: dbm.NewMemDB()}
+	memDB := dbadapter.Store{DB: memdb.NewDB()}
 	store := newEmptyListenKVStore(nil)
 	require.Equal(t, memDB.GetStoreType(), store.GetStoreType())
 }

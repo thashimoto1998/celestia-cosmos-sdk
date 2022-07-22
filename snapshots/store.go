@@ -10,8 +10,8 @@ import (
 	"strconv"
 	"sync"
 
+	dbm "github.com/cosmos/cosmos-sdk/db"
 	"github.com/gogo/protobuf/proto"
-	db "github.com/tendermint/tm-db"
 
 	"github.com/cosmos/cosmos-sdk/snapshots/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -24,7 +24,7 @@ const (
 
 // Store is a snapshot store, containing snapshot metadata and binary chunks.
 type Store struct {
-	db  db.DB
+	db  dbm.DBConnection
 	dir string
 
 	mtx    sync.Mutex
@@ -32,7 +32,7 @@ type Store struct {
 }
 
 // NewStore creates a new snapshot store.
-func NewStore(db db.DB, dir string) (*Store, error) {
+func NewStore(db dbm.DBConnection, dir string) (*Store, error) {
 	if dir == "" {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrLogic, "snapshot directory not given")
 	}

@@ -14,6 +14,7 @@ import (
 	dbm "github.com/tendermint/tm-db"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
+	"github.com/cosmos/cosmos-sdk/db/memdb"
 	pruningtypes "github.com/cosmos/cosmos-sdk/pruning/types"
 	"github.com/cosmos/cosmos-sdk/store/rootmulti"
 	store "github.com/cosmos/cosmos-sdk/store/types"
@@ -114,7 +115,7 @@ func TestSetLoader(t *testing.T) {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
 			// prepare a db with some data
-			db := dbm.NewMemDB()
+			db := memdb.NewDB()
 
 			initStore(t, db, tc.origStoreKey, k, v)
 

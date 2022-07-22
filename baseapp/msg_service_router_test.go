@@ -8,10 +8,10 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
-	dbm "github.com/tendermint/tm-db"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client/tx"
+	"github.com/cosmos/cosmos-sdk/db/memdb"
 	"github.com/cosmos/cosmos-sdk/simapp"
 	"github.com/cosmos/cosmos-sdk/testutil/testdata"
 	"github.com/cosmos/cosmos-sdk/types/tx/signing"
@@ -19,7 +19,7 @@ import (
 )
 
 func TestRegisterMsgService(t *testing.T) {
-	db := dbm.NewMemDB()
+	db := memdb.NewDB()
 
 	// Create an encoding config that doesn't register testdata Msg services.
 	encCfg := simapp.MakeTestEncodingConfig()
@@ -44,7 +44,7 @@ func TestRegisterMsgService(t *testing.T) {
 
 func TestRegisterMsgServiceTwice(t *testing.T) {
 	// Setup baseapp.
-	db := dbm.NewMemDB()
+	db := memdb.NewDB()
 	encCfg := simapp.MakeTestEncodingConfig()
 	app := baseapp.NewBaseApp("test", log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, encCfg.TxConfig.TxDecoder())
 	app.SetInterfaceRegistry(encCfg.InterfaceRegistry)
@@ -71,7 +71,7 @@ func TestMsgService(t *testing.T) {
 	priv, _, _ := testdata.KeyTestPubAddr()
 	encCfg := simapp.MakeTestEncodingConfig()
 	testdata.RegisterInterfaces(encCfg.InterfaceRegistry)
-	db := dbm.NewMemDB()
+	db := memdb.NewDB()
 	app := baseapp.NewBaseApp("test", log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, encCfg.TxConfig.TxDecoder())
 	app.SetInterfaceRegistry(encCfg.InterfaceRegistry)
 	testdata.RegisterMsgServer(

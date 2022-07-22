@@ -4,11 +4,13 @@ import (
 	"fmt"
 	"io"
 
-	dbm "github.com/tendermint/tm-db"
-
 	"github.com/cosmos/cosmos-sdk/codec/types"
+	pruningtypes "github.com/cosmos/cosmos-sdk/pruning/types"
 	"github.com/cosmos/cosmos-sdk/snapshots"
-	"github.com/cosmos/cosmos-sdk/store"
+	snapshottypes "github.com/cosmos/cosmos-sdk/snapshots/types"
+	storetypes "github.com/cosmos/cosmos-sdk/store/v2alpha1"
+
+	"github.com/cosmos/cosmos-sdk/store/v2alpha1/multi"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -16,12 +18,12 @@ import (
 // for options that need access to non-exported fields of the BaseApp
 
 // SetPruning sets a pruning option on the multistore associated with the app
-func SetPruning(opts sdk.PruningOptions) func(*BaseApp) {
-	return func(bapp *BaseApp) { bapp.cms.SetPruning(opts) }
+func SetPruning(opts pruningtypes.PruningOptions) StoreOption {
+	return func(config *multi.StoreParams, _ uint64) error { config.Pruning = opts; return nil }
 }
 
 // SetMinGasPrices returns an option that sets the minimum gas prices on the app.
-func SetMinGasPrices(gasPricesStr string) func(*BaseApp) {
+func SetMinGasPrices(gasPricesStr string) AppOptionFunc {
 	gasPrices, err := sdk.ParseDecCoins(gasPricesStr)
 	if err != nil {
 		panic(fmt.Sprintf("invalid minimum gas prices: %v", err))
@@ -31,56 +33,60 @@ func SetMinGasPrices(gasPricesStr string) func(*BaseApp) {
 }
 
 // SetHaltHeight returns a BaseApp option function that sets the halt block height.
-func SetHaltHeight(blockHeight uint64) func(*BaseApp) {
+func SetHaltHeight(blockHeight uint64) AppOptionFunc {
 	return func(bapp *BaseApp) { bapp.setHaltHeight(blockHeight) }
 }
 
 // SetHaltTime returns a BaseApp option function that sets the halt block time.
-func SetHaltTime(haltTime uint64) func(*BaseApp) {
+func SetHaltTime(haltTime uint64) AppOptionFunc {
 	return func(bapp *BaseApp) { bapp.setHaltTime(haltTime) }
 }
 
 // SetMinRetainBlocks returns a BaseApp option function that sets the minimum
 // block retention height value when determining which heights to prune during
 // ABCI Commit.
-func SetMinRetainBlocks(minRetainBlocks uint64) func(*BaseApp) {
+func SetMinRetainBlocks(minRetainBlocks uint64) AppOptionFunc {
 	return func(bapp *BaseApp) { bapp.setMinRetainBlocks(minRetainBlocks) }
 }
 
 // SetTrace will turn on or off trace flag
-func SetTrace(trace bool) func(*BaseApp) {
+func SetTrace(trace bool) AppOptionFunc {
 	return func(app *BaseApp) { app.setTrace(trace) }
 }
 
 // SetIndexEvents provides a BaseApp option function that sets the events to index.
-func SetIndexEvents(ie []string) func(*BaseApp) {
+func SetIndexEvents(ie []string) AppOptionFunc {
 	return func(app *BaseApp) { app.setIndexEvents(ie) }
-}
-
-// SetIAVLCacheSize provides a BaseApp option function that sets the size of IAVL cache.
-func SetIAVLCacheSize(size int) func(*BaseApp) {
-	return func(bapp *BaseApp) { bapp.cms.SetIAVLCacheSize(size) }
 }
 
 // SetInterBlockCache provides a BaseApp option function that sets the
 // inter-block cache.
-func SetInterBlockCache(cache sdk.MultiStorePersistentCache) func(*BaseApp) {
+func SetInterBlockCache(cache sdk.MultiStorePersistentCache) AppOptionFunc {
 	return func(app *BaseApp) { app.setInterBlockCache(cache) }
 }
 
-// SetSnapshotInterval sets the snapshot interval.
-func SetSnapshotInterval(interval uint64) func(*BaseApp) {
-	return func(app *BaseApp) { app.SetSnapshotInterval(interval) }
+// SetSubstores registers substores according to app configuration
+func SetSubstores(keys ...storetypes.StoreKey) StoreOption {
+	return func(config *multi.StoreParams, _ uint64) error {
+		for _, key := range keys {
+			typ, err := storetypes.StoreKeyToType(key)
+			if err != nil {
+				return err
+			}
+			if err = config.RegisterSubstore(key, typ); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
 }
 
-// SetSnapshotKeepRecent sets the recent snapshots to keep.
-func SetSnapshotKeepRecent(keepRecent uint32) func(*BaseApp) {
-	return func(app *BaseApp) { app.SetSnapshotKeepRecent(keepRecent) }
-}
-
-// SetSnapshotStore sets the snapshot store.
-func SetSnapshotStore(snapshotStore *snapshots.Store) func(*BaseApp) {
-	return func(app *BaseApp) { app.SetSnapshotStore(snapshotStore) }
+// SetSnapshot sets the snapshot store.
+func SetSnapshot(snapshotStore *snapshots.Store, opts snapshottypes.SnapshotOptions) AppOption {
+	return AppOptionOrdered{
+		func(app *BaseApp) { app.SetSnapshot(snapshotStore, opts) },
+		OptionOrderAfterStore,
+	}
 }
 
 func (app *BaseApp) SetName(name string) {
@@ -111,22 +117,6 @@ func (app *BaseApp) SetVersion(v string) {
 // SetProtocolVersion sets the application's protocol version
 func (app *BaseApp) SetProtocolVersion(v uint64) {
 	app.appVersion = v
-}
-
-func (app *BaseApp) SetDB(db dbm.DB) {
-	if app.sealed {
-		panic("SetDB() on sealed BaseApp")
-	}
-
-	app.db = db
-}
-
-func (app *BaseApp) SetCMS(cms store.CommitMultiStore) {
-	if app.sealed {
-		panic("SetEndBlocker() on sealed BaseApp")
-	}
-
-	app.cms = cms
 }
 
 func (app *BaseApp) SetInitChainer(initChainer sdk.InitChainer) {
@@ -188,16 +178,11 @@ func (app *BaseApp) SetFauxMerkleMode() {
 // SetCommitMultiStoreTracer sets the store tracer on the BaseApp's underlying
 // CommitMultiStore.
 func (app *BaseApp) SetCommitMultiStoreTracer(w io.Writer) {
-	app.cms.SetTracer(w)
-}
-
-// SetStoreLoader allows us to customize the rootMultiStore initialization.
-func (app *BaseApp) SetStoreLoader(loader StoreLoader) {
-	if app.sealed {
-		panic("SetStoreLoader() on sealed BaseApp")
+	opt := func(cfg *multi.StoreParams, v uint64) error {
+		cfg.TraceWriter = w
+		return nil
 	}
-
-	app.storeLoader = loader
+	app.storeOpts = append(app.storeOpts, opt)
 }
 
 // SetRouter allows us to customize the router.
@@ -208,32 +193,16 @@ func (app *BaseApp) SetRouter(router sdk.Router) {
 	app.router = router
 }
 
-// SetSnapshotStore sets the snapshot store.
-func (app *BaseApp) SetSnapshotStore(snapshotStore *snapshots.Store) {
+// SetSnapshot sets the snapshot store and options.
+func (app *BaseApp) SetSnapshot(snapshotStore *snapshots.Store, opts snapshottypes.SnapshotOptions) {
 	if app.sealed {
-		panic("SetSnapshotStore() on sealed BaseApp")
+		panic("SetSnapshot() on sealed BaseApp")
 	}
-	if snapshotStore == nil {
+	if snapshotStore == nil || opts.Interval == snapshottypes.SnapshotIntervalOff {
 		app.snapshotManager = nil
 		return
 	}
-	app.snapshotManager = snapshots.NewManager(snapshotStore, app.cms)
-}
-
-// SetSnapshotInterval sets the snapshot interval.
-func (app *BaseApp) SetSnapshotInterval(snapshotInterval uint64) {
-	if app.sealed {
-		panic("SetSnapshotInterval() on sealed BaseApp")
-	}
-	app.snapshotInterval = snapshotInterval
-}
-
-// SetSnapshotKeepRecent sets the number of recent snapshots to keep.
-func (app *BaseApp) SetSnapshotKeepRecent(snapshotKeepRecent uint32) {
-	if app.sealed {
-		panic("SetSnapshotKeepRecent() on sealed BaseApp")
-	}
-	app.snapshotKeepRecent = snapshotKeepRecent
+	app.snapshotManager = snapshots.NewManager(snapshotStore, app.store)
 }
 
 // SetInterfaceRegistry sets the InterfaceRegistry.

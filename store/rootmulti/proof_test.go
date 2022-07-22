@@ -5,15 +5,15 @@ import (
 
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"
-	dbm "github.com/tendermint/tm-db"
 
+	"github.com/cosmos/cosmos-sdk/db/memdb"
 	"github.com/cosmos/cosmos-sdk/store/iavl"
 	"github.com/cosmos/cosmos-sdk/store/types"
 )
 
 func TestVerifyIAVLStoreQueryProof(t *testing.T) {
 	// Create main tree for testing.
-	db := dbm.NewMemDB()
+	db := memdb.NewDB()
 	iStore, err := iavl.LoadStore(db, types.CommitID{}, false, iavl.DefaultIAVLCacheSize)
 	store := iStore.(*iavl.Store)
 	require.Nil(t, err)
@@ -56,7 +56,7 @@ func TestVerifyIAVLStoreQueryProof(t *testing.T) {
 
 func TestVerifyMultiStoreQueryProof(t *testing.T) {
 	// Create main tree for testing.
-	db := dbm.NewMemDB()
+	db := memdb.NewDB()
 	store := NewStore(db)
 	iavlStoreKey := types.NewKVStoreKey("iavlStoreKey")
 
@@ -111,7 +111,7 @@ func TestVerifyMultiStoreQueryProof(t *testing.T) {
 
 func TestVerifyMultiStoreQueryProofAbsence(t *testing.T) {
 	// Create main tree for testing.
-	db := dbm.NewMemDB()
+	db := memdb.NewDB()
 	store := NewStore(db)
 	iavlStoreKey := types.NewKVStoreKey("iavlStoreKey")
 

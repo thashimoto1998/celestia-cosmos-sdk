@@ -9,6 +9,7 @@ import (
 
 	dbm "github.com/tendermint/tm-db"
 
+	"github.com/cosmos/cosmos-sdk/db/memdb"
 	"github.com/cosmos/cosmos-sdk/internal/conv"
 	"github.com/cosmos/cosmos-sdk/store/listenkv"
 	"github.com/cosmos/cosmos-sdk/store/tracekv"
@@ -42,7 +43,7 @@ func NewStore(parent types.KVStore) *Store {
 		cache:         make(map[string]*cValue),
 		deleted:       make(map[string]struct{}),
 		unsortedCache: make(map[string]struct{}),
-		sortedCache:   dbm.NewMemDB(),
+		sortedCache:   memdb.NewDB(),
 		parent:        parent,
 	}
 }
@@ -146,7 +147,7 @@ func (store *Store) Write() {
 	for key := range store.unsortedCache {
 		delete(store.unsortedCache, key)
 	}
-	store.sortedCache = dbm.NewMemDB()
+	store.sortedCache = memdb.NewDB()
 }
 
 // CacheWrap implements CacheWrapper.

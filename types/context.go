@@ -12,6 +12,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/store/gaskv"
 	stypes "github.com/cosmos/cosmos-sdk/store/types"
+	stypes2 "github.com/cosmos/cosmos-sdk/store/v2alpha1"
 )
 
 /*
@@ -24,7 +25,7 @@ and standard additions here would be better just to add to the Context struct
 */
 type Context struct {
 	ctx           context.Context
-	ms            MultiStore
+	ms            stypes2.MultiStore
 	header        tmproto.Header
 	headerHash    tmbytes.HexBytes
 	chainID       string
@@ -44,20 +45,20 @@ type Context struct {
 type Request = Context
 
 // Read-only accessors
-func (c Context) Context() context.Context    { return c.ctx }
-func (c Context) MultiStore() MultiStore      { return c.ms }
-func (c Context) BlockHeight() int64          { return c.header.Height }
-func (c Context) BlockTime() time.Time        { return c.header.Time }
-func (c Context) ChainID() string             { return c.chainID }
-func (c Context) TxBytes() []byte             { return c.txBytes }
-func (c Context) Logger() log.Logger          { return c.logger }
-func (c Context) VoteInfos() []abci.VoteInfo  { return c.voteInfo }
-func (c Context) GasMeter() GasMeter          { return c.gasMeter }
-func (c Context) BlockGasMeter() GasMeter     { return c.blockGasMeter }
-func (c Context) IsCheckTx() bool             { return c.checkTx }
-func (c Context) IsReCheckTx() bool           { return c.recheckTx }
-func (c Context) MinGasPrices() DecCoins      { return c.minGasPrice }
-func (c Context) EventManager() *EventManager { return c.eventManager }
+func (c Context) Context() context.Context       { return c.ctx }
+func (c Context) MultiStore() stypes2.MultiStore { return c.ms }
+func (c Context) BlockHeight() int64             { return c.header.Height }
+func (c Context) BlockTime() time.Time           { return c.header.Time }
+func (c Context) ChainID() string                { return c.chainID }
+func (c Context) TxBytes() []byte                { return c.txBytes }
+func (c Context) Logger() log.Logger             { return c.logger }
+func (c Context) VoteInfos() []abci.VoteInfo     { return c.voteInfo }
+func (c Context) GasMeter() GasMeter             { return c.gasMeter }
+func (c Context) BlockGasMeter() GasMeter        { return c.blockGasMeter }
+func (c Context) IsCheckTx() bool                { return c.checkTx }
+func (c Context) IsReCheckTx() bool              { return c.recheckTx }
+func (c Context) MinGasPrices() DecCoins         { return c.minGasPrice }
+func (c Context) EventManager() *EventManager    { return c.eventManager }
 
 // clone the header before returning
 func (c Context) BlockHeader() tmproto.Header {
@@ -77,7 +78,7 @@ func (c Context) ConsensusParams() *abci.ConsensusParams {
 }
 
 // create a new context
-func NewContext(ms MultiStore, header tmproto.Header, isCheckTx bool, logger log.Logger) Context {
+func NewContext(ms stypes2.MultiStore, header tmproto.Header, isCheckTx bool, logger log.Logger) Context {
 	// https://github.com/gogo/protobuf/issues/519
 	header.Time = header.Time.UTC()
 	return Context{
@@ -100,7 +101,7 @@ func (c Context) WithContext(ctx context.Context) Context {
 }
 
 // WithMultiStore returns a Context with an updated MultiStore.
-func (c Context) WithMultiStore(ms MultiStore) Context {
+func (c Context) WithMultiStore(ms stypes2.MultiStore) Context {
 	c.ms = ms
 	return c
 }
@@ -256,7 +257,7 @@ func (c Context) TransientStore(key StoreKey) KVStore {
 // EventManager. The cached context is written to the context when writeCache
 // is called.
 func (c Context) CacheContext() (cc Context, writeCache func()) {
-	cms := c.MultiStore().CacheMultiStore()
+	cms := c.MultiStore().CacheWrap()
 	cc = c.WithMultiStore(cms).WithEventManager(NewEventManager())
 	return cc, cms.Write
 }

@@ -324,6 +324,12 @@ func (st StoreType) String() string {
 
 	case StoreTypeMemory:
 		return "StoreTypeMemory"
+
+	case StoreTypeSMT:
+		return "StoreTypeSMT"
+
+	case StoreTypePersistent:
+		return "StoreTypePersistent"
 	}
 
 	return "unknown store type"
@@ -419,6 +425,29 @@ type KVPair kv.Pair
 // TraceContext contains TraceKVStore context data. It will be written with
 // every trace operation.
 type TraceContext map[string]interface{}
+
+// Clone clones tc into another instance of TraceContext.
+func (tc TraceContext) Clone() TraceContext {
+	ret := TraceContext{}
+	for k, v := range tc {
+		ret[k] = v
+	}
+
+	return ret
+}
+
+// Merge merges value of newTc into tc.
+func (tc TraceContext) Merge(newTc TraceContext) TraceContext {
+	if tc == nil {
+		tc = TraceContext{}
+	}
+
+	for k, v := range newTc {
+		tc[k] = v
+	}
+
+	return tc
+}
 
 // MultiStorePersistentCache defines an interface which provides inter-block
 // (persistent) caching capabilities for multiple CommitKVStores based on StoreKeys.

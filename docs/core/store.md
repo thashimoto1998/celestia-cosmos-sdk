@@ -154,7 +154,7 @@ The documentation on the IAVL Tree is located [here](https://github.com/cosmos/i
 
 +++ https://github.com/cosmos/cosmos-sdk/blob/v0.40.0-rc6/store/transient/store.go#L13-L16
 
-`Transient.Store` is a `dbadapter.Store` with a `dbm.NewMemDB()`. All `KVStore` methods are reused. When `Store.Commit()` is called, a new `dbadapter.Store` is assigned, discarding previous reference and making it garbage collected.
+`Transient.Store` is a `dbadapter.Store` with a `memdb.NewDB()`. All `KVStore` methods are reused. When `Store.Commit()` is called, a new `dbadapter.Store` is assigned, discarding previous reference and making it garbage collected.
 
 This type of store is useful to persist information that is only relevant per-block. One example would be to store parameter changes (i.e. a bool set to `true` if a parameter changed in a block).
 

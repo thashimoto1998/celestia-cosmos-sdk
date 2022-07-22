@@ -13,8 +13,8 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
-	dbm "github.com/tendermint/tm-db"
 
+	"github.com/cosmos/cosmos-sdk/db/memdb"
 	"github.com/cosmos/cosmos-sdk/simapp"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -37,7 +37,7 @@ type TestSuite struct {
 var s TestSuite
 
 func setupTest(height int64, skip map[int64]bool) TestSuite {
-	db := dbm.NewMemDB()
+	db := memdb.NewDB()
 	app := simapp.NewSimApp(log.NewNopLogger(), db, nil, true, skip, simapp.DefaultNodeHome, 0, simapp.MakeTestEncodingConfig(), simapp.EmptyAppOptions{})
 	genesisState := simapp.NewDefaultGenesisState(app.AppCodec())
 	stateBytes, err := json.MarshalIndent(genesisState, "", "  ")

@@ -4,8 +4,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
-	dbm "github.com/tendermint/tm-db"
 
+	"github.com/cosmos/cosmos-sdk/db/memdb"
 	"github.com/cosmos/cosmos-sdk/store/rootmulti"
 	"github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -107,7 +107,7 @@ func (s *storeTestSuite) TestDiffKVStores() {
 }
 
 func (s *storeTestSuite) initTestStores() (types.KVStore, types.KVStore) {
-	db := dbm.NewMemDB()
+	db := memdb.NewDB()
 	ms := rootmulti.NewStore(db)
 
 	key1 := types.NewKVStoreKey("store1")

@@ -5,9 +5,9 @@ import (
 	"os"
 	"testing"
 
+	"github.com/cosmos/cosmos-sdk/db/memdb"
 	"github.com/stretchr/testify/require"
 	"github.com/tendermint/tendermint/libs/log"
-	dbm "github.com/tendermint/tm-db"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec/types"
@@ -52,7 +52,7 @@ func TestGRPCGatewayRouter(t *testing.T) {
 
 func TestRegisterQueryServiceTwice(t *testing.T) {
 	// Setup baseapp.
-	db := dbm.NewMemDB()
+	db := memdb.NewDB()
 	encCfg := simapp.MakeTestEncodingConfig()
 	app := baseapp.NewBaseApp("test", log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, encCfg.TxConfig.TxDecoder())
 	app.SetInterfaceRegistry(encCfg.InterfaceRegistry)

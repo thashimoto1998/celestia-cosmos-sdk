@@ -5,14 +5,14 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	dbm "github.com/tendermint/tm-db"
 
+	"github.com/cosmos/cosmos-sdk/db/memdb"
 	"github.com/cosmos/cosmos-sdk/store/rootmulti"
 	"github.com/cosmos/cosmos-sdk/store/types"
 )
 
 func initTestStores(t *testing.T) (types.KVStore, types.KVStore) {
-	db := dbm.NewMemDB()
+	db := memdb.NewDB()
 	ms := rootmulti.NewStore(db)
 
 	key1 := types.NewKVStoreKey("store1")

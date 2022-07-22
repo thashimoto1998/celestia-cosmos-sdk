@@ -6,15 +6,15 @@ import (
 
 	"github.com/cosmos/iavl"
 	"github.com/stretchr/testify/require"
-	dbm "github.com/tendermint/tm-db"
 
+	"github.com/cosmos/cosmos-sdk/db/memdb"
 	"github.com/cosmos/cosmos-sdk/store/cache"
 	iavlstore "github.com/cosmos/cosmos-sdk/store/iavl"
 	"github.com/cosmos/cosmos-sdk/store/types"
 )
 
 func TestGetOrSetStoreCache(t *testing.T) {
-	db := dbm.NewMemDB()
+	db := memdb.NewDB()
 	mngr := cache.NewCommitKVStoreCacheManager(cache.DefaultCommitKVStoreCacheSize)
 
 	sKey := types.NewKVStoreKey("test")
@@ -28,7 +28,7 @@ func TestGetOrSetStoreCache(t *testing.T) {
 }
 
 func TestUnwrap(t *testing.T) {
-	db := dbm.NewMemDB()
+	db := memdb.NewDB()
 	mngr := cache.NewCommitKVStoreCacheManager(cache.DefaultCommitKVStoreCacheSize)
 
 	sKey := types.NewKVStoreKey("test")
@@ -42,7 +42,7 @@ func TestUnwrap(t *testing.T) {
 }
 
 func TestStoreCache(t *testing.T) {
-	db := dbm.NewMemDB()
+	db := memdb.NewDB()
 	mngr := cache.NewCommitKVStoreCacheManager(cache.DefaultCommitKVStoreCacheSize)
 
 	sKey := types.NewKVStoreKey("test")

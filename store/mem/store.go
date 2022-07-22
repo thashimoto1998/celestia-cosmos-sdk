@@ -5,6 +5,7 @@ import (
 
 	dbm "github.com/tendermint/tm-db"
 
+	"github.com/cosmos/cosmos-sdk/db/memdb"
 	pruningtypes "github.com/cosmos/cosmos-sdk/pruning/types"
 	"github.com/cosmos/cosmos-sdk/store/cachekv"
 	"github.com/cosmos/cosmos-sdk/store/dbadapter"
@@ -26,7 +27,7 @@ type Store struct {
 }
 
 func NewStore() *Store {
-	return NewStoreWithDB(dbm.NewMemDB())
+	return NewStoreWithDB(memdb.NewDB())
 }
 
 func NewStoreWithDB(db *dbm.MemDB) *Store { // nolint: interfacer

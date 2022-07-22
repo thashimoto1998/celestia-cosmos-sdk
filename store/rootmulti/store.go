@@ -10,12 +10,12 @@ import (
 	"sort"
 	"strings"
 
+	dbm "github.com/cosmos/cosmos-sdk/db"
 	iavltree "github.com/cosmos/iavl"
 	protoio "github.com/gogo/protobuf/io"
 	gogotypes "github.com/gogo/protobuf/types"
 	"github.com/pkg/errors"
 	abci "github.com/tendermint/tendermint/abci/types"
-	dbm "github.com/tendermint/tm-db"
 
 	pruningtypes "github.com/cosmos/cosmos-sdk/pruning/types"
 	"github.com/cosmos/cosmos-sdk/snapshots"
@@ -75,7 +75,7 @@ var (
 // store will be created with a PruneNothing pruning strategy by default. After
 // a store is created, KVStores must be mounted and finally LoadLatestVersion or
 // LoadVersion must be called.
-func NewStore(db dbm.DB) *Store {
+func NewStore(db dbm.DBConnection) *Store {
 	return &Store{
 		db:            db,
 		pruningOpts:   pruningtypes.NewPruningOptionsFromString("nothing"),

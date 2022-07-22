@@ -5,12 +5,12 @@ import (
 	"os"
 	"testing"
 
+	"github.com/cosmos/cosmos-sdk/db/memdb"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
-	dbm "github.com/tendermint/tm-db"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/tests/mocks"
@@ -37,7 +37,7 @@ import (
 
 func TestSimAppExportAndBlockedAddrs(t *testing.T) {
 	encCfg := MakeTestEncodingConfig()
-	db := dbm.NewMemDB()
+	db := memdb.NewDB()
 	app := NewSimApp(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, nil, true, map[int64]bool{}, DefaultNodeHome, 0, encCfg, EmptyAppOptions{})
 
 	for acc := range maccPerms {
@@ -73,7 +73,7 @@ func TestGetMaccPerms(t *testing.T) {
 }
 
 func TestRunMigrations(t *testing.T) {
-	db := dbm.NewMemDB()
+	db := memdb.NewDB()
 	encCfg := MakeTestEncodingConfig()
 	logger := log.NewTMLogger(log.NewSyncWriter(os.Stdout))
 	app := NewSimApp(logger, db, nil, true, map[int64]bool{}, DefaultNodeHome, 0, encCfg, EmptyAppOptions{})
@@ -196,7 +196,7 @@ func TestRunMigrations(t *testing.T) {
 }
 
 func TestInitGenesisOnMigration(t *testing.T) {
-	db := dbm.NewMemDB()
+	db := memdb.NewDB()
 	encCfg := MakeTestEncodingConfig()
 	logger := log.NewTMLogger(log.NewSyncWriter(os.Stdout))
 	app := NewSimApp(logger, db, nil, true, map[int64]bool{}, DefaultNodeHome, 0, encCfg, EmptyAppOptions{})
@@ -241,7 +241,7 @@ func TestInitGenesisOnMigration(t *testing.T) {
 
 func TestUpgradeStateOnGenesis(t *testing.T) {
 	encCfg := MakeTestEncodingConfig()
-	db := dbm.NewMemDB()
+	db := memdb.NewDB()
 	app := NewSimApp(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, nil, true, map[int64]bool{}, DefaultNodeHome, 0, encCfg, EmptyAppOptions{})
 	genesisState := NewDefaultGenesisState(encCfg.Marshaler)
 	stateBytes, err := json.MarshalIndent(genesisState, "", "  ")

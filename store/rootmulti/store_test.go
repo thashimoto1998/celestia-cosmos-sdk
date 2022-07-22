@@ -19,6 +19,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	codecTypes "github.com/cosmos/cosmos-sdk/codec/types"
+	"github.com/cosmos/cosmos-sdk/db/memdb"
 	pruningtypes "github.com/cosmos/cosmos-sdk/pruning/types"
 	snapshottypes "github.com/cosmos/cosmos-sdk/snapshots/types"
 	"github.com/cosmos/cosmos-sdk/store/cachemulti"
@@ -31,13 +32,13 @@ import (
 )
 
 func TestStoreType(t *testing.T) {
-	db := dbm.NewMemDB()
+	db := memdb.NewDB()
 	store := NewStore(db)
 	store.MountStoreWithDB(types.NewKVStoreKey("store1"), types.StoreTypeIAVL, db)
 }
 
 func TestGetCommitKVStore(t *testing.T) {
-	var db dbm.DB = dbm.NewMemDB()
+	var db dbm.DB = memdb.NewDB()
 	ms := newMultiStoreWithMounts(db, pruningtypes.PruneDefault)
 	err := ms.LoadLatestVersion()
 	require.Nil(t, err)
@@ -54,7 +55,7 @@ func TestGetCommitKVStore(t *testing.T) {
 }
 
 func TestStoreMount(t *testing.T) {
-	db := dbm.NewMemDB()
+	db := memdb.NewDB()
 	store := NewStore(db)
 
 	key1 := types.NewKVStoreKey("store1")
@@ -70,7 +71,7 @@ func TestStoreMount(t *testing.T) {
 }
 
 func TestCacheMultiStore(t *testing.T) {
-	var db dbm.DB = dbm.NewMemDB()
+	var db dbm.DB = memdb.NewDB()
 	ms := newMultiStoreWithMounts(db, pruningtypes.PruneNothing)
 
 	cacheMulti := ms.CacheMultiStore()
@@ -78,7 +79,7 @@ func TestCacheMultiStore(t *testing.T) {
 }
 
 func TestCacheMultiStoreWithVersion(t *testing.T) {
-	var db dbm.DB = dbm.NewMemDB()
+	var db dbm.DB = memdb.NewDB()
 	ms := newMultiStoreWithMounts(db, pruningtypes.PruneNothing)
 	err := ms.LoadLatestVersion()
 	require.Nil(t, err)
@@ -115,7 +116,7 @@ func TestCacheMultiStoreWithVersion(t *testing.T) {
 }
 
 func TestHashStableWithEmptyCommit(t *testing.T) {
-	var db dbm.DB = dbm.NewMemDB()
+	var db dbm.DB = memdb.NewDB()
 	ms := newMultiStoreWithMounts(db, pruningtypes.PruneNothing)
 	err := ms.LoadLatestVersion()
 	require.Nil(t, err)
@@ -139,7 +140,7 @@ func TestHashStableWithEmptyCommit(t *testing.T) {
 }
 
 func TestMultistoreCommitLoad(t *testing.T) {
-	var db dbm.DB = dbm.NewMemDB()
+	var db dbm.DB = memdb.NewDB()
 	store := newMultiStoreWithMounts(db, pruningtypes.PruneNothing)
 	err := store.LoadLatestVersion()
 	require.Nil(t, err)
@@ -186,7 +187,7 @@ func TestMultistoreCommitLoad(t *testing.T) {
 }
 
 func TestMultistoreLoadWithUpgrade(t *testing.T) {
-	var db dbm.DB = dbm.NewMemDB()
+	var db dbm.DB = memdb.NewDB()
 	store := newMultiStoreWithMounts(db, pruningtypes.PruneNothing)
 	err := store.LoadLatestVersion()
 	require.Nil(t, err)
@@ -328,7 +329,7 @@ func TestParsePath(t *testing.T) {
 }
 
 func TestMultiStoreRestart(t *testing.T) {
-	db := dbm.NewMemDB()
+	db := memdb.NewDB()
 	pruning := pruningtypes.PruningOptions{
 		KeepRecent: 2,
 		KeepEvery:  3,
@@ -411,7 +412,7 @@ func TestMultiStoreRestart(t *testing.T) {
 }
 
 func TestMultiStoreQuery(t *testing.T) {
-	db := dbm.NewMemDB()
+	db := memdb.NewDB()
 	multi := newMultiStoreWithMounts(db, pruningtypes.PruneNothing)
 	err := multi.LoadLatestVersion()
 	require.Nil(t, err)
@@ -499,7 +500,7 @@ func TestMultiStore_Pruning(t *testing.T) {
 		tc := tc
 
 		t.Run(tc.name, func(t *testing.T) {
-			db := dbm.NewMemDB()
+			db := memdb.NewDB()
 			ms := newMultiStoreWithMounts(db, tc.po)
 			require.NoError(t, ms.LoadLatestVersion())
 
@@ -521,7 +522,7 @@ func TestMultiStore_Pruning(t *testing.T) {
 }
 
 func TestMultiStore_PruningRestart(t *testing.T) {
-	db := dbm.NewMemDB()
+	db := memdb.NewDB()
 	ms := newMultiStoreWithMounts(db, pruningtypes.NewPruningOptions(2, 3, 11))
 	require.NoError(t, ms.LoadLatestVersion())
 
@@ -559,7 +560,7 @@ func TestMultistoreSnapshot_Checksum(t *testing.T) {
 	// This checksum test makes sure that the byte stream remains identical. If the test fails
 	// without having changed the data (e.g. because the Protobuf or zlib encoding changes),
 	// snapshottypes.CurrentFormat must be bumped.
-	store := newMultiStoreWithGeneratedData(dbm.NewMemDB(), 5, 10000)
+	store := newMultiStoreWithGeneratedData(memdb.NewDB(), 5, 10000)
 	version := uint64(store.LastCommitID().Version)
 
 	testcases := []struct {
@@ -595,7 +596,7 @@ func TestMultistoreSnapshot_Checksum(t *testing.T) {
 }
 
 func TestMultistoreSnapshot_Errors(t *testing.T) {
-	store := newMultiStoreWithMixedMountsAndBasicData(dbm.NewMemDB())
+	store := newMultiStoreWithMixedMountsAndBasicData(memdb.NewDB())
 
 	testcases := map[string]struct {
 		height     uint64
@@ -620,7 +621,7 @@ func TestMultistoreSnapshot_Errors(t *testing.T) {
 }
 
 func TestMultistoreRestore_Errors(t *testing.T) {
-	store := newMultiStoreWithMixedMounts(dbm.NewMemDB())
+	store := newMultiStoreWithMixedMounts(memdb.NewDB())
 
 	testcases := map[string]struct {
 		height     uint64
@@ -644,8 +645,8 @@ func TestMultistoreRestore_Errors(t *testing.T) {
 }
 
 func TestMultistoreSnapshotRestore(t *testing.T) {
-	source := newMultiStoreWithMixedMountsAndBasicData(dbm.NewMemDB())
-	target := newMultiStoreWithMixedMounts(dbm.NewMemDB())
+	source := newMultiStoreWithMixedMountsAndBasicData(memdb.NewDB())
+	target := newMultiStoreWithMixedMounts(memdb.NewDB())
 	version := uint64(source.LastCommitID().Version)
 	require.EqualValues(t, 3, version)
 
@@ -670,7 +671,7 @@ func TestMultistoreSnapshotRestore(t *testing.T) {
 }
 
 func TestSetInitialVersion(t *testing.T) {
-	db := dbm.NewMemDB()
+	db := memdb.NewDB()
 	multi := newMultiStoreWithMounts(db, pruningtypes.PruneNothing)
 
 	require.NoError(t, multi.LoadLatestVersion())
@@ -688,7 +689,7 @@ func TestSetInitialVersion(t *testing.T) {
 }
 
 func TestAddListenersAndListeningEnabled(t *testing.T) {
-	db := dbm.NewMemDB()
+	db := memdb.NewDB()
 	multi := newMultiStoreWithMounts(db, pruningtypes.PruneNothing)
 	testKey := types.NewKVStoreKey("listening_test_key")
 	enabled := multi.ListeningEnabled(testKey)
@@ -719,7 +720,7 @@ var (
 
 func TestGetListenWrappedKVStore(t *testing.T) {
 	buf := new(bytes.Buffer)
-	var db dbm.DB = dbm.NewMemDB()
+	var db dbm.DB = memdb.NewDB()
 	ms := newMultiStoreWithMounts(db, pruningtypes.PruneNothing)
 	ms.LoadLatestVersion()
 	mockListeners := []types.WriteListener{types.NewStoreKVPairWriteListener(buf, testMarshaller)}
@@ -793,7 +794,7 @@ func TestGetListenWrappedKVStore(t *testing.T) {
 }
 
 func TestCacheWraps(t *testing.T) {
-	db := dbm.NewMemDB()
+	db := memdb.NewDB()
 	multi := newMultiStoreWithMounts(db, pruningtypes.PruneNothing)
 
 	cacheWrapper := multi.CacheWrap()
@@ -827,13 +828,13 @@ func benchmarkMultistoreSnapshot(b *testing.B, stores uint8, storeKeys uint64) {
 
 	b.ReportAllocs()
 	b.StopTimer()
-	source := newMultiStoreWithGeneratedData(dbm.NewMemDB(), stores, storeKeys)
+	source := newMultiStoreWithGeneratedData(memdb.NewDB(), stores, storeKeys)
 	version := source.LastCommitID().Version
 	require.EqualValues(b, 1, version)
 	b.StartTimer()
 
 	for i := 0; i < b.N; i++ {
-		target := NewStore(dbm.NewMemDB())
+		target := NewStore(memdb.NewDB())
 		for key := range source.stores {
 			target.MountStoreWithDB(key, types.StoreTypeIAVL, nil)
 		}
@@ -857,13 +858,13 @@ func benchmarkMultistoreSnapshotRestore(b *testing.B, stores uint8, storeKeys ui
 
 	b.ReportAllocs()
 	b.StopTimer()
-	source := newMultiStoreWithGeneratedData(dbm.NewMemDB(), stores, storeKeys)
+	source := newMultiStoreWithGeneratedData(memdb.NewDB(), stores, storeKeys)
 	version := uint64(source.LastCommitID().Version)
 	require.EqualValues(b, 1, version)
 	b.StartTimer()
 
 	for i := 0; i < b.N; i++ {
-		target := NewStore(dbm.NewMemDB())
+		target := NewStore(memdb.NewDB())
 		for key := range source.stores {
 			target.MountStoreWithDB(key, types.StoreTypeIAVL, nil)
 		}

@@ -388,7 +388,7 @@ We will add a new method to the `BaseApp` to enable the registration of `Streami
 func (app *BaseApp) RegisterHooks(s StreamingService) {
 	// set the listeners for each StoreKey
 	for key, lis := range s.Listeners() {
-		app.cms.AddListeners(key, lis)
+		app.store.AddListeners(key, lis)
 	}
 	// register the streaming service hooks within the BaseApp
 	// BaseApp will pass BeginBlock, DeliverTx, and EndBlock requests and responses to the streaming services to update their ABCI context using these hooks

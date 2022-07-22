@@ -8,13 +8,14 @@ import (
 	tmrand "github.com/tendermint/tendermint/libs/rand"
 	dbm "github.com/tendermint/tm-db"
 
+	"github.com/cosmos/cosmos-sdk/db/memdb"
 	"github.com/cosmos/cosmos-sdk/store/cachekv"
 	"github.com/cosmos/cosmos-sdk/store/dbadapter"
 	"github.com/cosmos/cosmos-sdk/store/types"
 )
 
 func newCacheKVStore() types.CacheKVStore {
-	mem := dbadapter.Store{DB: dbm.NewMemDB()}
+	mem := dbadapter.Store{DB: memdb.NewDB()}
 	return cachekv.NewStore(mem)
 }
 
@@ -22,7 +23,7 @@ func keyFmt(i int) []byte { return bz(fmt.Sprintf("key%0.8d", i)) }
 func valFmt(i int) []byte { return bz(fmt.Sprintf("value%0.8d", i)) }
 
 func TestCacheKVStore(t *testing.T) {
-	mem := dbadapter.Store{DB: dbm.NewMemDB()}
+	mem := dbadapter.Store{DB: memdb.NewDB()}
 	st := cachekv.NewStore(mem)
 
 	require.Empty(t, st.Get(keyFmt(1)), "Expected `key1` to be empty")
@@ -65,7 +66,7 @@ func TestCacheKVStore(t *testing.T) {
 }
 
 func TestCacheKVStoreNoNilSet(t *testing.T) {
-	mem := dbadapter.Store{DB: dbm.NewMemDB()}
+	mem := dbadapter.Store{DB: memdb.NewDB()}
 	st := cachekv.NewStore(mem)
 	require.Panics(t, func() { st.Set([]byte("key"), nil) }, "setting a nil value should panic")
 	require.Panics(t, func() { st.Set(nil, []byte("value")) }, "setting a nil key should panic")
@@ -73,7 +74,7 @@ func TestCacheKVStoreNoNilSet(t *testing.T) {
 }
 
 func TestCacheKVStoreNested(t *testing.T) {
-	mem := dbadapter.Store{DB: dbm.NewMemDB()}
+	mem := dbadapter.Store{DB: memdb.NewDB()}
 	st := cachekv.NewStore(mem)
 
 	// set. check its there on st and not on mem.
@@ -228,7 +229,7 @@ func TestCacheKVMergeIteratorDeleteLast(t *testing.T) {
 
 func TestCacheKVMergeIteratorDeletes(t *testing.T) {
 	st := newCacheKVStore()
-	truth := dbm.NewMemDB()
+	truth := memdb.NewDB()
 
 	// set some items and write them
 	nItems := 10
@@ -245,7 +246,7 @@ func TestCacheKVMergeIteratorDeletes(t *testing.T) {
 
 	// reset
 	st = newCacheKVStore()
-	truth = dbm.NewMemDB()
+	truth = memdb.NewDB()
 
 	// set some items and write them
 	for i := 0; i < nItems; i++ {
@@ -264,7 +265,7 @@ func TestCacheKVMergeIteratorChunks(t *testing.T) {
 	st := newCacheKVStore()
 
 	// Use the truth to check values on the merge iterator
-	truth := dbm.NewMemDB()
+	truth := memdb.NewDB()
 
 	// sets to the parent
 	setRange(t, st, truth, 0, 20)
@@ -293,7 +294,7 @@ func TestCacheKVMergeIteratorChunks(t *testing.T) {
 
 func TestCacheKVMergeIteratorRandom(t *testing.T) {
 	st := newCacheKVStore()
-	truth := dbm.NewMemDB()
+	truth := memdb.NewDB()
 
 	start, end := 25, 975
 	max := 1000

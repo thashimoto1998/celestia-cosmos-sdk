@@ -4,14 +4,14 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	dbm "github.com/tendermint/tm-db"
 
+	"github.com/cosmos/cosmos-sdk/db/memdb"
 	"github.com/cosmos/cosmos-sdk/store/iavl"
 	"github.com/cosmos/cosmos-sdk/store/types"
 )
 
 func newMemTestKVStore(t *testing.T) types.KVStore {
-	db := dbm.NewMemDB()
+	db := memdb.NewDB()
 	store, err := iavl.LoadStore(db, types.CommitID{}, false, iavl.DefaultIAVLCacheSize)
 	require.NoError(t, err)
 	return store

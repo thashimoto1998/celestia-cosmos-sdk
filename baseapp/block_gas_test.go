@@ -10,12 +10,12 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
-	dbm "github.com/tendermint/tm-db"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
+	"github.com/cosmos/cosmos-sdk/db/memdb"
 	"github.com/cosmos/cosmos-sdk/simapp"
 	"github.com/cosmos/cosmos-sdk/testutil/testdata"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -66,7 +66,7 @@ func TestBaseApp_BlockGas(t *testing.T) {
 			encCfg.InterfaceRegistry.RegisterImplementations((*sdk.Msg)(nil),
 				&testdata.TestMsg{},
 			)
-			app = simapp.NewSimApp(log.NewNopLogger(), dbm.NewMemDB(), nil, true, map[int64]bool{}, "", 0, encCfg, simapp.EmptyAppOptions{}, routerOpt)
+			app = simapp.NewSimApp(log.NewNopLogger(), memdb.NewDB(), nil, true, map[int64]bool{}, "", 0, encCfg, simapp.EmptyAppOptions{}, baseapp.AppOptionFunc(routerOpt))
 			genState := simapp.NewDefaultGenesisState(encCfg.Marshaler)
 			stateBytes, err := json.MarshalIndent(genState, "", " ")
 			require.NoError(t, err)
