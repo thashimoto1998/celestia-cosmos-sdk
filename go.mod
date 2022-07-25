@@ -28,7 +28,6 @@ require (
 	github.com/lazyledger/smt v0.2.1-0.20210709230900-03ea40719554
 	github.com/magiconair/properties v1.8.6
 	github.com/mattn/go-isatty v0.0.14
-	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/onsi/gomega v1.18.1 // indirect
 	github.com/otiai10/copy v1.6.0
 	github.com/pelletier/go-toml/v2 v2.0.2 // indirect
@@ -104,6 +103,7 @@ require (
 	github.com/matttproud/golang_protobuf_extensions v1.0.1 // indirect
 	github.com/mimoo/StrobeGo v0.0.0-20181016162300-f8f6d4d2b643 // indirect
 	github.com/minio/highwayhash v1.0.2 // indirect
+	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/mtibben/percent v0.2.1 // indirect
 	github.com/onsi/ginkgo v1.16.4 // indirect
 	github.com/pelletier/go-toml v1.9.5 // indirect
