@@ -3,6 +3,7 @@ package cachemulti
 import (
 	"fmt"
 	"io"
+	"sync"
 
 	dbm "github.com/tendermint/tm-db"
 
@@ -23,8 +24,9 @@ type Store struct {
 	stores map[types.StoreKey]types.CacheWrap
 	keys   map[string]types.StoreKey
 
-	traceWriter  io.Writer
-	traceContext types.TraceContext
+	traceWriter       io.Writer
+	traceContext      types.TraceContext
+	traceContextMutex sync.RWMutex
 
 	listeners map[types.StoreKey][]types.WriteListener
 }
@@ -96,6 +98,8 @@ func (cms Store) SetTracer(w io.Writer) types.MultiStore {
 // be overwritten. It is implied that the caller should update the context when
 // necessary between tracing operations. It returns a modified MultiStore.
 func (cms Store) SetTracingContext(tc types.TraceContext) types.MultiStore {
+	cms.traceContextMutex.Lock()
+	defer cms.traceContextMutex.Unlock()
 	if cms.traceContext != nil {
 		for k, v := range tc {
 			cms.traceContext[k] = v

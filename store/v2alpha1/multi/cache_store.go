@@ -35,6 +35,8 @@ func (cs *cacheStore) GetKVStore(skey types.StoreKey) types.KVStore {
 
 // Write implements CacheMultiStore.
 func (cs *cacheStore) Write() {
+	cs.traceListenMixin.traceContextMutex.Lock()
+	defer cs.traceListenMixin.traceContextMutex.Unlock()
 	for _, sub := range cs.substores {
 		sub.Write()
 	}
