@@ -145,7 +145,7 @@ func InterceptConfigsPreRunHandler(cmd *cobra.Command, customAppConfigTemplate s
 	}
 
 	var logWriter io.Writer
-	if strings.ToLower(serverCtx.Viper.GetString(flags.FlagLogFormat)) == tmlog.LogFormatPlain {
+	if strings.ToLower(serverCtx.Viper.GetString(flags.FlagLogFormat)) == tmcfg.LogFormatPlain {
 		logWriter = zerolog.ConsoleWriter{Out: os.Stderr}
 	} else {
 		logWriter = os.Stderr
@@ -278,7 +278,6 @@ func AddCommands(rootCmd *cobra.Command, defaultNodeHome string, appCreator type
 		VersionCmd(),
 		tmcmd.ResetAllCmd,
 		tmcmd.ResetStateCmd,
-		tmcmd.InspectCmd,
 	)
 
 	startCmd := StartCmd(appCreator, defaultNodeHome)

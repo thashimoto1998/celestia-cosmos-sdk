@@ -8,6 +8,7 @@ import (
 	"sort"
 	"strings"
 	"syscall"
+	"time"
 
 	"github.com/gogo/protobuf/proto"
 	abci "github.com/tendermint/tendermint/abci/types"
@@ -108,6 +109,12 @@ func (app *BaseApp) InitChain(req abci.RequestInitChain) (res abci.ResponseInitC
 		Validators:      res.Validators,
 		AppHash:         appHash,
 	}
+}
+
+// SetOption implements the ABCI interface.
+func (app *BaseApp) SetOption(req abci.RequestSetOption) (res abci.ResponseSetOption) {
+	// TODO: Implement!
+	return
 }
 
 // Info implements the ABCI interface.
@@ -406,6 +413,10 @@ func (app *BaseApp) Query(req abci.RequestQuery) (res abci.ResponseQuery) {
 	if req.Height == 0 {
 		req.Height = app.LastBlockHeight()
 	}
+
+	telemetry.IncrCounter(1, "query", "count")
+	telemetry.IncrCounter(1, "query", req.Path)
+	defer telemetry.MeasureSince(time.Now(), req.Path)
 
 	// handle gRPC routes first rather than calling splitPath because '/' characters
 	// are used as part of gRPC paths

@@ -60,6 +60,11 @@ func SimulateMsgSend(ak types.AccountKeeper, bk keeper.Keeper) simtypes.Operatio
 	) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {
 		from, to, coins, skip := randomSendFields(r, ctx, accs, bk, ak)
 
+		// if coins slice is empty, we can not create valid types.MsgSend
+		if len(coins) == 0 {
+			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgSend, "empty coins slice"), nil, nil
+		}
+
 		// Check send_enabled status of each coin denom
 		if err := bk.IsSendEnabledCoins(ctx, coins...); err != nil {
 			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgSend, err.Error()), nil, nil
@@ -93,6 +98,10 @@ func SimulateMsgSendToModuleAccount(ak types.AccountKeeper, bk keeper.Keeper, mo
 
 		spendable := bk.SpendableCoins(ctx, from.Address)
 		coins := simtypes.RandSubsetCoins(r, spendable)
+		// if coins slice is empty, we can not create valid types.MsgSend
+		if len(coins) == 0 {
+			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgSend, "empty coins slice"), nil, nil
+		}
 
 		// Check send_enabled status of each coin denom
 		if err := bk.IsSendEnabledCoins(ctx, coins...); err != nil {
@@ -137,6 +146,7 @@ func sendMsgSend(
 	}
 	txGen := simappparams.MakeTestEncodingConfig().TxConfig
 	tx, err := helpers.GenSignedMockTx(
+		r,
 		txGen,
 		[]sdk.Msg{msg},
 		fees,
@@ -323,10 +333,7 @@ func sendMsgMultiSend(
 	sequenceNumbers := make([]uint64, len(msg.Inputs))
 
 	for i := 0; i < len(msg.Inputs); i++ {
-		addr, err := sdk.AccAddressFromBech32(msg.Inputs[i].Address)
-		if err != nil {
-			panic(err)
-		}
+		addr := sdk.MustAccAddressFromBech32(msg.Inputs[i].Address)
 		acc := ak.GetAccount(ctx, addr)
 		accountNumbers[i] = acc.GetAccountNumber()
 		sequenceNumbers[i] = acc.GetSequence()
@@ -337,10 +344,7 @@ func sendMsgMultiSend(
 		err  error
 	)
 
-	addr, err := sdk.AccAddressFromBech32(msg.Inputs[0].Address)
-	if err != nil {
-		panic(err)
-	}
+	addr := sdk.MustAccAddressFromBech32(msg.Inputs[0].Address)
 
 	// feePayer is the first signer, i.e. first input address
 	feePayer := ak.GetAccount(ctx, addr)
@@ -356,6 +360,7 @@ func sendMsgMultiSend(
 
 	txGen := simappparams.MakeTestEncodingConfig().TxConfig
 	tx, err := helpers.GenSignedMockTx(
+		r,
 		txGen,
 		[]sdk.Msg{msg},
 		fees,

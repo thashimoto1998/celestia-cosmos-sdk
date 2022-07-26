@@ -409,15 +409,15 @@ func (app *BaseApp) setDeliverState(header tmproto.Header) {
 
 // GetConsensusParams returns the current consensus parameters from the BaseApp's
 // ParamStore. If the BaseApp has no ParamStore defined, nil is returned.
-func (app *BaseApp) GetConsensusParams(ctx sdk.Context) *tmproto.ConsensusParams {
+func (app *BaseApp) GetConsensusParams(ctx sdk.Context) *abci.ConsensusParams {
 	if app.paramStore == nil {
 		return nil
 	}
 
-	cp := new(tmproto.ConsensusParams)
+	cp := new(abci.ConsensusParams)
 
 	if app.paramStore.Has(ctx, ParamStoreKeyBlockParams) {
-		var bp tmproto.BlockParams
+		var bp abci.BlockParams
 
 		app.paramStore.Get(ctx, ParamStoreKeyBlockParams, &bp)
 		cp.Block = &bp
@@ -448,7 +448,7 @@ func (app *BaseApp) AddRunTxRecoveryHandler(handlers ...RecoveryHandler) {
 }
 
 // StoreConsensusParams sets the consensus parameters to the baseapp's param store.
-func (app *BaseApp) StoreConsensusParams(ctx sdk.Context, cp *tmproto.ConsensusParams) {
+func (app *BaseApp) StoreConsensusParams(ctx sdk.Context, cp *abci.ConsensusParams) {
 	if app.paramStore == nil {
 		panic("cannot store consensus params with no params store set")
 	}
@@ -707,11 +707,11 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte) (gInfo sdk.GasInfo, re
 			consumeBlockGas()
 
 			msCache.Write()
+		}
 
-			if len(anteEvents) > 0 {
-				// append the events in the order of occurrence
-				result.Events = append(anteEvents, result.Events...)
-			}
+		if len(anteEvents) > 0 && (mode == runTxModeDeliver || mode == runTxModeSimulate) {
+			// append the events in the order of occurrence
+			result.Events = append(anteEvents, result.Events...)
 		}
 	}
 

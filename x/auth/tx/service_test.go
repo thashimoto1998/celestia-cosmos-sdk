@@ -206,21 +206,22 @@ func (s IntegrationTestSuite) TestGetTxEvents_GRPC() {
 		req       *tx.GetTxsEventRequest
 		expErr    bool
 		expErrMsg string
+		expLen    int
 	}{
 		{
 			"nil request",
 			nil,
-			true, "request cannot be nil",
+			true, "request cannot be nil", 0,
 		},
 		{
 			"empty request",
 			&tx.GetTxsEventRequest{},
-			true, "must declare at least one event to search",
+			true, "must declare at least one event to search", 0,
 		},
 		{
 			"request with dummy event",
 			&tx.GetTxsEventRequest{Events: []string{"foobar"}},
-			true, "event foobar should be of the format: {eventType}.{eventAttribute}={value}",
+			true, "event foobar should be of the format: {eventType}.{eventAttribute}={value}", 0,
 		},
 		{
 			"request with order-by",
@@ -228,33 +229,30 @@ func (s IntegrationTestSuite) TestGetTxEvents_GRPC() {
 				Events:  []string{bankMsgSendEventAction},
 				OrderBy: tx.OrderBy_ORDER_BY_ASC,
 			},
-			false, "",
+			false, "", 3,
 		},
 		{
 			"without pagination",
 			&tx.GetTxsEventRequest{
 				Events: []string{bankMsgSendEventAction},
 			},
-			false, "",
+			false, "", 3,
 		},
 		{
 			"with pagination",
 			&tx.GetTxsEventRequest{
 				Events: []string{bankMsgSendEventAction},
-				Pagination: &query.PageRequest{
-					CountTotal: false,
-					Offset:     0,
-					Limit:      1,
-				},
+				Page:   2,
+				Limit:  2,
 			},
-			false, "",
+			false, "", 1,
 		},
 		{
 			"with multi events",
 			&tx.GetTxsEventRequest{
 				Events: []string{bankMsgSendEventAction, "message.module='bank'"},
 			},
-			false, "",
+			false, "", 3,
 		},
 	}
 	for _, tc := range testCases {
@@ -268,7 +266,7 @@ func (s IntegrationTestSuite) TestGetTxEvents_GRPC() {
 				s.Require().NoError(err)
 				s.Require().GreaterOrEqual(len(grpcRes.Txs), 1)
 				s.Require().Equal("foobar", grpcRes.Txs[0].Body.Memo)
-
+				s.Require().Equal(len(grpcRes.Txs), tc.expLen)
 				// Make sure fields are populated.
 				// ref: https://github.com/cosmos/cosmos-sdk/issues/8680
 				// ref: https://github.com/cosmos/cosmos-sdk/issues/8681
@@ -286,54 +284,55 @@ func (s IntegrationTestSuite) TestGetTxEvents_GRPCGateway() {
 		url       string
 		expErr    bool
 		expErrMsg string
+		expLen    int
 	}{
 		{
 			"empty params",
 			fmt.Sprintf("%s/cosmos/tx/v1beta1/txs", val.APIAddress),
 			true,
-			"must declare at least one event to search",
+			"must declare at least one event to search", 0,
 		},
 		{
 			"without pagination",
 			fmt.Sprintf("%s/cosmos/tx/v1beta1/txs?events=%s", val.APIAddress, bankMsgSendEventAction),
 			false,
-			"",
+			"", 3,
 		},
 		{
 			"with pagination",
-			fmt.Sprintf("%s/cosmos/tx/v1beta1/txs?events=%s&pagination.offset=%d&pagination.limit=%d", val.APIAddress, bankMsgSendEventAction, 0, 10),
+			fmt.Sprintf("%s/cosmos/tx/v1beta1/txs?events=%s&page=%d&limit=%d", val.APIAddress, bankMsgSendEventAction, 2, 2),
 			false,
-			"",
+			"", 1,
 		},
 		{
 			"valid request: order by asc",
-			fmt.Sprintf("%s/cosmos/tx/v1beta1/txs?events=%s&events=%s&order_by=ORDER_BY_ASC", val.APIAddress, bankMsgSendEventAction, "message.module='bank'"),
+			fmt.Sprintf("%s/cosmos/tx/v1beta1/txs?events=%s&events=%s&order_by=1", val.APIAddress, bankMsgSendEventAction, "message.module='bank'"),
 			false,
-			"",
+			"", 3,
 		},
 		{
 			"valid request: order by desc",
-			fmt.Sprintf("%s/cosmos/tx/v1beta1/txs?events=%s&events=%s&order_by=ORDER_BY_DESC", val.APIAddress, bankMsgSendEventAction, "message.module='bank'"),
+			fmt.Sprintf("%s/cosmos/tx/v1beta1/txs?events=%s&events=%s&order_by=2", val.APIAddress, bankMsgSendEventAction, "message.module='bank'"),
 			false,
-			"",
+			"", 3,
 		},
 		{
 			"invalid request: invalid order by",
 			fmt.Sprintf("%s/cosmos/tx/v1beta1/txs?events=%s&events=%s&order_by=invalid_order", val.APIAddress, bankMsgSendEventAction, "message.module='bank'"),
 			true,
-			"is not a valid tx.OrderBy",
+			"invalid syntax", 0,
 		},
 		{
 			"expect pass with multiple-events",
 			fmt.Sprintf("%s/cosmos/tx/v1beta1/txs?events=%s&events=%s", val.APIAddress, bankMsgSendEventAction, "message.module='bank'"),
 			false,
-			"",
+			"", 3,
 		},
 		{
 			"expect pass with escape event",
 			fmt.Sprintf("%s/cosmos/tx/v1beta1/txs?events=%s", val.APIAddress, "message.action%3D'/cosmos.bank.v1beta1.MsgSend'"),
 			false,
-			"",
+			"", 3,
 		},
 	}
 	for _, tc := range testCases {
@@ -349,6 +348,7 @@ func (s IntegrationTestSuite) TestGetTxEvents_GRPCGateway() {
 				s.Require().GreaterOrEqual(len(result.Txs), 1)
 				s.Require().Equal("foobar", result.Txs[0].Body.Memo)
 				s.Require().NotZero(result.TxResponses[0].Height)
+				s.Require().Equal(len(result.Txs), tc.expLen)
 			}
 		})
 	}
@@ -615,14 +615,16 @@ func (s IntegrationTestSuite) TestGetBlockWithTxs_GRPC() {
 		req       *tx.GetBlockWithTxsRequest
 		expErr    bool
 		expErrMsg string
+		expTxsLen int
 	}{
-		{"nil request", nil, true, "request cannot be nil"},
-		{"empty request", &tx.GetBlockWithTxsRequest{}, true, "height must not be less than 1 or greater than the current height"},
-		{"bad height", &tx.GetBlockWithTxsRequest{Height: 99999999}, true, "height must not be less than 1 or greater than the current height"},
-		{"bad pagination", &tx.GetBlockWithTxsRequest{Height: s.txHeight, Pagination: &query.PageRequest{Offset: 1000, Limit: 100}}, true, "out of range"},
-		{"good request", &tx.GetBlockWithTxsRequest{Height: s.txHeight}, false, ""},
-		{"with pagination request", &tx.GetBlockWithTxsRequest{Height: s.txHeight, Pagination: &query.PageRequest{Offset: 0, Limit: 1}}, false, ""},
-		{"page all request", &tx.GetBlockWithTxsRequest{Height: s.txHeight, Pagination: &query.PageRequest{Offset: 0, Limit: 100}}, false, ""},
+		{"nil request", nil, true, "request cannot be nil", 0},
+		{"empty request", &tx.GetBlockWithTxsRequest{}, true, "height must not be less than 1 or greater than the current height", 0},
+		{"bad height", &tx.GetBlockWithTxsRequest{Height: 99999999}, true, "height must not be less than 1 or greater than the current height", 0},
+		{"bad pagination", &tx.GetBlockWithTxsRequest{Height: s.txHeight, Pagination: &query.PageRequest{Offset: 1000, Limit: 100}}, true, "out of range", 0},
+		{"good request", &tx.GetBlockWithTxsRequest{Height: s.txHeight}, false, "", 1},
+		{"with pagination request", &tx.GetBlockWithTxsRequest{Height: s.txHeight, Pagination: &query.PageRequest{Offset: 0, Limit: 1}}, false, "", 1},
+		{"page all request", &tx.GetBlockWithTxsRequest{Height: s.txHeight, Pagination: &query.PageRequest{Offset: 0, Limit: 100}}, false, "", 1},
+		{"block with 0 tx", &tx.GetBlockWithTxsRequest{Height: s.txHeight - 1, Pagination: &query.PageRequest{Offset: 0, Limit: 100}}, false, "", 0},
 	}
 	for _, tc := range testCases {
 		s.Run(tc.name, func() {
@@ -633,7 +635,9 @@ func (s IntegrationTestSuite) TestGetBlockWithTxs_GRPC() {
 				s.Require().Contains(err.Error(), tc.expErrMsg)
 			} else {
 				s.Require().NoError(err)
-				s.Require().Equal("foobar", grpcRes.Txs[0].Body.Memo)
+				if tc.expTxsLen > 0 {
+					s.Require().Equal("foobar", grpcRes.Txs[0].Body.Memo)
+				}
 				s.Require().Equal(grpcRes.Block.Header.Height, tc.req.Height)
 				if tc.req.Pagination != nil {
 					s.Require().LessOrEqual(len(grpcRes.Txs), int(tc.req.Pagination.Limit))
