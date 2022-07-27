@@ -12,11 +12,11 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	codecTypes "github.com/cosmos/cosmos-sdk/codec/types"
-	dbm "github.com/cosmos/cosmos-sdk/db"
 	"github.com/cosmos/cosmos-sdk/db/memdb"
 	pruningtypes "github.com/cosmos/cosmos-sdk/pruning/types"
 	types "github.com/cosmos/cosmos-sdk/store/v2alpha1"
 	"github.com/cosmos/cosmos-sdk/types/kv"
+	dbm "github.com/tendermint/tm-db"
 )
 
 var (
@@ -37,9 +37,9 @@ var (
 )
 
 // Factored out so the same tests can be run on Store and adaptor (v1asv2)
-type storeConstructor = func(dbm.DBConnection, StoreParams) (types.CommitMultiStore, error)
+type storeConstructor = func(dbm.DB, StoreParams) (types.CommitMultiStore, error)
 
-func multistoreConstructor(db dbm.DBConnection, params StoreParams) (types.CommitMultiStore, error) {
+func multistoreConstructor(db dbm.DB, params StoreParams) (types.CommitMultiStore, error) {
 	return NewStore(db, params)
 }
 
@@ -58,7 +58,7 @@ func storeParams123(t *testing.T) StoreParams {
 	return opts
 }
 
-func newSubStoreWithData(t *testing.T, db dbm.DBConnection, storeData map[string]string) (*Store, types.KVStore) {
+func newSubStoreWithData(t *testing.T, db dbm.DB, storeData map[string]string) (*Store, types.KVStore) {
 	root, err := NewStore(db, storeParams1(t))
 	require.NoError(t, err)
 
@@ -96,7 +96,7 @@ func doTestMultiStoreBasic(t *testing.T, ctor storeConstructor) {
 	opts := DefaultStoreParams()
 	err := opts.RegisterSubstore(skey_1, types.StoreTypePersistent)
 	require.NoError(t, err)
-	store, err := ctor(memdb.NewDB(), opts)
+	store, err := ctor(dbm.NewMemDB(), opts)
 	require.NoError(t, err)
 
 	store_1 := store.GetKVStore(skey_1)
@@ -110,7 +110,7 @@ func doTestMultiStoreBasic(t *testing.T, ctor storeConstructor) {
 }
 
 func TestGetSetHasDelete(t *testing.T) {
-	_, store := newSubStoreWithData(t, memdb.NewDB(), alohaData)
+	_, store := newSubStoreWithData(t, dbm.NewMemDB(), alohaData)
 	key := "hello"
 
 	exists := store.Has([]byte(key))
@@ -138,7 +138,7 @@ func TestGetSetHasDelete(t *testing.T) {
 }
 
 func TestIterators(t *testing.T) {
-	_, store := newSubStoreWithData(t, memdb.NewDB(), map[string]string{
+	_, store := newSubStoreWithData(t, dbm.NewMemDB(), map[string]string{
 		string([]byte{0x00}):       "0",
 		string([]byte{0x00, 0x00}): "0 0",
 		string([]byte{0x00, 0x01}): "0 1",
@@ -199,7 +199,7 @@ func TestIterators(t *testing.T) {
 }
 
 func TestConstructors(t *testing.T) {
-	db := memdb.NewDB()
+	db := dbm.NewMemDB()
 
 	store, err := NewStore(db, storeParams1(t))
 	require.NoError(t, err)
@@ -215,20 +215,20 @@ func TestConstructors(t *testing.T) {
 	})
 
 	t.Run("can't load store when db.Versions fails", func(t *testing.T) {
-		store, err = NewStore(dbVersionsFails{memdb.NewDB()}, DefaultStoreParams())
+		store, err = NewStore(dbVersionsFails{dbm.NewMemDB()}, DefaultStoreParams())
 		require.Error(t, err)
-		store, err = NewStore(db, StoreParams{StateCommitmentDB: dbVersionsFails{memdb.NewDB()}})
+		store, err = NewStore(db, StoreParams{StateCommitmentDB: dbVersionsFails{dbm.NewMemDB()}})
 		require.Error(t, err)
 	})
 
-	db = memdb.NewDB()
-	merkledb := memdb.NewDB()
-	w := db.Writer()
+	db = dbm.NewMemDB()
+	merkledb := dbm.NewMemDB()
+	w := db
 	t.Run("can't use a DB with open writers", func(t *testing.T) {
 		store, err = NewStore(db, DefaultStoreParams())
 		require.Error(t, err)
 		w.Discard()
-		w = merkledb.Writer()
+		w = merkledb
 		store, err = NewStore(db, StoreParams{StateCommitmentDB: merkledb})
 		require.Error(t, err)
 		w.Discard()
@@ -247,7 +247,7 @@ func TestConstructors(t *testing.T) {
 		store.Commit()
 		require.NoError(t, store.Close())
 		// ...whether because root is misssing
-		w = db.Writer()
+		w = db
 		s1RootKey := append(contentPrefix, substorePrefix(skey_1.Name())...)
 		s1RootKey = append(s1RootKey, merkleRootKey...)
 		w.Delete(s1RootKey)
@@ -304,14 +304,14 @@ func TestCommit(t *testing.T) {
 		testBasic(basicOpts)
 	})
 	t.Run("sanity tests for Merkle hashing with separate DBs", func(t *testing.T) {
-		basicOpts.StateCommitmentDB = memdb.NewDB()
+		basicOpts.StateCommitmentDB = dbm.NewMemDB()
 		testBasic(basicOpts)
 	})
 
 	// test that we can recover from a failed commit
 	testFailedCommit := func(t *testing.T,
 		store *Store,
-		db dbm.DBConnection,
+		db dbm.DB,
 		opts StoreParams) {
 		if db == nil {
 			db = store.stateDB
@@ -342,7 +342,7 @@ func TestCommit(t *testing.T) {
 
 	// Ensure Store's commit is rolled back in each failure case...
 	t.Run("recover after failed Commit", func(t *testing.T) {
-		store, err := NewStore(dbRWCommitFails{memdb.NewDB()}, opts)
+		store, err := NewStore(dbRWCommitFails{dbm.NewMemDB()}, opts)
 		require.NoError(t, err)
 		testFailedCommit(t, store, nil, opts)
 	})
@@ -350,8 +350,8 @@ func TestCommit(t *testing.T) {
 	// committed data that belongs to no version: non-atomic behavior from the Store user's perspective.
 	// So, that data must be reverted when the store is reloaded.
 	t.Run("recover after failed SaveVersion and Revert", func(t *testing.T) {
-		var db dbm.DBConnection
-		db = dbSaveVersionFails{memdb.NewDB()}
+		var db dbm.DB
+		db = dbSaveVersionFails{dbm.NewMemDB()}
 		// Revert should succeed in initial NewStore call, but fail during Commit
 		db = dbRevertFails{db, []bool{false, true}}
 		store, err := NewStore(db, opts)
@@ -360,39 +360,39 @@ func TestCommit(t *testing.T) {
 	})
 	// Repeat the above for StateCommitmentDB
 	t.Run("recover after failed StateCommitmentDB Commit", func(t *testing.T) {
-		opts.StateCommitmentDB = dbRWCommitFails{memdb.NewDB()}
-		store, err := NewStore(memdb.NewDB(), opts)
+		opts.StateCommitmentDB = dbRWCommitFails{dbm.NewMemDB()}
+		store, err := NewStore(dbm.NewMemDB(), opts)
 		require.NoError(t, err)
 		testFailedCommit(t, store, nil, opts)
 	})
 	t.Run("recover after failed StateCommitmentDB SaveVersion and Revert", func(t *testing.T) {
-		var db dbm.DBConnection
-		db = dbSaveVersionFails{memdb.NewDB()}
+		var db dbm.DB
+		db = dbSaveVersionFails{dbm.NewMemDB()}
 		db = dbRevertFails{db, []bool{false, true}}
 		opts.StateCommitmentDB = db
-		store, err := NewStore(memdb.NewDB(), opts)
+		store, err := NewStore(dbm.NewMemDB(), opts)
 		require.NoError(t, err)
 		testFailedCommit(t, store, nil, opts)
 	})
 
 	opts = storeParams1(t)
 	t.Run("recover after stateDB.Versions error triggers failure", func(t *testing.T) {
-		db := memdb.NewDB()
+		db := dbm.NewMemDB()
 		store, err := NewStore(db, opts)
 		require.NoError(t, err)
 		store.stateDB = dbVersionsFails{store.stateDB}
 		testFailedCommit(t, store, db, opts)
 	})
 	t.Run("recover after stateTxn.Set error triggers failure", func(t *testing.T) {
-		store, err := NewStore(memdb.NewDB(), opts)
+		store, err := NewStore(dbm.NewMemDB(), opts)
 		require.NoError(t, err)
 		store.stateTxn = rwCrudFails{store.stateTxn, merkleRootKey}
 		testFailedCommit(t, store, nil, opts)
 	})
 
 	t.Run("stateDB.DeleteVersion error triggers failure", func(t *testing.T) {
-		opts.StateCommitmentDB = memdb.NewDB()
-		store, err := NewStore(memdb.NewDB(), opts)
+		opts.StateCommitmentDB = dbm.NewMemDB()
+		store, err := NewStore(dbm.NewMemDB(), opts)
 		require.NoError(t, err)
 		store.stateCommitmentTxn = rwCommitFails{store.stateCommitmentTxn}
 		store.stateDB = dbDeleteVersionFails{store.stateDB}
@@ -402,7 +402,7 @@ func TestCommit(t *testing.T) {
 		opts.StateCommitmentDB = nil
 		opts.InitialVersion = math.MaxInt64
 		opts.Pruning = pruningtypes.PruneNothing
-		store, err := NewStore(memdb.NewDB(), opts)
+		store, err := NewStore(dbm.NewMemDB(), opts)
 		require.NoError(t, err)
 		require.Equal(t, int64(math.MaxInt64), store.Commit().Version)
 		require.Panics(t, func() { store.Commit() })
@@ -413,23 +413,23 @@ func TestCommit(t *testing.T) {
 		opts = storeParams1(t)
 		opts.InitialVersion = 5
 		opts.Pruning = pruningtypes.PruneNothing
-		opts.StateCommitmentDB = memdb.NewDB()
-		store, err := NewStore(memdb.NewDB(), opts)
+		opts.StateCommitmentDB = dbm.NewMemDB()
+		store, err := NewStore(dbm.NewMemDB(), opts)
 		require.NoError(t, err)
 		require.Equal(t, int64(5), store.Commit().Version)
 	})
 
 	// test improbable failures to fill out test coverage
 	opts = storeParams1(t)
-	store, err := NewStore(memdb.NewDB(), opts)
+	store, err := NewStore(dbm.NewMemDB(), opts)
 	require.NoError(t, err)
 	store.Commit()
 	store.stateDB = dbVersionsFails{store.stateDB}
 	require.Panics(t, func() { store.LastCommitID() })
 
 	opts = storeParams1(t)
-	opts.StateCommitmentDB = memdb.NewDB()
-	store, err = NewStore(memdb.NewDB(), opts)
+	opts.StateCommitmentDB = dbm.NewMemDB()
+	store, err = NewStore(dbm.NewMemDB(), opts)
 	require.NoError(t, err)
 	store.Commit()
 	store.stateTxn = rwCrudFails{store.stateTxn, nil}
@@ -461,9 +461,9 @@ func doTestPruning(t *testing.T, ctor storeConstructor, sepDBs bool) {
 	for tci, tc := range testCases {
 		opts := storeParams1(t)
 		opts.Pruning = tc.PruningOptions
-		dbs := []dbm.DBConnection{memdb.NewDB()}
+		dbs := []dbm.DB{dbm.NewMemDB()}
 		if sepDBs {
-			dbs = append(dbs, memdb.NewDB())
+			dbs = append(dbs, dbm.NewMemDB())
 			opts.StateCommitmentDB = dbs[1]
 		}
 		store, err := ctor(dbs[0], opts)
@@ -525,7 +525,7 @@ func doTestQuery(t *testing.T, ctor storeConstructor) {
 	valExpSub2, err := KVs2.Marshal()
 	require.NoError(t, err)
 
-	store, err := NewStore(memdb.NewDB(), storeParams1(t))
+	store, err := NewStore(dbm.NewMemDB(), storeParams1(t))
 	require.NoError(t, err)
 	cid := store.Commit()
 	ver := cid.Version
@@ -595,7 +595,7 @@ func doTestQuery(t *testing.T, ctor storeConstructor) {
 	})
 
 	t.Run("different versions", func(t *testing.T) {
-		stateDB := memdb.NewDB()
+		stateDB := dbm.NewMemDB()
 
 		// default (height 0) will show latest-1
 		qres = store.Query(queryHeight0)
@@ -632,7 +632,7 @@ func doTestQuery(t *testing.T, ctor storeConstructor) {
 	})
 
 	t.Run("failed queries", func(t *testing.T) {
-		stateDB := memdb.NewDB()
+		stateDB := dbm.NewMemDB()
 
 		store, err = NewStore(stateDB, storeParams1(t))
 		require.NoError(t, err)
@@ -688,8 +688,8 @@ func doTestQuery(t *testing.T, ctor storeConstructor) {
 		require.NoError(t, store.Close())
 
 		opts := storeParams1(t)
-		opts.StateCommitmentDB = memdb.NewDB()
-		store, err = NewStore(memdb.NewDB(), opts)
+		opts.StateCommitmentDB = dbm.NewMemDB()
+		store, err = NewStore(dbm.NewMemDB(), opts)
 		require.NoError(t, err)
 		store.GetKVStore(skey_1).Set(k1, v1)
 		store.Commit()
@@ -703,7 +703,7 @@ func TestGetVersion(t *testing.T) {
 }
 
 func doTestGetVersion(t *testing.T, ctor storeConstructor) {
-	db := memdb.NewDB()
+	db := dbm.NewMemDB()
 	opts := storeParams123(t)
 	store, err := ctor(db, opts)
 	require.NoError(t, err)
@@ -742,7 +742,7 @@ func TestStoreSchemaMigration(t *testing.T) {
 }
 
 func doTestStoreSchemaMigration(t *testing.T, ctor storeConstructor) {
-	db := memdb.NewDB()
+	db := dbm.NewMemDB()
 	opts := storeParams123(t)
 	store, err := ctor(db, opts)
 	require.NoError(t, err)
@@ -905,7 +905,7 @@ func doTestTrace(t *testing.T, ctor storeConstructor) {
 	expected_IterKey := `{"operation":"iterKey","key":"dGVzdC1rZXk=","value":"","metadata":{"blockHeight":64}}` + "\n"
 	expected_IterValue := `{"operation":"iterValue","key":"","value":"dGVzdC12YWx1ZQ==","metadata":{"blockHeight":64}}` + "\n"
 
-	db := memdb.NewDB()
+	db := dbm.NewMemDB()
 	opts := storeParams1(t)
 	require.NoError(t, opts.RegisterSubstore(skey_mem1, types.StoreTypeMemory))
 	require.NoError(t, opts.RegisterSubstore(skey_tran1, types.StoreTypeTransient))
@@ -956,7 +956,7 @@ func TestTraceConcurrency(t *testing.T) {
 }
 
 func doTestTraceConcurrency(t *testing.T, ctor storeConstructor) {
-	db := memdb.NewDB()
+	db := dbm.NewMemDB()
 	opts := storeParams123(t)
 	store, err := ctor(db, opts)
 	require.NoError(t, err)
@@ -1038,7 +1038,7 @@ func doTestListeners(t *testing.T, ctor storeConstructor) {
 	interfaceRegistry := codecTypes.NewInterfaceRegistry()
 	marshaller := codec.NewProtoCodec(interfaceRegistry)
 
-	db := memdb.NewDB()
+	db := dbm.NewMemDB()
 	opts := storeParams1(t)
 	require.NoError(t, opts.RegisterSubstore(skey_mem1, types.StoreTypeMemory))
 	require.NoError(t, opts.RegisterSubstore(skey_tran1, types.StoreTypeTransient))

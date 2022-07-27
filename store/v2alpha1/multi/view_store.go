@@ -5,7 +5,6 @@ import (
 	"io"
 
 	util "github.com/cosmos/cosmos-sdk/internal"
-	dbutil "github.com/cosmos/cosmos-sdk/internal/db"
 	"github.com/cosmos/cosmos-sdk/store/cachekv"
 	"github.com/cosmos/cosmos-sdk/store/listenkv"
 	"github.com/cosmos/cosmos-sdk/store/tracekv"
@@ -61,7 +60,7 @@ func (vs *viewStore) getSubstore(key string) (*viewSubstore, error) {
 		root:                 vs,
 		name:                 key,
 		dataBucket:           db.NewPrefixDB(stateR, dataPrefix),
-		stateCommitmentStore: loadSMT(dbm.ReaderAsReadWriter(stateCommitmentR), rootHash),
+		stateCommitmentStore: loadSMT(stateCommitmentR, rootHash),
 	}, nil
 }
 
@@ -109,7 +108,7 @@ func (s *viewSubstore) Iterator(start, end []byte) types.Iterator {
 	if err != nil {
 		panic(err)
 	}
-	return dbutil.DBToStoreIterator(iter)
+	return iter
 }
 
 // ReverseIterator implements KVStore.
@@ -118,7 +117,7 @@ func (s *viewSubstore) ReverseIterator(start, end []byte) types.Iterator {
 	if err != nil {
 		panic(err)
 	}
-	return dbutil.DBToStoreIterator(iter)
+	return iter
 }
 
 // GetStoreType implements Store.
@@ -177,7 +176,7 @@ func (store *Store) getView(version int64) (ret *viewStore, err error) {
 		}()
 	}
 	// Now read this version's schema
-	schemaView := prefixdb.NewPrefixReader(stateView, schemaPrefix)
+	schemaView := dbm.NewPrefixDB(stateView, schemaPrefix)
 	defer func() {
 		if err != nil {
 			err = util.CombineErrors(err, schemaView.Discard(), "schemaView.Discard also failed")

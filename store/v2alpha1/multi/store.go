@@ -288,7 +288,7 @@ func NewStore(db dbm.DB, opts StoreParams) (ret *Store, err error) {
 		if err != nil {
 			return
 		}
-		stateCommitmentTxn = opts.StateCommitmentDB.ReadWriter()
+		stateCommitmentTxn = opts.StateCommitmentDB
 	}
 
 	ret = &Store{
