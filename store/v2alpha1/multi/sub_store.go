@@ -4,12 +4,11 @@ import (
 	"io"
 	"sync"
 
-	dbm "github.com/cosmos/cosmos-sdk/db"
-	dbutil "github.com/cosmos/cosmos-sdk/internal/db"
 	"github.com/cosmos/cosmos-sdk/store/cachekv"
 	"github.com/cosmos/cosmos-sdk/store/listenkv"
 	"github.com/cosmos/cosmos-sdk/store/tracekv"
 	types "github.com/cosmos/cosmos-sdk/store/v2alpha1"
+	dbm "github.com/tendermint/tm-db"
 )
 
 // Get implements KVStore.
@@ -65,7 +64,7 @@ type contentsIterator struct {
 func (s *substore) newSubstoreIterator(source dbm.Iterator) *contentsIterator {
 	locker := s.root.mtx.RLocker()
 	locker.Lock()
-	return &contentsIterator{dbutil.DBToStoreIterator(source), locker}
+	return &contentsIterator{source, locker}
 }
 
 func (it *contentsIterator) Close() error {

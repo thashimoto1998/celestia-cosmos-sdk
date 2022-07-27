@@ -57,7 +57,10 @@ require (
 	gopkg.in/yaml.v2 v2.4.0
 )
 
-require github.com/cosmos/cosmos-sdk/db v1.0.0-beta.1
+require (
+	github.com/cosmos/cosmos-sdk/db v1.0.0-beta.1
+	github.com/docker/docker v1.4.2-0.20180625184442-8e610b2b55bf
+)
 
 require (
 	filippo.io/edwards25519 v1.0.0-beta.2 // indirect

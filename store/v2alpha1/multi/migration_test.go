@@ -6,7 +6,6 @@ import (
 	"math/rand"
 	"testing"
 
-	"github.com/cosmos/cosmos-sdk/db/memdb"
 	"github.com/cosmos/cosmos-sdk/store/iavl"
 	"github.com/cosmos/cosmos-sdk/store/rootmulti"
 	"github.com/cosmos/cosmos-sdk/store/types"
@@ -69,7 +68,7 @@ func TestMigrationV2(t *testing.T) {
 		}
 
 		// setup a new root store of smt
-		db2 := memdb.NewDB()
+		db2 := dbm.NewMemDB()
 		storeConfig := DefaultStoreParams()
 		// migrating the iavl store (v1) to smt store (v2)
 		v2Store, err := MigrateFromV1(v1Store, db2, storeConfig)
@@ -97,7 +96,7 @@ func TestMigrateV2ForEmptyStore(t *testing.T) {
 	v1Store := rootmulti.NewStore(db)
 	err := v1Store.LoadLatestVersion()
 	require.Nil(t, err)
-	db2 := memdb.NewDB()
+	db2 := dbm.NewMemDB()
 	storeConfig := DefaultStoreParams()
 	// migrating the iavl store (v1) to smt store (v2)
 	v2Store, err := MigrateFromV1(v1Store, db2, storeConfig)

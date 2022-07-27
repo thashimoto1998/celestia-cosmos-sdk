@@ -1,17 +1,17 @@
 package multi
 
 import (
-	dbm "github.com/cosmos/cosmos-sdk/db"
 	"github.com/cosmos/cosmos-sdk/store/iavl"
 	"github.com/cosmos/cosmos-sdk/store/mem"
 	v1Store "github.com/cosmos/cosmos-sdk/store/rootmulti"
 	"github.com/cosmos/cosmos-sdk/store/transient"
 	"github.com/cosmos/cosmos-sdk/store/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	dbm "github.com/tendermint/tm-db"
 )
 
 // MigrateFromV1 will migrate the state from iavl to smt
-func MigrateFromV1(rootMultiStore *v1Store.Store, store2db dbm.DBConnection, storeConfig StoreParams) (*Store, error) {
+func MigrateFromV1(rootMultiStore *v1Store.Store, store2db dbm.DB, storeConfig StoreParams) (*Store, error) {
 	type namedStore struct {
 		*iavl.Store
 		name string

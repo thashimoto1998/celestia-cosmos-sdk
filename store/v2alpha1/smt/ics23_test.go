@@ -8,12 +8,12 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/cosmos/cosmos-sdk/db/memdb"
 	store "github.com/cosmos/cosmos-sdk/store/v2alpha1/smt"
+	dbm "github.com/tendermint/tm-db"
 )
 
 func TestProofICS23(t *testing.T) {
-	txn := memdb.NewDB().ReadWriter()
+	txn := dbm.NewMemDB()
 	s := store.NewStore(txn)
 	// pick keys whose hashes begin with different bits
 	key00 := []byte("foo")  // 00101100 = sha256(foo)[0]

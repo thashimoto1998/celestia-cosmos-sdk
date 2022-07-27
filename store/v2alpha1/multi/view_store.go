@@ -4,8 +4,6 @@ import (
 	"errors"
 	"io"
 
-	dbm "github.com/cosmos/cosmos-sdk/db"
-	prefixdb "github.com/cosmos/cosmos-sdk/db/prefix"
 	util "github.com/cosmos/cosmos-sdk/internal"
 	dbutil "github.com/cosmos/cosmos-sdk/internal/db"
 	"github.com/cosmos/cosmos-sdk/store/cachekv"
@@ -13,14 +11,16 @@ import (
 	"github.com/cosmos/cosmos-sdk/store/tracekv"
 	types "github.com/cosmos/cosmos-sdk/store/v2alpha1"
 	"github.com/cosmos/cosmos-sdk/store/v2alpha1/smt"
+	db "github.com/tendermint/tm-db"
+	dbm "github.com/tendermint/tm-db"
 )
 
 var ErrReadOnly = errors.New("cannot modify read-only store")
 
 // Read-only store for querying past versions
 type viewStore struct {
-	stateView           dbm.DBReader
-	stateCommitmentView dbm.DBReader
+	stateView           dbm.DB
+	stateCommitmentView dbm.DB
 	substoreCache       map[string]*viewSubstore
 	schema              StoreSchema
 }
@@ -28,7 +28,7 @@ type viewStore struct {
 type viewSubstore struct {
 	root                 *viewStore
 	name                 string
-	dataBucket           dbm.DBReader
+	dataBucket           dbm.DB
 	stateCommitmentStore *smt.Store
 }
 
@@ -51,8 +51,8 @@ func (vs *viewStore) getSubstore(key string) (*viewSubstore, error) {
 		return cached, nil
 	}
 	pfx := substorePrefix(key)
-	stateR := prefixdb.NewPrefixReader(vs.stateView, pfx)
-	stateCommitmentR := prefixdb.NewPrefixReader(vs.stateCommitmentView, pfx)
+	stateR := db.NewPrefixDB(vs.stateView, pfx)
+	stateCommitmentR := db.NewPrefixDB(vs.stateCommitmentView, pfx)
 	rootHash, err := stateR.Get(merkleRootKey)
 	if err != nil {
 		return nil, err
@@ -60,7 +60,7 @@ func (vs *viewStore) getSubstore(key string) (*viewSubstore, error) {
 	return &viewSubstore{
 		root:                 vs,
 		name:                 key,
-		dataBucket:           prefixdb.NewPrefixReader(stateR, dataPrefix),
+		dataBucket:           db.NewPrefixDB(stateR, dataPrefix),
 		stateCommitmentStore: loadSMT(dbm.ReaderAsReadWriter(stateCommitmentR), rootHash),
 	}, nil
 }
@@ -154,7 +154,7 @@ func (s *viewStore) getMerkleRoots() (ret map[string][]byte, err error) {
 }
 
 func (store *Store) getView(version int64) (ret *viewStore, err error) {
-	stateView, err := store.stateDB.ReaderAt(uint64(version))
+	stateView, err := store.stateDB.ReaderAt(uint64(version)) // TODO: Replace with loadVersion
 	if err != nil {
 		return
 	}
@@ -166,7 +166,7 @@ func (store *Store) getView(version int64) (ret *viewStore, err error) {
 
 	stateCommitmentView := stateView
 	if store.StateCommitmentDB != nil {
-		stateCommitmentView, err = store.StateCommitmentDB.ReaderAt(uint64(version))
+		stateCommitmentView, err = store.StateCommitmentDB.ReaderAt(uint64(version)) // TODO: Replace with loadVersion
 		if err != nil {
 			return
 		}

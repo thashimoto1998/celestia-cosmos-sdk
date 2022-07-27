@@ -5,13 +5,13 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/cosmos/cosmos-sdk/db/memdb"
 	store "github.com/cosmos/cosmos-sdk/store/v2alpha1/smt"
+	dbm "github.com/tendermint/tm-db"
 )
 
 func TestGetSetHasDelete(t *testing.T) {
-	db := memdb.NewDB()
-	s := store.NewStore(db.ReadWriter())
+	db := dbm.NewMemDB()
+	s := store.NewStore(db)
 
 	s.Set([]byte("foo"), []byte("bar"))
 	assert.Equal(t, []byte("bar"), s.Get([]byte("foo")))
@@ -31,8 +31,7 @@ func TestGetSetHasDelete(t *testing.T) {
 }
 
 func TestLoadStore(t *testing.T) {
-	db := memdb.NewDB()
-	txn := db.ReadWriter()
+	txn := dbm.NewMemDB()
 	s := store.NewStore(txn)
 
 	s.Set([]byte{0}, []byte{0})

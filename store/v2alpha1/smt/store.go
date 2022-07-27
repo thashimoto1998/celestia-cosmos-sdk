@@ -4,9 +4,8 @@ import (
 	"crypto/sha256"
 	"errors"
 
-	dbm "github.com/cosmos/cosmos-sdk/db"
-	"github.com/cosmos/cosmos-sdk/db/prefix"
 	types "github.com/cosmos/cosmos-sdk/store/v2alpha1"
+	dbm "github.com/tendermint/tm-db"
 
 	ics23 "github.com/confio/ics23/go"
 	"github.com/lazyledger/smt"
@@ -30,19 +29,19 @@ var (
 // Store Implements types.BasicKVStore.
 type Store struct {
 	tree   *smt.SparseMerkleTree
-	values dbm.DBReader
+	values dbm.DB
 	// Map hashed keys back to preimage
-	preimages dbm.DBReadWriter
+	preimages dbm.DB
 }
 
 // An smt.MapStore that wraps Get to raise smt.InvalidKeyError;
 // smt.SparseMerkleTree expects this error to be returned when a key is not found
-type dbMapStore struct{ dbm.DBReadWriter }
+type dbMapStore struct{ dbm.DB }
 
-func NewStore(db dbm.DBReadWriter) *Store {
-	nodes := prefix.NewPrefixReadWriter(db, nodesPrefix)
-	values := prefix.NewPrefixReadWriter(db, valuesPrefix)
-	preimages := prefix.NewPrefixReadWriter(db, preimagesPrefix)
+func NewStore(db dbm.DB) *Store {
+	nodes := dbm.NewPrefixDB(db, nodesPrefix)
+	values := dbm.NewPrefixDB(db, valuesPrefix)
+	preimages := dbm.NewPrefixDB(db, preimagesPrefix)
 	return &Store{
 		tree:      smt.NewSparseMerkleTree(dbMapStore{nodes}, dbMapStore{values}, sha256.New()),
 		values:    values,
@@ -50,10 +49,10 @@ func NewStore(db dbm.DBReadWriter) *Store {
 	}
 }
 
-func LoadStore(db dbm.DBReadWriter, root []byte) *Store {
-	nodes := prefix.NewPrefixReadWriter(db, nodesPrefix)
-	values := prefix.NewPrefixReadWriter(db, valuesPrefix)
-	preimages := prefix.NewPrefixReadWriter(db, preimagesPrefix)
+func LoadStore(db dbm.DB, root []byte) *Store {
+	nodes := dbm.NewPrefixDB(db, nodesPrefix)
+	values := dbm.NewPrefixDB(db, valuesPrefix)
+	preimages := dbm.NewPrefixDB(db, preimagesPrefix)
 	return &Store{
 		tree:      smt.ImportSparseMerkleTree(dbMapStore{nodes}, dbMapStore{values}, sha256.New(), root),
 		values:    values,
@@ -132,7 +131,7 @@ func (s *Store) Delete(key []byte) {
 }
 
 func (ms dbMapStore) Get(key []byte) ([]byte, error) {
-	val, err := ms.DBReadWriter.Get(key)
+	val, err := ms.DB.Get(key)
 	if err != nil {
 		return nil, err
 	}
@@ -143,12 +142,12 @@ func (ms dbMapStore) Get(key []byte) ([]byte, error) {
 }
 
 func (ms dbMapStore) Delete(key []byte) error {
-	has, err := ms.DBReadWriter.Has(key)
+	has, err := ms.DB.Has(key)
 	if err != nil {
 		return err
 	}
 	if !has {
 		return &smt.InvalidKeyError{key}
 	}
-	return ms.DBReadWriter.Delete(key)
+	return ms.DB.Delete(key)
 }

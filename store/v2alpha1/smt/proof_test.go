@@ -7,15 +7,15 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/cosmos/cosmos-sdk/db/memdb"
 	smtstore "github.com/cosmos/cosmos-sdk/store/v2alpha1/smt"
 	"github.com/lazyledger/smt"
+	dbm "github.com/tendermint/tm-db"
 )
 
 func TestProofOpInterface(t *testing.T) {
 	hasher := sha256.New()
-	nodes, values := memdb.NewDB(), memdb.NewDB()
-	tree := smt.NewSparseMerkleTree(nodes.ReadWriter(), values.ReadWriter(), hasher)
+	nodes, values := dbm.NewMemDB(), dbm.NewMemDB()
+	tree := smt.NewSparseMerkleTree(nodes, values, hasher)
 	key := []byte("foo")
 	value := []byte("bar")
 	root, err := tree.Update(key, value)
@@ -23,6 +23,7 @@ func TestProofOpInterface(t *testing.T) {
 	require.NotEmpty(t, root)
 
 	proof, err := tree.Prove(key)
+	require.NoError(t, err)
 	require.True(t, smt.VerifyProof(proof, root, key, value, hasher))
 
 	storeProofOp := smtstore.NewProofOp(root, key, smtstore.SHA256, proof)

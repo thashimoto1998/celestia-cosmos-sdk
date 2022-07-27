@@ -7,7 +7,7 @@ import (
 	"crypto/sha256"
 	"fmt"
 
-	dbm "github.com/cosmos/cosmos-sdk/db"
+	dbm "github.com/tendermint/tm-db"
 
 	ics23 "github.com/confio/ics23/go"
 )
@@ -51,7 +51,7 @@ func toNonExistenceProof(store *Store, path [32]byte) (*ics23.NonExistenceProof,
 	// Seek to our neighbors via the backing DB
 	getNext := func(it dbm.Iterator) (*ics23.ExistenceProof, error) {
 		defer it.Close()
-		if it.Next() {
+		if it.Valid() {
 			value, err := store.values.Get(it.Key())
 			if err != nil {
 				return nil, err

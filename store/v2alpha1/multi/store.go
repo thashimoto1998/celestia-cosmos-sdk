@@ -8,10 +8,9 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/docker/docker/api/types/versions"
 	abci "github.com/tendermint/tendermint/abci/types"
 
-	dbm "github.com/cosmos/cosmos-sdk/db"
-	prefixdb "github.com/cosmos/cosmos-sdk/db/prefix"
 	util "github.com/cosmos/cosmos-sdk/internal"
 	pruningtypes "github.com/cosmos/cosmos-sdk/pruning/types"
 	sdkmaps "github.com/cosmos/cosmos-sdk/store/internal/maps"
@@ -24,6 +23,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/store/v2alpha1/transient"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/types/kv"
+	dbm "github.com/tendermint/tm-db"
 )
 
 var (
@@ -62,7 +62,7 @@ type StoreParams struct {
 	InitialVersion uint64
 	// The optional backing DB to use for the state commitment Merkle tree data.
 	// If nil, Merkle data is stored in the state storage DB under a separate prefix.
-	StateCommitmentDB dbm.DBConnection
+	StateCommitmentDB dbm.DB
 	// Contains the store schema and methods to modify it
 	SchemaBuilder
 	storeKeys
@@ -89,10 +89,10 @@ type storeKeys map[string]types.StoreKey
 // * The state commitment store of each substore consists of a independent SMT.
 // * The state commitment of the root store consists of a Merkle map of all registered persistent substore names to the root hash of their corresponding SMTs
 type Store struct {
-	stateDB            dbm.DBConnection
-	stateTxn           dbm.DBReadWriter
-	StateCommitmentDB  dbm.DBConnection
-	stateCommitmentTxn dbm.DBReadWriter
+	stateDB            dbm.DB
+	stateTxn           dbm.DB
+	StateCommitmentDB  dbm.DB
+	stateCommitmentTxn dbm.DB
 
 	schema StoreKeySchema
 
@@ -112,7 +112,7 @@ type Store struct {
 type substore struct {
 	root                 *Store
 	name                 string
-	dataBucket           dbm.DBReadWriter
+	dataBucket           dbm.DB
 	stateCommitmentStore *smt.Store
 }
 
@@ -228,13 +228,14 @@ func (this StoreSchema) matches(that StoreKeySchema) bool {
 }
 
 // Parses a schema from the DB
-func readSavedSchema(bucket dbm.DBReader) (*SchemaBuilder, error) {
+func readSavedSchema(bucket dbm.DB) (*SchemaBuilder, error) {
 	ret := newSchemaBuilder()
 	it, err := bucket.Iterator(nil, nil)
 	if err != nil {
 		return nil, err
 	}
-	for it.Next() {
+	for ; it.Valid(); it.Next() {
+
 		value := it.Value()
 		if len(value) != 1 || !validSubStoreType(types.StoreType(value[0])) {
 			return nil, fmt.Errorf("invalid mapping for store key: %v => %v", it.Key(), value)
@@ -250,17 +251,13 @@ func readSavedSchema(bucket dbm.DBReader) (*SchemaBuilder, error) {
 
 // NewStore constructs a MultiStore directly from a database.
 // Creates a new store if no data exists; otherwise loads existing data.
-func NewStore(db dbm.DBConnection, opts StoreParams) (ret *Store, err error) {
-	versions, err := db.Versions()
-	if err != nil {
-		return
-	}
+func NewStore(db dbm.DB, opts StoreParams) (ret *Store, err error) {
+
+	latestVersion := getLatestVersion(db)
 	// If the DB is not empty, attempt to load existing data
-	if saved := versions.Count(); saved != 0 {
-		if opts.InitialVersion != 0 && versions.Last() < opts.InitialVersion {
-			return nil, fmt.Errorf("latest saved version is less than initial version: %v < %v",
-				versions.Last(), opts.InitialVersion)
-		}
+	if opts.InitialVersion != 0 && latestVersion < opts.InitialVersion {
+		return nil, fmt.Errorf("latest saved version is less than initial version: %v < %v",
+			latestVersion, opts.InitialVersion)
 	}
 	// To abide by atomicity constraints, revert the DB to the last saved version, in case it contains
 	// committed data in the "working" version.
@@ -269,7 +266,7 @@ func NewStore(db dbm.DBConnection, opts StoreParams) (ret *Store, err error) {
 	if err != nil {
 		return
 	}
-	stateTxn := db.ReadWriter()
+	stateTxn := db
 	defer func() {
 		if err != nil {
 			err = util.CombineErrors(err, stateTxn.Discard(), "stateTxn.Discard also failed")
@@ -312,7 +309,7 @@ func NewStore(db dbm.DBConnection, opts StoreParams) (ret *Store, err error) {
 	}
 
 	// Now load the substore schema
-	schemaView := prefixdb.NewPrefixReader(ret.stateDB.Reader(), schemaPrefix)
+	schemaView := dbm.NewPrefixDB(ret.stateDB, schemaPrefix)
 	defer func() {
 		if err != nil {
 			err = util.CombineErrors(err, schemaView.Discard(), "schemaView.Discard also failed")
@@ -320,13 +317,13 @@ func NewStore(db dbm.DBConnection, opts StoreParams) (ret *Store, err error) {
 		}
 	}()
 	writeSchema := func(sch StoreSchema) {
-		schemaWriter := prefixdb.NewPrefixWriter(ret.stateTxn, schemaPrefix)
+		schemaWriter := dbm.NewPrefixDB(ret.stateTxn, schemaPrefix)
 		var it dbm.Iterator
 		it, err = schemaView.Iterator(nil, nil)
 		if err != nil {
 			return
 		}
-		for it.Next() {
+		for ; it.Valid(); it.Next() {
 			err = schemaWriter.Delete(it.Key())
 			if err != nil {
 				return
@@ -400,30 +397,30 @@ func (s *Store) Close() error {
 // Applies store upgrades to the DB contents.
 func migrateData(store *Store, upgrades types.StoreUpgrades) error {
 	// Get a view of current state to allow mutation while iterating
-	reader := store.stateDB.Reader()
+	reader := store.stateDB
 	scReader := reader
 	if store.StateCommitmentDB != nil {
-		scReader = store.StateCommitmentDB.Reader()
+		scReader = store.StateCommitmentDB
 	}
 
 	for _, key := range upgrades.Deleted {
 		pfx := substorePrefix(key)
-		subReader := prefixdb.NewPrefixReader(reader, pfx)
+		subReader := dbm.NewPrefixDB(reader, pfx)
 		it, err := subReader.Iterator(nil, nil)
 		if err != nil {
 			return err
 		}
-		for it.Next() {
+		for ; it.Valid(); it.Next() {
 			store.stateTxn.Delete(it.Key())
 		}
 		it.Close()
 		if store.StateCommitmentDB != nil {
-			subReader = prefixdb.NewPrefixReader(scReader, pfx)
+			subReader = dbm.NewPrefixDB(scReader, pfx)
 			it, err = subReader.Iterator(nil, nil)
 			if err != nil {
 				return err
 			}
-			for it.Next() {
+			for ; it.Valid(); it.Next() {
 				store.stateCommitmentTxn.Delete(it.Key())
 			}
 			it.Close()
@@ -432,24 +429,24 @@ func migrateData(store *Store, upgrades types.StoreUpgrades) error {
 	for _, rename := range upgrades.Renamed {
 		oldPrefix := substorePrefix(rename.OldKey)
 		newPrefix := substorePrefix(rename.NewKey)
-		subReader := prefixdb.NewPrefixReader(reader, oldPrefix)
-		subWriter := prefixdb.NewPrefixWriter(store.stateTxn, newPrefix)
+		subReader := dbm.NewPrefixDB(reader, oldPrefix)
+		subWriter := dbm.NewPrefixDB(store.stateTxn, newPrefix)
 		it, err := subReader.Iterator(nil, nil)
 		if err != nil {
 			return err
 		}
-		for it.Next() {
+		for ; it.Valid(); it.Next() {
 			subWriter.Set(it.Key(), it.Value())
 		}
 		it.Close()
 		if store.StateCommitmentDB != nil {
-			subReader = prefixdb.NewPrefixReader(scReader, oldPrefix)
-			subWriter = prefixdb.NewPrefixWriter(store.stateCommitmentTxn, newPrefix)
+			subReader = dbm.NewPrefixDB(scReader, oldPrefix)
+			subWriter = dbm.NewPrefixDB(store.stateCommitmentTxn, newPrefix)
 			it, err = subReader.Iterator(nil, nil)
 			if err != nil {
 				return err
 			}
-			for it.Next() {
+			for ; it.Valid(); it.Next() {
 				subWriter.Set(it.Key(), it.Value())
 			}
 			it.Close()
@@ -502,8 +499,8 @@ func (rs *Store) getSubstore(key string) (*substore, error) {
 		return cached, nil
 	}
 	pfx := substorePrefix(key)
-	stateRW := prefixdb.NewPrefixReadWriter(rs.stateTxn, pfx)
-	stateCommitmentRW := prefixdb.NewPrefixReadWriter(rs.stateCommitmentTxn, pfx)
+	stateRW := dbm.NewPrefixDB(rs.stateTxn, pfx)
+	stateCommitmentRW := dbm.NewPrefixDB(rs.stateCommitmentTxn, pfx)
 	var stateCommitmentStore *smt.Store
 
 	rootHash, err := stateRW.Get(substoreMerkleRootKey)
@@ -513,14 +510,14 @@ func (rs *Store) getSubstore(key string) (*substore, error) {
 	if rootHash != nil {
 		stateCommitmentStore = loadSMT(stateCommitmentRW, rootHash)
 	} else {
-		smtdb := prefixdb.NewPrefixReadWriter(stateCommitmentRW, smtPrefix)
+		smtdb := dbm.NewPrefixDB(stateCommitmentRW, smtPrefix)
 		stateCommitmentStore = smt.NewStore(smtdb)
 	}
 
 	return &substore{
 		root:                 rs,
 		name:                 key,
-		dataBucket:           prefixdb.NewPrefixReadWriter(stateRW, dataPrefix),
+		dataBucket:           dbm.NewPrefixDB(stateRW, dataPrefix),
 		stateCommitmentStore: stateCommitmentStore,
 	}, nil
 }
@@ -528,9 +525,9 @@ func (rs *Store) getSubstore(key string) (*substore, error) {
 // Resets a substore's state after commit (because root stateTxn has been discarded)
 func (s *substore) refresh(rootHash []byte) {
 	pfx := substorePrefix(s.name)
-	stateRW := prefixdb.NewPrefixReadWriter(s.root.stateTxn, pfx)
-	stateCommitmentRW := prefixdb.NewPrefixReadWriter(s.root.stateCommitmentTxn, pfx)
-	s.dataBucket = prefixdb.NewPrefixReadWriter(stateRW, dataPrefix)
+	stateRW := dbm.NewPrefixDB(s.root.stateTxn, pfx)
+	stateCommitmentRW := dbm.NewPrefixDB(s.root.stateCommitmentTxn, pfx)
+	s.dataBucket = dbm.NewPrefixDB(stateRW, dataPrefix)
 	s.stateCommitmentStore = loadSMT(stateCommitmentRW, rootHash)
 }
 
@@ -607,7 +604,7 @@ func (s *Store) commit(target uint64) (id *types.CommitID, err error) {
 	// Update substore Merkle roots
 	for key, storeHash := range storeHashes {
 		pfx := substorePrefix(key)
-		stateW := prefixdb.NewPrefixReadWriter(s.stateTxn, pfx)
+		stateW := dbm.NewPrefixDB(s.stateTxn, pfx)
 		if err = stateW.Set(substoreMerkleRootKey, storeHash); err != nil {
 			return
 		}
@@ -629,7 +626,7 @@ func (s *Store) commit(target uint64) (id *types.CommitID, err error) {
 		return
 	}
 
-	stateTxn := s.stateDB.ReadWriter()
+	stateTxn := s.stateDB
 	defer func() {
 		if err != nil {
 			err = util.CombineErrors(err, stateTxn.Discard(), "stateTxn.Discard also failed")
@@ -662,7 +659,7 @@ func (s *Store) commit(target uint64) (id *types.CommitID, err error) {
 		if err != nil {
 			return
 		}
-		stateCommitmentTxn = s.StateCommitmentDB.ReadWriter()
+		stateCommitmentTxn = s.StateCommitmentDB
 	}
 
 	s.stateTxn = stateTxn
@@ -792,7 +789,7 @@ func (rs *Store) Query(req abci.RequestQuery) (res abci.ResponseQuery) {
 	}
 	view, err := rs.getView(height)
 	if err != nil {
-		if errors.Is(err, dbm.ErrVersionDoesNotExist) {
+		if errors.Is(err, ErrVersionDoesNotExist) {
 			err = sdkerrors.ErrInvalidHeight
 		}
 		return sdkerrors.QueryResult(sdkerrors.Wrapf(err, "failed to access height"))
@@ -846,8 +843,8 @@ func (rs *Store) Query(req abci.RequestQuery) (res abci.ResponseQuery) {
 	return res
 }
 
-func loadSMT(stateCommitmentTxn dbm.DBReadWriter, root []byte) *smt.Store {
-	smtdb := prefixdb.NewPrefixReadWriter(stateCommitmentTxn, smtPrefix)
+func loadSMT(stateCommitmentTxn dbm.DB, root []byte) *smt.Store {
+	smtdb := dbm.NewPrefixDB(stateCommitmentTxn, smtPrefix)
 	return smt.LoadStore(smtdb, root)
 }
 
