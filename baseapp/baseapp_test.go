@@ -2306,7 +2306,7 @@ func TestGenerateAndLoadFraudProof(t *testing.T) {
 	storeKeyToSubstoreTraceBuf := make(map[stypes.StoreKey]*bytes.Buffer)
 	storeKeyToSubstoreTraceBuf[capKey2] = subStoreTraceBuf
 
-	// Records S1 in fraudproof
+	// Records S2 in fraudproof
 	fraudProof := appB1.generateFraudProof(storeKeyToSubstoreTraceBuf)
 	currentBlockHeight := appB1.LastBlockHeight() // Only changes on a Commit
 	fraudProof.blockHeight = currentBlockHeight + 1
