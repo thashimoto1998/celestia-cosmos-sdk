@@ -2274,7 +2274,6 @@ func TestGenerateAndLoadFraudProof(t *testing.T) {
 		2. Block with invalid appHash at the end
 		3. Corrupted Fraud Proof: bad SMT format, insufficient key-value pairs inside SMT needed to verify fraud
 		4. Bad block, fraud proof needed, fraud proof works, chain halts (happy case)
-
 	*/
 
 	storeTraceBuf := &bytes.Buffer{}
@@ -2301,13 +2300,14 @@ func TestGenerateAndLoadFraudProof(t *testing.T) {
 	numTransactions := 5
 	// B1 <- S1
 	executeBlockWithArbitraryTxs(t, appB1, numTransactions, 1)
-	appB1.Commit()
+	commitB1 := appB1.Commit()
+	appHashB1 := commitB1.GetData()
 
 	// Exports all data inside current multistore into a fraudProof (S0 -> S1) //
 	storeKeyToSubstoreTraceBuf := make(map[stypes.StoreKey]*bytes.Buffer)
 	storeKeyToSubstoreTraceBuf[capKey2] = subStoreTraceBuf
 
-	// Records S2 in fraudproof
+	// Records S1 in fraudproof
 	fraudProof, err := appB1.generateFraudProof(storeKeyToSubstoreTraceBuf)
 	require.Nil(t, err)
 	currentBlockHeight := appB1.LastBlockHeight() // Only changes on a Commit
@@ -2326,7 +2326,7 @@ func TestGenerateAndLoadFraudProof(t *testing.T) {
 		require.Equal(t, appHash[0], appHashB1)
 	}
 
-	// Now we take contents of the fraud proof which was recorded with S2 and try to populate a fresh baseapp B2 with it
+	// Now we take contents of the fraud proof which was recorded with S1 and try to populate a fresh baseapp B2 with it
 	// B2 <- S1
 	appB2 := setupBaseAppFromFraudProof(t, fraudProof)
 	require.True(t, checkSMTStoreEqual(appB1, appB2, capKey2.Name()))
