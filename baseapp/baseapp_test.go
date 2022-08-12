@@ -2258,12 +2258,10 @@ func TestGenerateAndLoadFraudProof(t *testing.T) {
 	/*
 		Tests switch between a baseapp and fraudproof and covers parts of the fraudproof cycle. Steps:
 		1. Initialize a baseapp, B1, with some state, S0
-		2. Make some state transition to state S1 by doing some transactions
+		2. Make some state transition to state S1 by doing some transactions and commit
 		3. Export that state S1 into a fraudProof data structure (minimal snapshot)
 		4. Load a fresh baseapp, B2, with the contents of fraud proof data structure from (3) so it can begin from state S1.
-		5. Now, pick some set of transactions, txs1, to make some more state transitions.
-		6. Execute txs1 on both B1 and B2 so they go through the same state transitions
-		7. If the state of both B1 and B2 has to converge at a state S2, then we the test passes.
+		5. If the state of both B1 and B2 has to converge at a state S2, then we the test passes.
 
 		Note that the appHash from B1 and B2 will not be the same because the subset of storeKeys in both apps is different
 		so we compare subStores instead
@@ -2274,9 +2272,6 @@ func TestGenerateAndLoadFraudProof(t *testing.T) {
 		2. Block with invalid appHash at the end
 		3. Corrupted Fraud Proof: bad SMT format, insufficient key-value pairs inside SMT needed to verify fraud
 		4. Bad block, fraud proof needed, fraud proof works, chain halts (happy case)
-
-		Notes: In the current implementation, all substores might not be SMTs, but we assume they are for the prototype here
-		Try to keep tx as generic as possible so you don't need to care about the messages inside a Tx
 
 	*/
 
@@ -2305,33 +2300,23 @@ func TestGenerateAndLoadFraudProof(t *testing.T) {
 	numTransactions := 5
 	// B1 <- S1
 	executeBlockWithArbitraryTxs(t, appB1, numTransactions, 1)
+	appB1.Commit()
 
-	// Exports all data inside current multistore into a fraudProof (S1) //
-
+	// Exports all data inside current multistore into a fraudProof (S0 -> S1) //
 	storeKeyToSubstoreTraceBuf := make(map[stypes.StoreKey]*bytes.Buffer)
 	storeKeyToSubstoreTraceBuf[capKey2] = subStoreTraceBuf
 
 	// Records S1 in fraudproof
 	fraudProof := appB1.generateFraudProof(storeKeyToSubstoreTraceBuf)
-	currentBlockHeight := appB1.LastBlockHeight()
+	currentBlockHeight := appB1.LastBlockHeight() // Only changes on a Commit
 	fraudProof.blockHeight = currentBlockHeight + 1
 
 	// Light Client
 
 	// TODO: Insert fraudproof verification here
 
-	// Now we take contents of the fraud proof which was recorded with S1 and try to populate a fresh baseapp B2 with it
+	// Now we take contents of the fraud proof which was recorded with S2 and try to populate a fresh baseapp B2 with it
 	// B2 <- S1
 	appB2 := setupBaseAppFromFraudProof(t, fraudProof)
-	require.True(t, checkSubstoreSMTsEqual(appB1, appB2, capKey2.Name()))
-
-	// B1 <- S2
-	txs1 := executeBlockWithArbitraryTxs(t, appB1, numTransactions, fraudProof.blockHeight)
-	require.False(t, checkSubstoreSMTsEqual(appB1, appB2, capKey2.Name()))
-
-	// Apply the set of transactions txs1 here
-	// B2 <- S2
-	executeBlock(t, appB2, txs1, fraudProof.blockHeight)
-
 	require.True(t, checkSubstoreSMTsEqual(appB1, appB2, capKey2.Name()))
 }
