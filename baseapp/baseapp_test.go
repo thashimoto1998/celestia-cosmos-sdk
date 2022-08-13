@@ -2330,7 +2330,6 @@ func TestGenerateAndLoadFraudProof(t *testing.T) {
 	executeBlockWithArbitraryTxs(t, appB1, numTransactions, 1)
 	commitB1 := appB1.Commit()
 	appHashB1 := commitB1.GetData()
-
 	storeHashB1 := appB1.cms.(*multi.Store).GetSubstoreSMT(capKey2.Name()).Root()
 
 	// B1 <- S2
@@ -2345,7 +2344,6 @@ func TestGenerateAndLoadFraudProof(t *testing.T) {
 	require.Nil(t, err)
 
 	// Light Client
-
 	fraudProofVerified, err := fraudProof.verifyFraudProof(appHashB1)
 	require.Nil(t, err)
 	require.True(t, fraudProofVerified)
