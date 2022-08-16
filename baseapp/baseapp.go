@@ -804,7 +804,8 @@ func (app *BaseApp) enableFraudProofGenerationMode(storeKeys []types.StoreKey, r
 		options = append(options, SetTracerFor(storeKey.Name(), storeKeyToSubstoreTraceBuf[storeKey.Name()]))
 		options = append(options, AppOptionFunc(routerOpts[storeKey.Name()]))
 	}
-	newApp, err := SetupBaseAppFromParams(app.name+"WithTracing", app.logger, dbm.NewMemDB(), app.txDecoder, storeKeyNames, app.LastBlockHeight()+1, storeToLoadFrom, options...)
+	newBlockHeight := app.LastBlockHeight() + 1
+	newApp, err := SetupBaseAppFromParams(app.name+"WithTracing", app.logger, dbm.NewMemDB(), app.txDecoder, storeKeyNames, newBlockHeight, storeToLoadFrom, options...)
 
 	// Need to reset all the buffers to remove anything logged while setting up baseapp
 	storeTraceBuf.Reset()
