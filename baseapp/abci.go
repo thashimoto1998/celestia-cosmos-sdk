@@ -182,6 +182,7 @@ func (app *BaseApp) GenerateFraudProof(req abci.RequestGenerateFraudProof) (res 
 	beginBlockRequest := req.BeginBlockRequest
 	beginBlockRequest.Header.Height = 1
 	isBeginBlockFraudulent := req.DeliverTxRequests == nil
+	isDeliverTxFraudulent := req.EndBlockRequest == nil
 	appWithTracing.BeginBlock(beginBlockRequest)
 	if !isBeginBlockFraudulent {
 		// BeginBlock is not the fraudulent state transition
@@ -193,7 +194,6 @@ func (app *BaseApp) GenerateFraudProof(req abci.RequestGenerateFraudProof) (res 
 		}
 
 		// Record the trace made by the fraudulent state transitions
-		isDeliverTxFraudulent := req.EndBlockRequest == nil
 		if isDeliverTxFraudulent {
 			// The last DeliverTx is the fraudulent state transition
 			fraudulentDeliverTx := req.DeliverTxRequests[len(req.DeliverTxRequests)-1]
@@ -222,6 +222,14 @@ func (app *BaseApp) GenerateFraudProof(req abci.RequestGenerateFraudProof) (res 
 	fraudProof, err := appFraudGen.getFraudProof(storeKeyToSubstoreTraceBuf, app.LastBlockHeight())
 	if err != nil {
 		panic(err)
+	}
+
+	if isBeginBlockFraudulent {
+		fraudProof.fraudulentBeginBlock = &beginBlockRequest
+	} else if isDeliverTxFraudulent {
+		fraudProof.fraudulentDeliverTx = req.DeliverTxRequests[len(req.DeliverTxRequests)-1]
+	} else {
+		fraudProof.fraudulentEndBlock = req.EndBlockRequest
 	}
 	abciFraudProof := fraudProof.toABCI()
 	res = abci.ResponseGenerateFraudProof{

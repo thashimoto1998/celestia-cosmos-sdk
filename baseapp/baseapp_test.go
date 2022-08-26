@@ -2434,6 +2434,8 @@ func TestEndToEndFraudProof(t *testing.T) {
 	fraudProof, err := appB2.getFraudProof(storeKeyToSubstoreTraceBuf, appB2.LastBlockHeight())
 	require.Nil(t, err)
 
+	fraudProof.fraudulentEndBlock = &abci.RequestEndBlock{Height: 1}
+
 	// Light Client
 	require.Equal(t, appHashB2, fraudProof.appHash)
 	fraudProofVerified, err := fraudProof.verifyFraudProof()

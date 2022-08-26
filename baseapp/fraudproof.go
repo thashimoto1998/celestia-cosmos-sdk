@@ -21,6 +21,12 @@ type FraudProof struct {
 	appHash []byte
 	// A map from module name to state witness
 	stateWitness map[string]StateWitness
+
+	// Fraudulent state transition has to be one of these
+	// Only one have of these three can be non-nil
+	fraudulentBeginBlock *abci.RequestBeginBlock
+	fraudulentDeliverTx  *abci.RequestDeliverTx
+	fraudulentEndBlock   *abci.RequestEndBlock
 }
 
 // State witness with a list of all witness data
@@ -79,7 +85,21 @@ func (fraudProof *FraudProof) extractStore() map[string]types.KVStore {
 	return store
 }
 
+// Returns true only if only one of the three pointers is nil
+func (fraudProof *FraudProof) checkFraudulentStateTransition() bool {
+	if fraudProof.fraudulentBeginBlock != nil {
+		return fraudProof.fraudulentDeliverTx == nil && fraudProof.fraudulentEndBlock == nil
+	}
+	if fraudProof.fraudulentDeliverTx != nil {
+		return fraudProof.fraudulentEndBlock == nil
+	}
+	return fraudProof.fraudulentEndBlock != nil
+}
+
 func (fraudProof *FraudProof) verifyFraudProof() (bool, error) {
+	if !fraudProof.checkFraudulentStateTransition() {
+		return false, fmt.Errorf("fraudProof has more than one type of fradulent state transitions marked nil")
+	}
 	for storeKey, stateWitness := range fraudProof.stateWitness {
 		proofOp := stateWitness.Proof
 		proof, err := types.CommitmentOpDecoder(proofOp)
@@ -141,9 +161,12 @@ func (fraudProof *FraudProof) toABCI() abci.FraudProof {
 		}
 	}
 	return abci.FraudProof{
-		BlockHeight:  fraudProof.blockHeight,
-		AppHash:      fraudProof.appHash,
-		StateWitness: abciStateWitness,
+		BlockHeight:          fraudProof.blockHeight,
+		AppHash:              fraudProof.appHash,
+		StateWitness:         abciStateWitness,
+		FraudulentBeginBlock: fraudProof.fraudulentBeginBlock,
+		FraudulentDeliverTx:  fraudProof.fraudulentDeliverTx,
+		FraudulentEndBlock:   fraudProof.fraudulentEndBlock,
 	}
 }
 
@@ -168,4 +191,7 @@ func (fraudProof *FraudProof) fromABCI(abciFraudProof abci.FraudProof) {
 	fraudProof.blockHeight = abciFraudProof.BlockHeight
 	fraudProof.appHash = abciFraudProof.AppHash
 	fraudProof.stateWitness = stateWitness
+	fraudProof.fraudulentBeginBlock = abciFraudProof.FraudulentBeginBlock
+	fraudProof.fraudulentDeliverTx = abciFraudProof.FraudulentDeliverTx
+	fraudProof.fraudulentEndBlock = abciFraudProof.FraudulentEndBlock
 }
