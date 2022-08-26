@@ -1,6 +1,7 @@
 package baseapp
 
 import (
+	"bytes"
 	"crypto/sha256"
 	"encoding/json"
 	"errors"
@@ -18,6 +19,7 @@ import (
 	grpcstatus "google.golang.org/grpc/status"
 
 	"github.com/cosmos/cosmos-sdk/codec"
+	dbm "github.com/cosmos/cosmos-sdk/db"
 	snapshottypes "github.com/cosmos/cosmos-sdk/snapshots/types"
 	"github.com/cosmos/cosmos-sdk/store/v2alpha1/multi"
 	"github.com/cosmos/cosmos-sdk/telemetry"
@@ -254,7 +256,45 @@ func (app *BaseApp) VerifyFraudProof(req abci.RequestVerifyFraudProof) (res abci
 		panic(err)
 	}
 
-	// TODO: third level of verification, state transition needed
+	if success {
+		// Third level of verification
+
+		// Setup a new app from fraud proof
+		options := make([]AppOption, 0)
+		if app.routerOpts != nil {
+			for _, storeKey := range app.cms.(*multi.Store).GetStoreKeys() {
+				if routerOpt, exists := app.routerOpts[(storeKey.Name())]; exists {
+					options = append(options, routerOpt)
+				}
+			}
+		}
+		appFromFraudProof, err := SetupBaseAppFromFraudProof(
+			app.Name()+"FromFraudProof",
+			app.logger,
+			dbm.NewMemDB(),
+			app.txDecoder,
+			fraudProof,
+			options...,
+		)
+		if err != nil {
+			panic(err)
+		}
+
+		// Execute fraudulent state transition
+		if fraudProof.fraudulentBeginBlock != nil {
+			appFromFraudProof.BeginBlock(*fraudProof.fraudulentBeginBlock)
+		} else if fraudProof.fraudulentDeliverTx != nil {
+			appFromFraudProof.DeliverTx(*fraudProof.fraudulentDeliverTx)
+		} else {
+			appFromFraudProof.EndBlock(*fraudProof.fraudulentEndBlock)
+		}
+
+		appHash, err := appFromFraudProof.cms.(*multi.Store).GetAppHash()
+		if err != nil {
+			panic(err)
+		}
+		success = bytes.Equal(appHash, req.ExpectedAppHash)
+	}
 	res = abci.ResponseVerifyFraudProof{
 		Success: success,
 	}
