@@ -2665,3 +2665,77 @@ func TestGenerateAndLoadFraudProof(t *testing.T) {
 	storeHashB2 := appB2.cms.(*multi.Store).GetSubstoreSMT(capKey2.Name()).Root()
 	require.Equal(t, storeHashB1, storeHashB2)
 }
+
+func TestABCIEndToEndFraudProof(t *testing.T) {
+
+	routerOpt := func(bapp *BaseApp) {
+		bapp.Router().AddRoute(sdk.NewRoute(routeMsgKeyValue, func(ctx sdk.Context, msg sdk.Msg) (*sdk.Result, error) {
+			kv := msg.(*msgKeyValue)
+			bapp.cms.GetKVStore(capKey2).Set(kv.Key, kv.Value)
+			return &sdk.Result{}, nil
+		}))
+	}
+
+	// BaseApp, B1 with no Tracing
+	appB1 := setupBaseApp(t,
+		AppOptionFunc(routerOpt),
+	)
+
+	// B1 <- S0
+	appB1.InitChain(abci.RequestInitChain{})
+
+	numTransactions := 2
+	// B1 <- S1
+	executeBlockWithArbitraryTxs(t, appB1, numTransactions, 1)
+	appB1.Commit()
+
+	// B1 <- S2
+	beginRequest, txs, deliverRequests, _ := getBlockWithArbitraryTxs(t, appB1, numTransactions, 2)
+
+	// Modify deliverRequests to discard last tx in the block
+	nonFraudulentDeliverRequests := deliverRequests[0 : len(deliverRequests)-1]
+	txs = txs[0 : len(txs)-1]
+	require.NotEmpty(t, txs)
+	fraudDeliverRequest := getFraudTx(t, txs[0])
+
+	executeBlockWithRequests(t, appB1, beginRequest, nonFraudulentDeliverRequests, nil, 0)
+	executeBlockWithRequests(t, appB1, nil, []*abci.RequestDeliverTx{fraudDeliverRequest}, nil, 0)
+
+	// Save appHash for comparision later
+	appHashAfterFraud, err := appB1.cms.(*multi.Store).GetAppHash()
+	require.Nil(t, err)
+
+	routerOpts := make(map[string]AppOptionFunc)
+	newRouterOpt := func(bapp *BaseApp) {
+		bapp.Router().AddRoute(sdk.NewRoute(routeMsgKeyValue, func(ctx sdk.Context, msg sdk.Msg) (*sdk.Result, error) {
+			kv := msg.(*msgKeyValue)
+			cms := bapp.cms.(*multi.Store)
+			sKeys := cms.GetStoreKeys()
+			largestKey := sKeys[0]
+			for _, sKey := range sKeys[1:] {
+				if sKey.Name() > largestKey.Name() {
+					largestKey = sKey
+				}
+			}
+			bapp.cms.GetKVStore(largestKey).Set(kv.Key, kv.Value)
+			return &sdk.Result{}, nil
+		}))
+	}
+	routerOpts[capKey2.Name()] = newRouterOpt
+
+	generateResp := appB1.generateFraudProofWithRouterOpts(
+		abci.RequestGenerateFraudProof{
+			BeginBlockRequest: *beginRequest, DeliverTxRequests: append(nonFraudulentDeliverRequests, fraudDeliverRequest), EndBlockRequest: nil,
+		},
+		routerOpts,
+	)
+
+	// Light Client
+	verifyResp := appB1.VerifyFraudProof(
+		abci.RequestVerifyFraudProof{
+			FraudProof:      generateResp.FraudProof,
+			ExpectedAppHash: appHashAfterFraud,
+		},
+	)
+	require.True(t, verifyResp.Success)
+}

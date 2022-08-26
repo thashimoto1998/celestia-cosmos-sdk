@@ -262,10 +262,8 @@ func (app *BaseApp) VerifyFraudProof(req abci.RequestVerifyFraudProof) (res abci
 		// Setup a new app from fraud proof
 		options := make([]AppOption, 0)
 		if app.routerOpts != nil {
-			for _, storeKey := range app.cms.(*multi.Store).GetStoreKeys() {
-				if routerOpt, exists := app.routerOpts[(storeKey.Name())]; exists {
-					options = append(options, routerOpt)
-				}
+			for _, routerOpt := range app.routerOpts {
+				options = append(options, routerOpt)
 			}
 		}
 		appFromFraudProof, err := SetupBaseAppFromFraudProof(
@@ -279,20 +277,30 @@ func (app *BaseApp) VerifyFraudProof(req abci.RequestVerifyFraudProof) (res abci
 		if err != nil {
 			panic(err)
 		}
+		appFromFraudProof.InitChain(abci.RequestInitChain{})
+		appHash := appFromFraudProof.GetAppHash(abci.RequestGetAppHash{}).AppHash
+
+		if !bytes.Equal(fraudProof.appHash, appHash) {
+			return abci.ResponseVerifyFraudProof{
+				Success: false,
+			}
+		}
 
 		// Execute fraudulent state transition
 		if fraudProof.fraudulentBeginBlock != nil {
 			appFromFraudProof.BeginBlock(*fraudProof.fraudulentBeginBlock)
-		} else if fraudProof.fraudulentDeliverTx != nil {
-			appFromFraudProof.DeliverTx(*fraudProof.fraudulentDeliverTx)
 		} else {
-			appFromFraudProof.EndBlock(*fraudProof.fraudulentEndBlock)
+			// Need to add some dummy begin block here since its a new app
+
+			appFromFraudProof.BeginBlock(abci.RequestBeginBlock{Header: tmproto.Header{Height: fraudProof.blockHeight}})
+			if fraudProof.fraudulentDeliverTx != nil {
+				appFromFraudProof.DeliverTx(*fraudProof.fraudulentDeliverTx)
+			} else {
+				appFromFraudProof.EndBlock(*fraudProof.fraudulentEndBlock)
+			}
 		}
 
-		appHash, err := appFromFraudProof.cms.(*multi.Store).GetAppHash()
-		if err != nil {
-			panic(err)
-		}
+		appHash = appFromFraudProof.GetAppHash(abci.RequestGetAppHash{}).AppHash
 		success = bytes.Equal(appHash, req.ExpectedAppHash)
 	}
 	res = abci.ResponseVerifyFraudProof{
