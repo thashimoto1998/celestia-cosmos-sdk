@@ -211,29 +211,29 @@ jobs:
           file: ./coverage.txt
         if: env.GIT_DIFF
 
-  test-rosetta:
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v3
-      - uses: technote-space/get-diff-action@v6.1.0
-        id: git_diff
-        with:
-          PATTERNS: |
-            **/**.go
-            go.mod
-            go.sum
-      - name: Get data from Go build cache
-        # if: env.GIT_DIFF
-        if: ${{ false }}
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/go/pkg/mod
-            ~/.cache/golangci-lint
-            ~/.cache/go-build
-          key: ${{ runner.os }}-go-build-${{ hashFiles('**/go.sum') }}
-      - name: test rosetta
+  # test-rosetta:
+  #   runs-on: ubuntu-latest
+  #   timeout-minutes: 10
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - uses: technote-space/get-diff-action@v6.1.0
+  #       id: git_diff
+  #       with:
+  #         PATTERNS: |
+  #           **/**.go
+  #           go.mod
+  #           go.sum
+  #     - name: Get data from Go build cache
+  #       # if: env.GIT_DIFF
+  #       if: ${{ false }}
+  #       uses: actions/cache@v3
+  #       with:
+  #         path: |
+  #           ~/go/pkg/mod
+  #           ~/.cache/golangci-lint
+  #           ~/.cache/go-build
+  #         key: ${{ runner.os }}-go-build-${{ hashFiles('**/go.sum') }}
+  #     - name: test rosetta
         run: |
           make test-rosetta
         # if: env.GIT_DIFF

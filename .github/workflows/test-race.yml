@@ -62,10 +62,6 @@ jobs:
         if: env.GIT_DIFF
         run: GOARCH=${{ matrix.go-arch }} LEDGER_ENABLED=false make build
 
-      - name: Build cosmovisor
-        if: env.GIT_DIFF
-        run: GOARCH=${{ matrix.go-arch }} LEDGER_ENABLED=false make cosmovisor
-
   split-test-files:
     runs-on: ubuntu-latest
     steps:
