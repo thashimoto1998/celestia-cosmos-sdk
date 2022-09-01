@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"strings"
 
+	dbm "github.com/cosmos/cosmos-sdk/db/memdb"
 	"github.com/stretchr/testify/suite"
 	abci "github.com/tendermint/tendermint/abci/types"
 	tmcli "github.com/tendermint/tendermint/libs/cli"
-	dbm "github.com/tendermint/tm-db"
 
 	"cosmossdk.io/depinject"
 	"github.com/cosmos/cosmos-sdk/baseapp"
@@ -70,13 +70,13 @@ func (s *IntegrationTestSuite) SetupSuite() {
 
 		app := appBuilder.Build(
 			val.GetCtx().Logger,
-			dbm.NewMemDB(),
+			dbm.NewDB(),
 			nil,
 			baseapp.SetPruning(pruningtypes.NewPruningOptionsFromString(val.GetAppConfig().Pruning)),
 			baseapp.SetMinGasPrices(val.GetAppConfig().MinGasPrices),
 		)
 
-		s.Require().NoError(app.Load(false))
+		s.Require().NoError(app.Load())
 
 		// Make sure not to forget to persist `myParams` into the actual store,
 		// this is done in InitChain.
@@ -86,7 +86,7 @@ func (s *IntegrationTestSuite) SetupSuite() {
 			return app.InitChainer(ctx, req)
 		})
 
-		s.Require().NoError(app.LoadLatestVersion())
+		s.Require().NoError(app.Load())
 
 		return app
 	}
