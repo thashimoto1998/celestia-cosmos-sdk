@@ -48,9 +48,6 @@ jobs:
       - name: Build
         run: GOARCH=${{ matrix.go-arch }} LEDGER_ENABLED=false make build
 
-      - name: Build cosmovisor
-        run: GOARCH=${{ matrix.go-arch }} LEDGER_ENABLED=false make cosmovisor
-
       - name: Install runsim
         run: go install github.com/cosmos/tools/cmd/runsim@v1.0.0
       - uses: actions/cache@v3
