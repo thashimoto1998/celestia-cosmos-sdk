@@ -61,7 +61,7 @@ require (
 	golang.org/x/exp v0.0.0-20220428152302-39d4317da171
 	google.golang.org/genproto v0.0.0-20220725144611-272f38e5d71b
 	google.golang.org/grpc v1.48.0
-	google.golang.org/protobuf v1.28.0
+	google.golang.org/protobuf v1.28.1
 	pgregory.net/rapid v0.4.8
 	sigs.k8s.io/yaml v1.3.0
 )
@@ -270,7 +270,7 @@ require (
 	golang.org/x/net v0.0.0-20220726230323-06994584191e // indirect
 	golang.org/x/oauth2 v0.0.0-20220411215720-9780585627b5 // indirect
 	golang.org/x/sync v0.0.0-20220722155255-886fb9371eb4 // indirect
-	golang.org/x/sys v0.0.0-20220727055044-e65921a090b8 // indirect
+	golang.org/x/sys v0.0.0-20220823224334-20c2bfdbfe24 // indirect
 	golang.org/x/term v0.0.0-20220722155259-a9ba230a4035 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/tools v0.1.12 // indirect
