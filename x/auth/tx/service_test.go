@@ -4,7 +4,6 @@ package tx_test
 
 import (
 	"context"
-	"encoding/base64"
 	"fmt"
 	"strings"
 	"testing"
@@ -115,39 +114,39 @@ func (s *IntegrationTestSuite) TearDownSuite() {
 	s.network.Cleanup()
 }
 
-func (s *IntegrationTestSuite) TestQueryBySig() {
-	// broadcast tx
-	txb := s.mkTxBuilder()
-	txbz, err := s.cfg.TxConfig.TxEncoder()(txb.GetTx())
-	s.Require().NoError(err)
-	_, err = s.queryClient.BroadcastTx(context.Background(), &tx.BroadcastTxRequest{TxBytes: txbz, Mode: tx.BroadcastMode_BROADCAST_MODE_BLOCK})
-	s.Require().NoError(err)
+// func (s *IntegrationTestSuite) TestQueryBySig() {
+// 	// broadcast tx
+// 	txb := s.mkTxBuilder()
+// 	txbz, err := s.cfg.TxConfig.TxEncoder()(txb.GetTx())
+// 	s.Require().NoError(err)
+// 	_, err = s.queryClient.BroadcastTx(context.Background(), &tx.BroadcastTxRequest{TxBytes: txbz, Mode: tx.BroadcastMode_BROADCAST_MODE_BLOCK})
+// 	s.Require().NoError(err)
 
-	// get the signature out of the builder
-	sigs, err := txb.GetTx().GetSignaturesV2()
-	s.Require().NoError(err)
-	s.Require().Len(sigs, 1)
-	sig, ok := sigs[0].Data.(*signing.SingleSignatureData)
-	s.Require().True(ok)
+// 	// get the signature out of the builder
+// 	sigs, err := txb.GetTx().GetSignaturesV2()
+// 	s.Require().NoError(err)
+// 	s.Require().Len(sigs, 1)
+// 	sig, ok := sigs[0].Data.(*signing.SingleSignatureData)
+// 	s.Require().True(ok)
 
-	// encode, format, query
-	b64Sig := base64.StdEncoding.EncodeToString(sig.Signature)
-	sigFormatted := fmt.Sprintf("%s.%s='%s'", sdk.EventTypeTx, sdk.AttributeKeySignature, b64Sig)
-	res, err := s.queryClient.GetTxsEvent(context.Background(), &tx.GetTxsEventRequest{
-		Events:  []string{sigFormatted},
-		OrderBy: 0,
-		Page:    0,
-		Limit:   10,
-	})
-	s.Require().NoError(err)
-	s.Require().Len(res.Txs, 1)
-	s.Require().Len(res.Txs[0].Signatures, 1)
-	s.Require().Equal(res.Txs[0].Signatures[0], sig.Signature)
+// 	// encode, format, query
+// 	b64Sig := base64.StdEncoding.EncodeToString(sig.Signature)
+// 	sigFormatted := fmt.Sprintf("%s.%s='%s'", sdk.EventTypeTx, sdk.AttributeKeySignature, b64Sig)
+// 	res, err := s.queryClient.GetTxsEvent(context.Background(), &tx.GetTxsEventRequest{
+// 		Events:  []string{sigFormatted},
+// 		OrderBy: 0,
+// 		Page:    0,
+// 		Limit:   10,
+// 	})
+// 	s.Require().NoError(err)
+// 	s.Require().Len(res.Txs, 1)
+// 	s.Require().Len(res.Txs[0].Signatures, 1)
+// 	s.Require().Equal(res.Txs[0].Signatures[0], sig.Signature)
 
-	// bad format should error
-	_, err = s.queryClient.GetTxsEvent(context.Background(), &tx.GetTxsEventRequest{Events: []string{"tx.foo.bar='baz'"}})
-	s.Require().ErrorContains(err, "invalid event;")
-}
+// 	// bad format should error
+// 	_, err = s.queryClient.GetTxsEvent(context.Background(), &tx.GetTxsEventRequest{Events: []string{"tx.foo.bar='baz'"}})
+// 	s.Require().ErrorContains(err, "invalid event;")
+// }
 
 func TestEventRegex(t *testing.T) {
 	t.Parallel()

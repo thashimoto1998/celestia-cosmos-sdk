@@ -1939,71 +1939,71 @@ func TestOfferSnapshot_Errors(t *testing.T) {
 	require.Equal(t, abci.ResponseOfferSnapshot{Result: abci.ResponseOfferSnapshot_ABORT}, resp)
 }
 
-func TestApplySnapshotChunk(t *testing.T) {
-	setupConfig1 := &setupConfig{
-		blocks:             4,
-		blockTxs:           10,
-		snapshotInterval:   2,
-		snapshotKeepRecent: 2,
-		pruningOpts:        pruningtypes.NewPruningOptions(pruningtypes.PruningNothing),
-	}
-	source, err := setupBaseAppWithSnapshots(t, setupConfig1)
-	require.NoError(t, err)
+// func TestApplySnapshotChunk(t *testing.T) {
+// 	setupConfig1 := &setupConfig{
+// 		blocks:             4,
+// 		blockTxs:           10,
+// 		snapshotInterval:   2,
+// 		snapshotKeepRecent: 2,
+// 		pruningOpts:        pruningtypes.NewPruningOptions(pruningtypes.PruningNothing),
+// 	}
+// 	source, err := setupBaseAppWithSnapshots(t, setupConfig1)
+// 	require.NoError(t, err)
 
-	setupConfig2 := &setupConfig{
-		blocks:             0,
-		blockTxs:           0,
-		snapshotInterval:   2,
-		snapshotKeepRecent: 2,
-		pruningOpts:        pruningtypes.NewPruningOptions(pruningtypes.PruningNothing),
-	}
-	target, err := setupBaseAppWithSnapshots(t, setupConfig2)
-	require.NoError(t, err)
+// 	setupConfig2 := &setupConfig{
+// 		blocks:             0,
+// 		blockTxs:           0,
+// 		snapshotInterval:   2,
+// 		snapshotKeepRecent: 2,
+// 		pruningOpts:        pruningtypes.NewPruningOptions(pruningtypes.PruningNothing),
+// 	}
+// 	target, err := setupBaseAppWithSnapshots(t, setupConfig2)
+// 	require.NoError(t, err)
 
-	// Fetch latest snapshot to restore
-	respList := source.ListSnapshots(abci.RequestListSnapshots{})
-	require.NotEmpty(t, respList.Snapshots)
-	snapshot := respList.Snapshots[0]
+// 	// Fetch latest snapshot to restore
+// 	respList := source.ListSnapshots(abci.RequestListSnapshots{})
+// 	require.NotEmpty(t, respList.Snapshots)
+// 	snapshot := respList.Snapshots[0]
 
-	// Make sure the snapshot has at least 3 chunks
-	require.GreaterOrEqual(t, snapshot.Chunks, uint32(3), "Not enough snapshot chunks")
+// 	// Make sure the snapshot has at least 3 chunks
+// 	require.GreaterOrEqual(t, snapshot.Chunks, uint32(3), "Not enough snapshot chunks")
 
-	// Begin a snapshot restoration in the target
-	respOffer := target.OfferSnapshot(abci.RequestOfferSnapshot{Snapshot: snapshot})
-	require.Equal(t, abci.ResponseOfferSnapshot{Result: abci.ResponseOfferSnapshot_ACCEPT}, respOffer)
+// 	// Begin a snapshot restoration in the target
+// 	respOffer := target.OfferSnapshot(abci.RequestOfferSnapshot{Snapshot: snapshot})
+// 	require.Equal(t, abci.ResponseOfferSnapshot{Result: abci.ResponseOfferSnapshot_ACCEPT}, respOffer)
 
-	// We should be able to pass an invalid chunk and get a verify failure, before reapplying it.
-	respApply := target.ApplySnapshotChunk(abci.RequestApplySnapshotChunk{
-		Index:  0,
-		Chunk:  []byte{9},
-		Sender: "sender",
-	})
-	require.Equal(t, abci.ResponseApplySnapshotChunk{
-		Result:        abci.ResponseApplySnapshotChunk_RETRY,
-		RefetchChunks: []uint32{0},
-		RejectSenders: []string{"sender"},
-	}, respApply)
+// 	// We should be able to pass an invalid chunk and get a verify failure, before reapplying it.
+// 	respApply := target.ApplySnapshotChunk(abci.RequestApplySnapshotChunk{
+// 		Index:  0,
+// 		Chunk:  []byte{9},
+// 		Sender: "sender",
+// 	})
+// 	require.Equal(t, abci.ResponseApplySnapshotChunk{
+// 		Result:        abci.ResponseApplySnapshotChunk_RETRY,
+// 		RefetchChunks: []uint32{0},
+// 		RejectSenders: []string{"sender"},
+// 	}, respApply)
 
-	// Fetch each chunk from the source and apply it to the target
-	for index := uint32(0); index < snapshot.Chunks; index++ {
-		respChunk := source.LoadSnapshotChunk(abci.RequestLoadSnapshotChunk{
-			Height: snapshot.Height,
-			Format: snapshot.Format,
-			Chunk:  index,
-		})
-		require.NotNil(t, respChunk.Chunk)
-		respApply := target.ApplySnapshotChunk(abci.RequestApplySnapshotChunk{
-			Index: index,
-			Chunk: respChunk.Chunk,
-		})
-		require.Equal(t, abci.ResponseApplySnapshotChunk{
-			Result: abci.ResponseApplySnapshotChunk_ACCEPT,
-		}, respApply)
-	}
+// 	// Fetch each chunk from the source and apply it to the target
+// 	for index := uint32(0); index < snapshot.Chunks; index++ {
+// 		respChunk := source.LoadSnapshotChunk(abci.RequestLoadSnapshotChunk{
+// 			Height: snapshot.Height,
+// 			Format: snapshot.Format,
+// 			Chunk:  index,
+// 		})
+// 		require.NotNil(t, respChunk.Chunk)
+// 		respApply := target.ApplySnapshotChunk(abci.RequestApplySnapshotChunk{
+// 			Index: index,
+// 			Chunk: respChunk.Chunk,
+// 		})
+// 		require.Equal(t, abci.ResponseApplySnapshotChunk{
+// 			Result: abci.ResponseApplySnapshotChunk_ACCEPT,
+// 		}, respApply)
+// 	}
 
-	// The target should now have the same hash as the source
-	assert.Equal(t, source.LastCommitID(), target.LastCommitID())
-}
+// 	// The target should now have the same hash as the source
+// 	assert.Equal(t, source.LastCommitID(), target.LastCommitID())
+// }
 
 // NOTE: represents a new custom router for testing purposes of WithRouter()
 type testCustomRouter struct {
@@ -2099,164 +2099,164 @@ func TestBaseApp_EndBlock(t *testing.T) {
 	require.Equal(t, cp.Block.MaxGas, res.ConsensusParamUpdates.Block.MaxGas)
 }
 
-func TestBaseApp_Init(t *testing.T) {
-	db := dbm.NewMemDB()
-	name := t.Name()
-	logger := defaultLogger()
+// func TestBaseApp_Init(t *testing.T) {
+// 	db := dbm.NewMemDB()
+// 	name := t.Name()
+// 	logger := defaultLogger()
 
-	snapshotStore, err := snapshots.NewStore(dbm.NewMemDB(), testutil.GetTempDir(t))
-	require.NoError(t, err)
+// 	snapshotStore, err := snapshots.NewStore(dbm.NewMemDB(), testutil.GetTempDir(t))
+// 	require.NoError(t, err)
 
-	testCases := map[string]struct {
-		bapp             *BaseApp
-		expectedPruning  pruningtypes.PruningOptions
-		expectedSnapshot snapshottypes.SnapshotOptions
-		expectedErr      error
-	}{
-		"snapshot but pruning unset": {
-			NewBaseApp(name, logger, db, nil,
-				SetSnapshot(snapshotStore, snapshottypes.NewSnapshotOptions(1500, 2)),
-			),
-			pruningtypes.NewPruningOptions(pruningtypes.PruningDefault),
-			snapshottypes.NewSnapshotOptions(1500, 2),
-			// if no pruning is set, the default is PruneNothing
-			nil,
-		},
-		"pruning everything only": {
-			NewBaseApp(name, logger, db, nil,
-				SetPruning(pruningtypes.NewPruningOptions(pruningtypes.PruningEverything)),
-			),
-			pruningtypes.NewPruningOptions(pruningtypes.PruningEverything),
-			snapshottypes.NewSnapshotOptions(snapshottypes.SnapshotIntervalOff, 0),
-			nil,
-		},
-		"pruning nothing only": {
-			NewBaseApp(name, logger, db, nil,
-				SetPruning(pruningtypes.NewPruningOptions(pruningtypes.PruningNothing)),
-			),
-			pruningtypes.NewPruningOptions(pruningtypes.PruningNothing),
-			snapshottypes.NewSnapshotOptions(snapshottypes.SnapshotIntervalOff, 0),
-			nil,
-		},
-		"pruning default only": {
-			NewBaseApp(name, logger, db, nil,
-				SetPruning(pruningtypes.NewPruningOptions(pruningtypes.PruningDefault)),
-			),
-			pruningtypes.NewPruningOptions(pruningtypes.PruningDefault),
-			snapshottypes.NewSnapshotOptions(snapshottypes.SnapshotIntervalOff, 0),
-			nil,
-		},
-		"pruning custom only": {
-			NewBaseApp(name, logger, db, nil,
-				SetPruning(pruningtypes.NewCustomPruningOptions(10, 10)),
-			),
-			pruningtypes.NewCustomPruningOptions(10, 10),
-			snapshottypes.NewSnapshotOptions(snapshottypes.SnapshotIntervalOff, 0),
-			nil,
-		},
-		"pruning everything and snapshots": {
-			NewBaseApp(name, logger, db, nil,
-				SetPruning(pruningtypes.NewPruningOptions(pruningtypes.PruningEverything)),
-				SetSnapshot(snapshotStore, snapshottypes.NewSnapshotOptions(1500, 2)),
-			),
-			pruningtypes.NewPruningOptions(pruningtypes.PruningEverything),
-			snapshottypes.NewSnapshotOptions(1500, 2),
-			nil,
-		},
-		"pruning nothing and snapshots": {
-			NewBaseApp(name, logger, db, nil,
-				SetPruning(pruningtypes.NewPruningOptions(pruningtypes.PruningNothing)),
-				SetSnapshot(snapshotStore, snapshottypes.NewSnapshotOptions(1500, 2)),
-			),
-			pruningtypes.NewPruningOptions(pruningtypes.PruningNothing),
-			snapshottypes.NewSnapshotOptions(1500, 2),
-			nil,
-		},
-		"pruning default and snapshots": {
-			NewBaseApp(name, logger, db, nil,
-				SetPruning(pruningtypes.NewPruningOptions(pruningtypes.PruningDefault)),
-				SetSnapshot(snapshotStore, snapshottypes.NewSnapshotOptions(1500, 2)),
-			),
-			pruningtypes.NewPruningOptions(pruningtypes.PruningDefault),
-			snapshottypes.NewSnapshotOptions(1500, 2),
-			nil,
-		},
-		"pruning custom and snapshots": {
-			NewBaseApp(name, logger, db, nil,
-				SetPruning(pruningtypes.NewCustomPruningOptions(10, 10)),
-				SetSnapshot(snapshotStore, snapshottypes.NewSnapshotOptions(1500, 2)),
-			),
-			pruningtypes.NewCustomPruningOptions(10, 10),
-			snapshottypes.NewSnapshotOptions(1500, 2),
-			nil,
-		},
-		"error custom pruning 0 interval": {
-			NewBaseApp(name, logger, db, nil,
-				SetPruning(pruningtypes.NewCustomPruningOptions(10, 0)),
-				SetSnapshot(snapshotStore, snapshottypes.NewSnapshotOptions(1500, 2)),
-			),
-			pruningtypes.NewCustomPruningOptions(10, 0),
-			snapshottypes.NewSnapshotOptions(1500, 2),
-			pruningtypes.ErrPruningIntervalZero,
-		},
-		"error custom pruning too small interval": {
-			NewBaseApp(name, logger, db, nil,
-				SetPruning(pruningtypes.NewCustomPruningOptions(10, 9)),
-				SetSnapshot(snapshotStore, snapshottypes.NewSnapshotOptions(1500, 2)),
-			),
-			pruningtypes.NewCustomPruningOptions(10, 9),
-			snapshottypes.NewSnapshotOptions(1500, 2),
-			pruningtypes.ErrPruningIntervalTooSmall,
-		},
-		"error custom pruning too small keep recent": {
-			NewBaseApp(name, logger, db, nil,
-				SetPruning(pruningtypes.NewCustomPruningOptions(1, 10)),
-				SetSnapshot(snapshotStore, snapshottypes.NewSnapshotOptions(1500, 2)),
-			),
-			pruningtypes.NewCustomPruningOptions(1, 10),
-			snapshottypes.NewSnapshotOptions(1500, 2),
-			pruningtypes.ErrPruningKeepRecentTooSmall,
-		},
-		"snapshot zero interval - manager not set": {
-			NewBaseApp(name, logger, db, nil,
-				SetPruning(pruningtypes.NewCustomPruningOptions(10, 10)),
-				SetSnapshot(snapshotStore, snapshottypes.NewSnapshotOptions(0, 2)),
-			),
-			pruningtypes.NewCustomPruningOptions(10, 10),
-			snapshottypes.NewSnapshotOptions(snapshottypes.SnapshotIntervalOff, 0),
-			nil,
-		},
-		"snapshot zero keep recent - allowed": {
-			NewBaseApp(name, logger, db, nil,
-				SetPruning(pruningtypes.NewCustomPruningOptions(10, 10)),
-				SetSnapshot(snapshotStore, snapshottypes.NewSnapshotOptions(1500, 0)),
-			),
-			pruningtypes.NewCustomPruningOptions(10, 10),
-			snapshottypes.NewSnapshotOptions(1500, 0), // 0 snapshot-keep-recent means keep all
-			nil,
-		},
-	}
+// 	testCases := map[string]struct {
+// 		bapp             *BaseApp
+// 		expectedPruning  pruningtypes.PruningOptions
+// 		expectedSnapshot snapshottypes.SnapshotOptions
+// 		expectedErr      error
+// 	}{
+// 		"snapshot but pruning unset": {
+// 			NewBaseApp(name, logger, db, nil,
+// 				SetSnapshot(snapshotStore, snapshottypes.NewSnapshotOptions(1500, 2)),
+// 			),
+// 			pruningtypes.NewPruningOptions(pruningtypes.PruningDefault),
+// 			snapshottypes.NewSnapshotOptions(1500, 2),
+// 			// if no pruning is set, the default is PruneNothing
+// 			nil,
+// 		},
+// 		"pruning everything only": {
+// 			NewBaseApp(name, logger, db, nil,
+// 				SetPruning(pruningtypes.NewPruningOptions(pruningtypes.PruningEverything)),
+// 			),
+// 			pruningtypes.NewPruningOptions(pruningtypes.PruningEverything),
+// 			snapshottypes.NewSnapshotOptions(snapshottypes.SnapshotIntervalOff, 0),
+// 			nil,
+// 		},
+// 		"pruning nothing only": {
+// 			NewBaseApp(name, logger, db, nil,
+// 				SetPruning(pruningtypes.NewPruningOptions(pruningtypes.PruningNothing)),
+// 			),
+// 			pruningtypes.NewPruningOptions(pruningtypes.PruningNothing),
+// 			snapshottypes.NewSnapshotOptions(snapshottypes.SnapshotIntervalOff, 0),
+// 			nil,
+// 		},
+// 		"pruning default only": {
+// 			NewBaseApp(name, logger, db, nil,
+// 				SetPruning(pruningtypes.NewPruningOptions(pruningtypes.PruningDefault)),
+// 			),
+// 			pruningtypes.NewPruningOptions(pruningtypes.PruningDefault),
+// 			snapshottypes.NewSnapshotOptions(snapshottypes.SnapshotIntervalOff, 0),
+// 			nil,
+// 		},
+// 		"pruning custom only": {
+// 			NewBaseApp(name, logger, db, nil,
+// 				SetPruning(pruningtypes.NewCustomPruningOptions(10, 10)),
+// 			),
+// 			pruningtypes.NewCustomPruningOptions(10, 10),
+// 			snapshottypes.NewSnapshotOptions(snapshottypes.SnapshotIntervalOff, 0),
+// 			nil,
+// 		},
+// 		"pruning everything and snapshots": {
+// 			NewBaseApp(name, logger, db, nil,
+// 				SetPruning(pruningtypes.NewPruningOptions(pruningtypes.PruningEverything)),
+// 				SetSnapshot(snapshotStore, snapshottypes.NewSnapshotOptions(1500, 2)),
+// 			),
+// 			pruningtypes.NewPruningOptions(pruningtypes.PruningEverything),
+// 			snapshottypes.NewSnapshotOptions(1500, 2),
+// 			nil,
+// 		},
+// 		"pruning nothing and snapshots": {
+// 			NewBaseApp(name, logger, db, nil,
+// 				SetPruning(pruningtypes.NewPruningOptions(pruningtypes.PruningNothing)),
+// 				SetSnapshot(snapshotStore, snapshottypes.NewSnapshotOptions(1500, 2)),
+// 			),
+// 			pruningtypes.NewPruningOptions(pruningtypes.PruningNothing),
+// 			snapshottypes.NewSnapshotOptions(1500, 2),
+// 			nil,
+// 		},
+// 		"pruning default and snapshots": {
+// 			NewBaseApp(name, logger, db, nil,
+// 				SetPruning(pruningtypes.NewPruningOptions(pruningtypes.PruningDefault)),
+// 				SetSnapshot(snapshotStore, snapshottypes.NewSnapshotOptions(1500, 2)),
+// 			),
+// 			pruningtypes.NewPruningOptions(pruningtypes.PruningDefault),
+// 			snapshottypes.NewSnapshotOptions(1500, 2),
+// 			nil,
+// 		},
+// 		"pruning custom and snapshots": {
+// 			NewBaseApp(name, logger, db, nil,
+// 				SetPruning(pruningtypes.NewCustomPruningOptions(10, 10)),
+// 				SetSnapshot(snapshotStore, snapshottypes.NewSnapshotOptions(1500, 2)),
+// 			),
+// 			pruningtypes.NewCustomPruningOptions(10, 10),
+// 			snapshottypes.NewSnapshotOptions(1500, 2),
+// 			nil,
+// 		},
+// 		"error custom pruning 0 interval": {
+// 			NewBaseApp(name, logger, db, nil,
+// 				SetPruning(pruningtypes.NewCustomPruningOptions(10, 0)),
+// 				SetSnapshot(snapshotStore, snapshottypes.NewSnapshotOptions(1500, 2)),
+// 			),
+// 			pruningtypes.NewCustomPruningOptions(10, 0),
+// 			snapshottypes.NewSnapshotOptions(1500, 2),
+// 			pruningtypes.ErrPruningIntervalZero,
+// 		},
+// 		"error custom pruning too small interval": {
+// 			NewBaseApp(name, logger, db, nil,
+// 				SetPruning(pruningtypes.NewCustomPruningOptions(10, 9)),
+// 				SetSnapshot(snapshotStore, snapshottypes.NewSnapshotOptions(1500, 2)),
+// 			),
+// 			pruningtypes.NewCustomPruningOptions(10, 9),
+// 			snapshottypes.NewSnapshotOptions(1500, 2),
+// 			pruningtypes.ErrPruningIntervalTooSmall,
+// 		},
+// 		"error custom pruning too small keep recent": {
+// 			NewBaseApp(name, logger, db, nil,
+// 				SetPruning(pruningtypes.NewCustomPruningOptions(1, 10)),
+// 				SetSnapshot(snapshotStore, snapshottypes.NewSnapshotOptions(1500, 2)),
+// 			),
+// 			pruningtypes.NewCustomPruningOptions(1, 10),
+// 			snapshottypes.NewSnapshotOptions(1500, 2),
+// 			pruningtypes.ErrPruningKeepRecentTooSmall,
+// 		},
+// 		"snapshot zero interval - manager not set": {
+// 			NewBaseApp(name, logger, db, nil,
+// 				SetPruning(pruningtypes.NewCustomPruningOptions(10, 10)),
+// 				SetSnapshot(snapshotStore, snapshottypes.NewSnapshotOptions(0, 2)),
+// 			),
+// 			pruningtypes.NewCustomPruningOptions(10, 10),
+// 			snapshottypes.NewSnapshotOptions(snapshottypes.SnapshotIntervalOff, 0),
+// 			nil,
+// 		},
+// 		"snapshot zero keep recent - allowed": {
+// 			NewBaseApp(name, logger, db, nil,
+// 				SetPruning(pruningtypes.NewCustomPruningOptions(10, 10)),
+// 				SetSnapshot(snapshotStore, snapshottypes.NewSnapshotOptions(1500, 0)),
+// 			),
+// 			pruningtypes.NewCustomPruningOptions(10, 10),
+// 			snapshottypes.NewSnapshotOptions(1500, 0), // 0 snapshot-keep-recent means keep all
+// 			nil,
+// 		},
+// 	}
 
-	for _, tc := range testCases {
-		// Init and validate
-		require.Equal(t, tc.expectedErr, tc.bapp.Init())
-		if tc.expectedErr != nil {
-			continue
-		}
+// 	for _, tc := range testCases {
+// 		// Init and validate
+// 		require.Equal(t, tc.expectedErr, tc.bapp.Init())
+// 		if tc.expectedErr != nil {
+// 			continue
+// 		}
 
-		// Check that settings were set correctly
-		actualPruning := tc.bapp.cms.GetPruning()
-		require.Equal(t, tc.expectedPruning, actualPruning)
+// 		// Check that settings were set correctly
+// 		actualPruning := tc.bapp.cms.GetPruning()
+// 		require.Equal(t, tc.expectedPruning, actualPruning)
 
-		if tc.expectedSnapshot.Interval == snapshottypes.SnapshotIntervalOff {
-			require.Nil(t, tc.bapp.snapshotManager)
-			continue
-		}
+// 		if tc.expectedSnapshot.Interval == snapshottypes.SnapshotIntervalOff {
+// 			require.Nil(t, tc.bapp.snapshotManager)
+// 			continue
+// 		}
 
-		require.Equal(t, tc.expectedSnapshot.Interval, tc.bapp.snapshotManager.GetInterval())
-		require.Equal(t, tc.expectedSnapshot.KeepRecent, tc.bapp.snapshotManager.GetKeepRecent())
-	}
-}
+// 		require.Equal(t, tc.expectedSnapshot.Interval, tc.bapp.snapshotManager.GetInterval())
+// 		require.Equal(t, tc.expectedSnapshot.KeepRecent, tc.bapp.snapshotManager.GetKeepRecent())
+// 	}
+// }
 
 func executeBlockWithArbitraryTxs(t *testing.T, app *BaseApp, numTransactions int, blockHeight int64) []txTest {
 	codec := codec.NewLegacyAmino()

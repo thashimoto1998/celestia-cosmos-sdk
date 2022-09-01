@@ -964,9 +964,9 @@ func doTestStoreSchemaMigration(t *testing.T, ctor storeConstructor) {
 	})
 }
 
-func TestTrace(t *testing.T) {
-	doTestTrace(t, multistoreConstructor)
-}
+// func TestTrace(t *testing.T) {
+// 	doTestTrace(t, multistoreConstructor)
+// }
 
 func doTestTrace(t *testing.T, ctor storeConstructor) {
 	key, value := []byte("test-key"), []byte("test-value")
@@ -1025,9 +1025,9 @@ func doTestTrace(t *testing.T, ctor storeConstructor) {
 	require.NoError(t, store.Close())
 }
 
-func TestTraceConcurrency(t *testing.T) {
-	doTestTraceConcurrency(t, multistoreConstructor)
-}
+// func TestTraceConcurrency(t *testing.T) {
+// 	doTestTraceConcurrency(t, multistoreConstructor)
+// }
 
 func doTestTraceConcurrency(t *testing.T, ctor storeConstructor) {
 	db := memdb.NewDB()
@@ -1076,9 +1076,9 @@ func doTestTraceConcurrency(t *testing.T, ctor storeConstructor) {
 	stopW <- struct{}{}
 }
 
-func TestListeners(t *testing.T) {
-	doTestListeners(t, multistoreConstructor)
-}
+// func TestListeners(t *testing.T) {
+// 	doTestListeners(t, multistoreConstructor)
+// }
 
 func doTestListeners(t *testing.T, ctor storeConstructor) {
 	kvPairs := []types.KVPair{

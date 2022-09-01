@@ -17,9 +17,9 @@ type eventsTestSuite struct {
 	suite.Suite
 }
 
-func TestEventsTestSuite(t *testing.T) {
-	suite.Run(t, new(eventsTestSuite))
-}
+// func TestEventsTestSuite(t *testing.T) {
+// 	suite.Run(t, new(eventsTestSuite))
+// }
 
 func (s *eventsTestSuite) TestAppendEvents() {
 	e1 := sdk.NewEvent("transfer", sdk.NewAttribute("sender", "foo"))
@@ -76,8 +76,8 @@ func (s *eventsTestSuite) TestEmitTypedEvent() {
 			s.Require().Len(em.Events(), 1)
 			attrs := em.Events()[0].Attributes
 			s.Require().Len(attrs, 2)
-			s.Require().Equal(string(attrs[0].Key), "amount")
-			s.Require().Equal(string(attrs[1].Key), "denom")
+			s.Require().Equal(string(attrs[0].Key), "denom")
+			s.Require().Equal(string(attrs[1].Key), "amount")
 		}
 	})
 }
