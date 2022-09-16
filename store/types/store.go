@@ -296,6 +296,7 @@ const (
 	StoreTypeMulti StoreType = iota
 	StoreTypeDB
 	StoreTypeIAVL
+	StoreTypeSMT
 	StoreTypeTransient
 	StoreTypeMemory
 )
@@ -310,6 +311,9 @@ func (st StoreType) String() string {
 
 	case StoreTypeIAVL:
 		return "StoreTypeIAVL"
+
+	case StoreTypeSMT:
+		return "StoreTypeSMT"
 
 	case StoreTypeTransient:
 		return "StoreTypeTransient"
