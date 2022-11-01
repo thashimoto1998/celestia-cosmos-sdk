@@ -18,6 +18,8 @@ type FraudProof struct {
 	// The block height to load state of
 	blockHeight int64
 
+	// TODO: Add Proof that appHash is inside merklized ISRs in block header at block height
+
 	appHash []byte
 	// A map from module name to state witness
 	stateWitness map[string]StateWitness
@@ -27,6 +29,8 @@ type FraudProof struct {
 	fraudulentBeginBlock *abci.RequestBeginBlock
 	fraudulentDeliverTx  *abci.RequestDeliverTx
 	fraudulentEndBlock   *abci.RequestEndBlock
+
+	// TODO: Add Proof that fraudulent state transition is inside merkelizied transactions in block header
 }
 
 // State witness with a list of all witness data
@@ -155,7 +159,7 @@ func (fraudProof *FraudProof) toABCI() abci.FraudProof {
 		}
 		proof := stateWitness.Proof
 		abciStateWitness[storeKey] = &abci.StateWitness{
-			ProofOp:     &proof,
+			Proof:       &proof,
 			RootHash:    stateWitness.RootHash,
 			WitnessData: abciWitnessData,
 		}
@@ -183,7 +187,7 @@ func (fraudProof *FraudProof) fromABCI(abciFraudProof abci.FraudProof) {
 			witnessData = append(witnessData, witness)
 		}
 		stateWitness[storeKey] = StateWitness{
-			Proof:       *abciStateWitness.ProofOp,
+			Proof:       *abciStateWitness.Proof,
 			RootHash:    abciStateWitness.RootHash,
 			WitnessData: witnessData,
 		}
