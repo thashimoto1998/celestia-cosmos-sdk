@@ -32,7 +32,7 @@ const (
 	DefaultHistoricalEntries uint32 = 10000
 )
 
-// DefaultMinCommissionRate is set to 0%
+// DefaultMinCommissionRate is set to .05
 var DefaultMinCommissionRate = sdk.NewDecWithPrec(5, 2)
 
 var (
