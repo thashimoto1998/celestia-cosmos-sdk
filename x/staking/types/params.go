@@ -33,7 +33,7 @@ const (
 )
 
 // DefaultMinCommissionRate is set to 0%
-var DefaultMinCommissionRate = sdk.ZeroDec()
+var DefaultMinCommissionRate = sdk.NewDecWithPrec(5, 2)
 
 var (
 	KeyUnbondingTime     = []byte("UnbondingTime")
