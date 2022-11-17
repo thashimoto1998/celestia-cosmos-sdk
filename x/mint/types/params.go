@@ -43,9 +43,9 @@ func NewParams(
 func DefaultParams() Params {
 	return Params{
 		MintDenom:           sdk.DefaultBondDenom,
-		InflationRateChange: sdk.ZeroDec(),
-		InflationMax:        sdk.NewDecWithPrec(2, 2),
-		InflationMin:        sdk.NewDecWithPrec(2, 2),
+		InflationRateChange: sdk.NewDecWithPrec(13, 2),
+		InflationMax:        sdk.NewDecWithPrec(20, 2),
+		InflationMin:        sdk.NewDecWithPrec(7, 2),
 		GoalBonded:          sdk.NewDecWithPrec(67, 2),
 		BlocksPerYear:       uint64(60 * 60 * 8766 / 15), // assuming 15 second block times
 	}
