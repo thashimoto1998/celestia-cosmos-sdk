@@ -25,6 +25,8 @@ const (
 	runTxModeCheck    runTxMode = iota // Check a transaction
 	runTxModeReCheck                   // Recheck a (pending) transaction after a commit
 	runTxModeSimulate                  // Simulate a transaction
+	runTxModePrepareProposal
+	runTxModeProcessProposal
 	runTxModeDeliver                   // Deliver a transaction
 )
 
@@ -593,6 +595,10 @@ func validateBasicTxMsgs(msgs []sdk.Msg) error {
 func (app *BaseApp) getState(mode runTxMode) *state {
 	if mode == runTxModeDeliver {
 		return app.deliverState
+	}
+	// see how the SDK does it
+	if mode == runTxModePrepareProposal {
+		return app.prepareProposalState
 	}
 
 	return app.checkState

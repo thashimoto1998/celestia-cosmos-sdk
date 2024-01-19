@@ -14,6 +14,12 @@ import (
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 )
 
+type mode int
+
+const (
+	ModeCheckTx mode = iota
+)
+
 /*
 Context is an immutable object contains all information needed to
 process a request.
@@ -33,7 +39,7 @@ type Context struct {
 	voteInfo             []abci.VoteInfo
 	gasMeter             GasMeter
 	blockGasMeter        GasMeter
-	checkTx              bool
+	mode              mode
 	recheckTx            bool // if recheckTx == true, then checkTx must also be true
 	minGasPrice          DecCoins
 	consParams           *abci.ConsensusParams
@@ -59,6 +65,7 @@ func (c Context) GasMeter() GasMeter                         { return c.gasMeter
 func (c Context) BlockGasMeter() GasMeter                    { return c.blockGasMeter }
 func (c Context) IsCheckTx() bool                            { return c.checkTx }
 func (c Context) IsReCheckTx() bool                          { return c.recheckTx }
+func (c Context) IsPrepareProposal()
 func (c Context) MinGasPrices() DecCoins                     { return c.minGasPrice }
 func (c Context) EventManager() *EventManager                { return c.eventManager }
 func (c Context) Priority() int64                            { return c.priority }
