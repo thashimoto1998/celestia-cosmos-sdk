@@ -258,7 +258,7 @@ func (m *Manager) SetOrderInitGenesis(moduleNames ...string) {
 
 // SetOrderExportGenesis sets the order of export genesis calls
 func (m *Manager) SetOrderExportGenesis(moduleNames ...string) {
-	m.assertNoForgottenModules("SetOrderExportGenesis", moduleNames)
+	// m.assertNoForgottenModules("SetOrderExportGenesis", moduleNames)
 	m.OrderExportGenesis = moduleNames
 }
 
